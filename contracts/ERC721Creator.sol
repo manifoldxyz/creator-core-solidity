@@ -19,11 +19,14 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, Ownable, IERC721Cre
 
     // Track registered extensions    
     EnumerableSet.AddressSet private _extensions;
+    mapping (address => uint256) private _extensionBalances;
+    mapping (address => mapping(uint256 => uint256)) private _extensionTokens;
+    mapping (uint256 => uint256) private _extensionTokensIndex;
+    mapping (uint256 => address) private _tokenExtension;
 
     // Track registered admins
     EnumerableSet.AddressSet private _admins;
 
-    mapping (uint256 => address) private _originatingContract;
 
     /**
      * @dev Only allows registered extensions to call the specified function
@@ -90,6 +93,23 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, Ownable, IERC721Cre
     }
 
     /**
+     * @dev See {IERC721Creator-balanceOfExtension}.
+     */
+    function balanceOfExtension(address extension) public view virtual override returns (uint256) {
+        require(extension != address(0), "ERC721Creator: balance query for the zero address");
+        return _extensionBalances[extension];
+    }
+
+
+    /**
+     * @dev See {IERC721Creator-tokenOfExtensionByIndex}.
+     */
+    function tokenOfExtensionByIndex(address extension, uint256 index) public view virtual override returns (uint256) {
+        require(index < balanceOfExtension(extension), "ERC721Creator: extension index out of bounds");
+        return _extensionTokens[extension][index];
+    }
+
+    /**
      * @dev See {IERC721Creator-registerExtension}.
      */
     function registerExtension(address extension) external override adminRequired returns (bool) {
@@ -109,19 +129,41 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, Ownable, IERC721Cre
      */
     function mint(address to, uint256 tokenId) external override nonReentrant extensionRequired virtual {
         _safeMint(to, tokenId);
-        _originatingContract[tokenId] = msg.sender;
+
+        // Add to extension token tracking
+        uint256 length = balanceOfExtension(msg.sender);
+        _tokenExtension[tokenId] = msg.sender;
+        _extensionTokens[msg.sender][length] = tokenId;
+        _extensionTokensIndex[tokenId] = length;
+        _extensionBalances[msg.sender] += 1;
     }
     
     /**
      * @dev See {IERC721Creator-burn}.
      */
     function burn(uint256 tokenId) external override nonReentrant virtual {
-        address originatingContract = _originatingContract[tokenId];
+        address tokenExtension = _tokenExtension[tokenId];
         _burn(tokenId);
-        _originatingContract[tokenId] = address(0);
         
-        // Callback to originating contract
-        require(ERC721CreatorExtension(originatingContract).onBurn(tokenId));
+        // Remove from extension token tracking
+        uint256 lastTokenIndex = balanceOfExtension(tokenExtension) - 1;
+        uint256 tokenIndex = _extensionTokensIndex[tokenId];
+
+        // When the token to delete is the last token, the swap operation is unnecessary
+        if (tokenIndex != lastTokenIndex) {
+            uint256 lastTokenId = _extensionTokens[tokenExtension][lastTokenIndex];
+
+            _extensionTokens[tokenExtension][tokenIndex] = lastTokenId; // Move the last token to the slot of the to-delete token
+            _extensionTokensIndex[lastTokenId] = tokenIndex; // Update the moved token's index
+        }
+        _extensionBalances[msg.sender] -= 1;
+        // This also deletes the contents at the last position of the array
+        delete _extensionTokensIndex[tokenId];
+        delete _extensionTokens[tokenExtension][lastTokenIndex];
+        delete _tokenExtension[tokenId];
+
+        // Callback to originating extension
+        require(ERC721CreatorExtension(tokenExtension).onBurn(tokenId));
     }
     
     

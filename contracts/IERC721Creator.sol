@@ -30,6 +30,17 @@ interface IERC721Creator is IERC721Enumerable {
      */
     function getExtensions() external view returns (address[] memory);
 
+    /*
+     * @dev gets the total number of tokens created by the extension (unburned)
+     */
+    function balanceOfExtension(address extension) external view returns (uint256);
+
+    /*
+     * @dev gets tokenId of an extension by index. 
+     * Iterate over this to get the full list of tokens of a given extension
+     */
+    function tokenOfExtensionByIndex(address extension, uint256 index) external view returns (uint256);
+
     /**
      * @dev add an extension.  Can only be called by contract owner or admin.
      * extension address must point to a contract implementing IERC721CreatorExtension.

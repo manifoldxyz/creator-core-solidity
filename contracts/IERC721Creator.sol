@@ -5,25 +5,9 @@ pragma solidity ^0.8.0;
 /// @author: manifold.xyz
 
 import "openzeppelin-solidity/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
+import "./access/IAdminControl.sol";
 
-interface IERC721Creator is IERC721Enumerable {
-
-    /**
-     * @dev gets address of all admins
-     */
-    function getAdmins() external view returns (address[] memory);
-
-    /**
-     * @dev add an admin.  Can only be called by contract owner.
-     * Returns True if newly added, False if already added.
-     */
-    function approveAdmin(address admin) external returns (bool);
-
-    /**
-     * @dev remove an admin.  Can only be called by contract owner.
-     * Returns True if removed, False if already removed.
-     */
-    function revokeAdmin(address admin) external returns (bool);
+interface IERC721Creator is IAdminControl, IERC721Enumerable {
 
     /**
      * @dev gets address of all extensions

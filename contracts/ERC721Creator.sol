@@ -5,15 +5,15 @@ pragma solidity ^0.8.0;
 /// @author: manifold.xyz
 
 import "openzeppelin-solidity/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import "openzeppelin-solidity/contracts/access/Ownable.sol";
 import "openzeppelin-solidity/contracts/security/ReentrancyGuard.sol";
 import "openzeppelin-solidity/contracts/utils/Strings.sol";
 import "openzeppelin-solidity/contracts/utils/structs/EnumerableSet.sol";
 import "./IERC721Creator.sol";
 import "./IERC721CreatorExtension.sol";
 import "./ERC721CreatorExtension.sol";
+import "./access/AdminControl.sol";
 
-contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, Ownable, IERC721Creator {
+contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC721Creator {
     using Strings for uint256;
     using EnumerableSet for EnumerableSet.AddressSet;
 
@@ -24,9 +24,6 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, Ownable, IERC721Cre
     mapping (uint256 => uint256) private _extensionTokensIndex;
     mapping (uint256 => address) private _tokenExtension;
 
-    // Track registered admins
-    EnumerableSet.AddressSet private _admins;
-
 
     /**
      * @dev Only allows registered extensions to call the specified function
@@ -36,48 +33,15 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, Ownable, IERC721Cre
         _;
     }   
 
-    /**
-     * @dev Only allows approved admins to call the specified function
-     */
-    modifier adminRequired() {
-        require(owner() == msg.sender || _admins.contains(msg.sender), "ERC721Creator: Must be the contract owner or admin to call this function");
-        _;
-    }   
-
     constructor (string memory _name, string memory _symbol) ERC721(_name, _symbol) {
     }
 
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC721Enumerable) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC721Enumerable, AdminControl) returns (bool) {
         return interfaceId == type(IERC721Creator).interfaceId
             || super.supportsInterface(interfaceId);
-    }
-
-    /**
-     * @dev See {IERC721Creator-getAdmins}.
-     */
-    function getAdmins() external view override returns (address[] memory) {
-        address[] memory admins = new address[](_admins.length());
-        for (uint i = 0; i < _admins.length(); i++) {
-            admins[i] = _admins.at(i);
-        }
-        return admins;
-    }
-
-    /**
-     * @dev See {IERC721Creator-approveAdmin}.
-     */
-    function approveAdmin(address admin) external override onlyOwner returns (bool) {
-        return _admins.add(admin);
-    }
-
-    /**
-     * @dev See {IERC721Creator-revokeAdmin}.
-     */
-    function revokeAdmin(address admin) external override onlyOwner returns (bool) {
-        return _admins.remove(admin);
     }
 
     /**

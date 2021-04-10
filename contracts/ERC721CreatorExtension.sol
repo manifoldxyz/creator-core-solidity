@@ -8,6 +8,12 @@ import "openzeppelin-solidity/contracts/utils/introspection/ERC165.sol";
 import "./IERC721CreatorExtension.sol";
 
 abstract contract ERC721CreatorExtension is ERC165, IERC721CreatorExtension {
+     address internal immutable _creator;
+
+     constructor(address creator_) {
+         _creator = creator_;
+     }
+
     /**
      * @dev See {IERC165-supportsInterface}.
      */

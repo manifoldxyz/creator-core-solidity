@@ -44,8 +44,7 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, Ownable, IERC721Cre
         _;
     }   
 
-    constructor (string memory _name, string memory _symbol) ERC721(_name, _symbol)
-    {
+    constructor (string memory _name, string memory _symbol) ERC721(_name, _symbol) {
     }
 
     /**

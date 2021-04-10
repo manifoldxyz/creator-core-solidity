@@ -30,7 +30,17 @@ interface IERC721Creator is IAdminControl, IERC721Enumerable {
      * extension address must point to a contract implementing IERC721CreatorExtension.
      * Returns True if newly added, False if already added.
      */
-    function registerExtension(address extension) external returns (bool);
+    function registerExtension(address extension, string calldata baseURI) external returns (bool);
+
+    /**
+     * @dev set the baseTokenURI of an extension.  Can only be called by extension.
+     */
+    function setBaseTokenURI(string calldata uri) external;
+
+    /**
+     * @dev set the tokenURI of a token extension.  Can only be called by extension that minted token.
+     */
+    function setTokenURI(uint256 tokenId, string calldata uri) external;
 
     /**
      * @dev add an extension.  Can only be called by contract owner or admin.
@@ -40,8 +50,9 @@ interface IERC721Creator is IAdminControl, IERC721Enumerable {
 
     /**
      * @dev mint a token. Can only be called by a registered extension.
+     * Returns tokenId minted
      */
-    function mint(address to, uint256 tokenId) external;
+    function mint(address to) external returns (uint256);
 
     /**
      * @dev burn a token. Can only be called by token owner or approved address.

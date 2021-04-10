@@ -7,15 +7,17 @@ pragma solidity ^0.8.0;
 import "openzeppelin-solidity/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "openzeppelin-solidity/contracts/security/ReentrancyGuard.sol";
 import "openzeppelin-solidity/contracts/utils/Strings.sol";
+import "openzeppelin-solidity/contracts/utils/introspection/ERC165Checker.sol";
 import "openzeppelin-solidity/contracts/utils/structs/EnumerableSet.sol";
 import "./IERC721Creator.sol";
 import "./IERC721CreatorExtension.sol";
-import "./ERC721CreatorExtension.sol";
 import "./access/AdminControl.sol";
 
 contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC721Creator {
     using Strings for uint256;
     using EnumerableSet for EnumerableSet.AddressSet;
+
+    uint256 _tokenCount = 0;
 
     // Track registered extensions    
     EnumerableSet.AddressSet private _extensions;
@@ -23,7 +25,10 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
     mapping (address => mapping(uint256 => uint256)) private _extensionTokens;
     mapping (uint256 => uint256) private _extensionTokensIndex;
     mapping (uint256 => address) private _tokenExtension;
+    mapping (address => string) private _extensionBaseURI;
 
+    // Mapping for token URIs
+    mapping (uint256 => string) private _tokenURIs;
 
     /**
      * @dev Only allows registered extensions to call the specified function
@@ -75,9 +80,25 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
     /**
      * @dev See {IERC721Creator-registerExtension}.
      */
-    function registerExtension(address extension) external override adminRequired returns (bool) {
-        require(ERC721CreatorExtension(msg.sender).supportsInterface(type(IERC721CreatorExtension).interfaceId), "ERC721Creator: Must implement IERC721CreatorExtension");
+    function registerExtension(address extension, string calldata baseURI) external override adminRequired returns (bool) {
+        require(ERC165Checker.supportsInterface(extension, type(IERC721CreatorExtension).interfaceId), "ERC721Creator: Must implement IERC721CreatorExtension");
+        _extensionBaseURI[extension] = baseURI;
         return _extensions.add(extension);
+    }
+
+    /**
+     * @dev See {IERC721Creator-setBaseTokenURI}.
+     */
+    function setBaseTokenURI(string calldata uri) external override extensionRequired {
+        _extensionBaseURI[msg.sender] = uri;
+    }
+
+    /**
+     * @dev See {IERC721Creator-setTokenURI}.
+     */
+    function setTokenURI(uint256 tokenId, string calldata uri) external override extensionRequired {
+        require(_tokenExtension[tokenId] == msg.sender, "ERC721Creator: Only callable by extension that created this token");
+        _tokenURIs[tokenId] = uri;
     }
 
     /**
@@ -90,8 +111,9 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
     /**
      * @dev See {IERC721Creator-mint}.
      */
-    function mint(address to, uint256 tokenId) external override nonReentrant extensionRequired virtual {
-        _safeMint(to, tokenId);
+    function mint(address to) external override nonReentrant extensionRequired virtual returns(uint256) {
+        uint256 tokenId = _tokenCount;
+        _tokenCount++;
 
         // Add to extension token tracking
         uint256 length = balanceOfExtension(msg.sender);
@@ -99,6 +121,10 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
         _extensionTokens[msg.sender][length] = tokenId;
         _extensionTokensIndex[tokenId] = length;
         _extensionBalances[msg.sender] += 1;
+
+        _safeMint(to, tokenId);
+
+        return tokenId;
     }
     
     /**
@@ -106,8 +132,7 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
      */
     function burn(uint256 tokenId) external override nonReentrant virtual {
         address tokenExtension = _tokenExtension[tokenId];
-        _burn(tokenId);
-        
+
         // Remove from extension token tracking
         uint256 lastTokenIndex = balanceOfExtension(tokenExtension) - 1;
         uint256 tokenIndex = _extensionTokensIndex[tokenId];
@@ -125,9 +150,28 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
         delete _extensionTokens[tokenExtension][lastTokenIndex];
         delete _tokenExtension[tokenId];
 
+        _burn(tokenId);
+
+        // Clear metadata (if any)
+         if (bytes(_tokenURIs[tokenId]).length != 0) {
+            delete _tokenURIs[tokenId];
+        }
+        
         // Callback to originating extension
-        require(ERC721CreatorExtension(tokenExtension).onBurn(tokenId));
+        require(IERC721CreatorExtension(tokenExtension).onBurn(tokenId));
     }
     
+
+    /**
+     * @dev See {IERC721Metadata-tokenURI}.
+     */
+    function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
+        require(_exists(tokenId), "Nonexistent token");
+
+        if (bytes(_tokenURIs[tokenId]).length != 0) {
+            return _tokenURIs[tokenId];
+        }
+        return string(abi.encodePacked(_extensionBaseURI[_tokenExtension[tokenId]], tokenId.toString()));
+    }
     
 }

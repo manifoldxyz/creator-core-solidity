@@ -1,0 +1,14 @@
+*.o
+*.lo
+*.la
+#*#
+.*.rej
+*.rej
+.*~
+*~
+.#*
+.DS_Store
+*.pyc
+package-lock.json
+build
+node_modules

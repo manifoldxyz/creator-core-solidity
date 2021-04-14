@@ -6,15 +6,26 @@ import "../ERC721CreatorExtension.sol";
 import "../IERC721Creator.sol";
 
 contract MockERC721CreatorExtension is ERC721CreatorExtension {
+    uint256 [] _mintedTokens;
+    uint256 [] _burntTokens;
     
     constructor(address creator_) ERC721CreatorExtension (creator_) {
     }
 
-    function testMint(address to) external returns (uint256) {
-        return IERC721Creator(_creator).mint(to);
+    function testMint(address to) external {
+        _mintedTokens.push(IERC721Creator(_creator).mint(to));
     }
 
-    function onBurn(uint256 tokenId) external pure override returns (bool) {
+    function mintedTokens() external view returns(uint256[] memory) {
+        return _mintedTokens;
+    }
+
+    function burntTokens() external view returns(uint256[] memory) {
+        return _burntTokens;
+    }
+
+    function onBurn(uint256 tokenId) external override returns (bool) {
+        _burntTokens.push(tokenId);
         return tokenId >= 0;
     }
 }

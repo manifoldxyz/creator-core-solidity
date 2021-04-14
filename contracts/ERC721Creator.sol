@@ -87,6 +87,13 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
     }
 
     /**
+     * @dev See {IERC721Creator-unregisterExtension}.
+     */
+    function unregisterExtension(address extension) external override adminRequired returns (bool) {
+        return _extensions.remove(extension);
+    }
+
+    /**
      * @dev See {IERC721Creator-setBaseTokenURI}.
      */
     function setBaseTokenURI(string calldata uri) external override extensionRequired {
@@ -102,18 +109,11 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
     }
 
     /**
-     * @dev See {IERC721Creator-unregisterExtension}.
-     */
-    function unregisterExtension(address extension) external override adminRequired returns (bool) {
-        return _extensions.remove(extension);
-    }
-
-    /**
      * @dev See {IERC721Creator-mint}.
      */
     function mint(address to) external override nonReentrant extensionRequired virtual returns(uint256) {
-        uint256 tokenId = _tokenCount;
         _tokenCount++;
+        uint256 tokenId = _tokenCount;
 
         // Add to extension token tracking
         uint256 length = balanceOfExtension(msg.sender);
@@ -144,7 +144,7 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
             _extensionTokens[tokenExtension][tokenIndex] = lastTokenId; // Move the last token to the slot of the to-delete token
             _extensionTokensIndex[lastTokenId] = tokenIndex; // Update the moved token's index
         }
-        _extensionBalances[msg.sender] -= 1;
+        _extensionBalances[tokenExtension] -= 1;
         // This also deletes the contents at the last position of the array
         delete _extensionTokensIndex[tokenId];
         delete _extensionTokens[tokenExtension][lastTokenIndex];
@@ -167,7 +167,7 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
      */
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
         require(_exists(tokenId), "Nonexistent token");
-
+        
         if (bytes(_tokenURIs[tokenId]).length != 0) {
             return _tokenURIs[tokenId];
         }

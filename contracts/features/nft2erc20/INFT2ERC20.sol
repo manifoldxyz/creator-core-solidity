@@ -11,7 +11,12 @@ interface INFT2ERC20 is IAdminControl, IERC20 {
     /*
      * @dev sets the contract used to get NFT to ERC20 conversion rate values
      */
-    function setRateEngine(address rateEngine) external;
+    function setRateEngine(address rateEngine_) external;
+
+    /*
+     * @dev gets the rate engine
+     */
+    function rateEngine() external view returns(address);
 
     /*
      * @dev sets the transfer function of a given spec
@@ -21,7 +26,12 @@ interface INFT2ERC20 is IAdminControl, IERC20 {
     /*
      * @dev burns an NFT token and gives the caller ERC20
      */
-    function burnToken(address tokenContract, uint256[] calldata values, string calldata spec) external;
+    function burnToken(address tokenContract, uint256[] calldata args, string calldata spec) external;
+
+    /*
+     * @dev burns an NFT token and gives the caller ERC20
+     */
+    function burnToken(address tokenContract, uint256[] calldata args, string calldata spec, address receiver) external;
 
     
 }

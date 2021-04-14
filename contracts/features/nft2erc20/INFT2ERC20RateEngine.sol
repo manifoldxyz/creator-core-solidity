@@ -13,6 +13,6 @@ interface INFT2ERC20RateEngine is IERC165 {
     /*
      * @dev get the conversion rate for a given NFT
      */
-    function getRate(uint256 totalSupply, address tokenContract, uint256[] calldata value, string calldata spec) external view returns (uint256);
+    function getRate(uint256 totalSupply, address tokenContract, uint256[] calldata args, string calldata spec) external view returns (uint256);
 
 }

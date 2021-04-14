@@ -46,6 +46,7 @@ abstract contract AdminControl is Ownable, IAdminControl, ERC165 {
      * @dev See {AdminControl-approveAdmin}.
      */
     function approveAdmin(address admin) external override onlyOwner returns (bool) {
+        emit AdminApproved(admin, msg.sender);
         return _admins.add(admin);
     }
 
@@ -53,6 +54,7 @@ abstract contract AdminControl is Ownable, IAdminControl, ERC165 {
      * @dev See {AdminControl-revokeAdmin}.
      */
     function revokeAdmin(address admin) external override onlyOwner returns (bool) {
+        emit AdminRevoked(admin, msg.sender);
         return _admins.remove(admin);
     }
 

@@ -9,6 +9,9 @@ import "./access/IAdminControl.sol";
 
 interface IERC721Creator is IAdminControl, IERC721Enumerable {
 
+    event ExtensionRegistered(address indexed extension, address indexed sender);
+    event ExtensionUnregistered(address indexed extension, address indexed sender);
+
     /**
      * @dev gets address of all extensions
      */

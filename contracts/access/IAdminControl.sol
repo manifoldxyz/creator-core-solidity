@@ -10,6 +10,10 @@ import "openzeppelin-solidity/contracts/utils/introspection/IERC165.sol";
  * @dev Required interface of an ERC721Creator compliant extension contracts.
  */
 interface IAdminControl is IERC165 {
+
+    event AdminApproved(address indexed account, address indexed sender);
+    event AdminRevoked(address indexed account, address indexed sender);
+
     /**
      * @dev gets address of all admins
      */

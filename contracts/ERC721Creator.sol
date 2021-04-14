@@ -112,6 +112,7 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
     function registerExtension(address extension, string calldata baseURI) external override adminRequired returns (bool) {
         require(ERC165Checker.supportsInterface(extension, type(IERC721CreatorExtension).interfaceId), "ERC721Creator: Must implement IERC721CreatorExtension");
         _extensionBaseURI[extension] = baseURI;
+        emit ExtensionRegistered(extension, msg.sender);
         return _extensions.add(extension);
     }
 
@@ -119,6 +120,7 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
      * @dev See {IERC721Creator-unregisterExtension}.
      */
     function unregisterExtension(address extension) external override adminRequired returns (bool) {
+        emit ExtensionUnregistered(extension, msg.sender);
         return _extensions.remove(extension);
     }
 

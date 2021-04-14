@@ -15,6 +15,16 @@ interface IERC721Creator is IAdminControl, IERC721Enumerable {
     function getExtensions() external view returns (address[] memory);
 
     /*
+     * @dev get balance of owner for an extension
+     */
+   function extensionBalanceOf(address extension, address owner) external view returns (uint256 balance);
+
+   /*
+    * @dev Returns a token ID owned by `owner` at a given `index` of its token list for a given extension
+    */
+   function extensionTokenOfOwnerByIndex(address extension, address owner, uint256 index) external view returns (uint256 tokenId);
+
+    /*
      * @dev gets the total number of tokens created by the extension (unburned)
      */
     function totalSupplyOfExtension(address extension) external view returns (uint256);

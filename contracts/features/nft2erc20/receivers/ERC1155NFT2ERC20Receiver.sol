@@ -24,38 +24,46 @@ contract ERC1155NFT2ERC20Receiver is ERC1155Receiver {
      * @dev See {IERC1155Receiver-onERC1155Received}.
      */
     function onERC1155Received(
-        address operator,
+        address,
         address from,
         uint256 id,
         uint256 value,
         bytes calldata
-    ) external override returns(bytes4) {
-        if (_approved[operator] != true) {
-            IERC1155(operator).setApprovalForAll(_nft2erc20, true);
-            _approved[operator] = true;
+    ) external override returns(bytes4) {    
+        if (_approved[msg.sender] != true) {
+            IERC1155(msg.sender).setApprovalForAll(_nft2erc20, true);
+            _approved[msg.sender] = true;
         }
-        uint256[] memory args = new uint256[](2);
+        uint256[] memory args = new uint256[](4);
         args[0] = id;
         args[1] = value;
-        INFT2ERC20(_nft2erc20).burnToken(operator, args, 'erc1155', from);
+        args[2] = 96; // Special value: defines offset of data bytes, which is 32bytes*3
+        args[3] = 0;
+        INFT2ERC20(_nft2erc20).burnToken(msg.sender, args, 'erc1155', from);
         return this.onERC1155Received.selector;
     }
 
     function onERC1155BatchReceived(
-        address operator,
+        address,
         address from,
         uint256[] calldata ids,
         uint256[] calldata values,
         bytes calldata
     ) external override returns(bytes4) {
         require(ids.length == values.length, "ERC1155NFT2ERC20Receiver: mismatched data length");
-        uint256[] memory args = new uint256[](2);
+        if (_approved[msg.sender] != true) {
+            IERC1155(msg.sender).setApprovalForAll(_nft2erc20, true);
+            _approved[msg.sender] = true;
+        }
+        uint256[] memory args = new uint256[](4);
+        args[2] = 96; // Special value: defines offset of data bytes, which is 32bytes*3
+        args[3] = 0;
         for (uint i=0; i < ids.length; i++) {
             args[0] = ids[i];
             args[1] = values[i];
-            INFT2ERC20(_nft2erc20).burnToken(operator, args, 'erc1155', from);
+            INFT2ERC20(_nft2erc20).burnToken(msg.sender, args, 'erc1155', from);
         }
-        return this.onERC1155Received.selector;
+        return this.onERC1155BatchReceived.selector;
     }
 
 }

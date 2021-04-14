@@ -17,13 +17,13 @@ interface IERC721Creator is IAdminControl, IERC721Enumerable {
     /*
      * @dev gets the total number of tokens created by the extension (unburned)
      */
-    function balanceOfExtension(address extension) external view returns (uint256);
+    function totalSupplyOfExtension(address extension) external view returns (uint256);
 
     /*
      * @dev gets tokenId of an extension by index. 
      * Iterate over this to get the full list of tokens of a given extension
      */
-    function tokenOfExtensionByIndex(address extension, uint256 index) external view returns (uint256);
+    function tokenByIndexOfExtension(address extension, uint256 index) external view returns (uint256);
 
     /**
      * @dev add an extension.  Can only be called by contract owner or admin.

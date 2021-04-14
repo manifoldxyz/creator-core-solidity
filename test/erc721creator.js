@@ -55,18 +55,18 @@ contract('ERC721Creator', function ([creator, ...accounts]) {
             await extension1.testMint(anyone);
             let newTokenId1 = (await extension1.mintedTokens()).slice(-1)[0];
             assert.equal(await creator.totalSupply(), 1);
-            assert.equal(await creator.balanceOfExtension(extension1.address), 1);
+            assert.equal(await creator.totalSupplyOfExtension(extension1.address), 1);
 
             await extension1.testMint(anyone);
             let newTokenId2 = (await extension1.mintedTokens()).slice(-1)[0];
             assert.equal(await creator.totalSupply(), 2);
-            assert.equal(await creator.balanceOfExtension(extension1.address), 2);
+            assert.equal(await creator.totalSupplyOfExtension(extension1.address), 2);
 
             await extension2.testMint(anyone);
             let newTokenId3 = (await extension2.mintedTokens()).slice(-1)[0];
             assert.equal(await creator.totalSupply(), 3);
-            assert.equal(await creator.balanceOfExtension(extension1.address), 2);
-            assert.equal(await creator.balanceOfExtension(extension2.address), 1);
+            assert.equal(await creator.totalSupplyOfExtension(extension1.address), 2);
+            assert.equal(await creator.totalSupplyOfExtension(extension2.address), 1);
 
             // Check URI's
             assert.equal(await creator.tokenURI(newTokenId1), 'http://extension1/'+newTokenId1);
@@ -82,16 +82,16 @@ contract('ERC721Creator', function ([creator, ...accounts]) {
             assert.equal(await creator.tokenURI(newTokenId1), 'http://extension1/'+newTokenId1);
             assert.equal(await creator.tokenURI(newTokenId2), 'http://extension1/'+newTokenId2);
             assert.equal(await creator.totalSupply(), 3);
-            assert.equal(await creator.balanceOfExtension(extension1.address), 2);
+            assert.equal(await creator.totalSupplyOfExtension(extension1.address), 2);
 
-            assert.equal(await creator.tokenOfExtensionByIndex(extension1.address, 0) - newTokenId1, 0);
-            assert.equal(await creator.tokenOfExtensionByIndex(extension1.address, 1) - newTokenId2, 0);
+            assert.equal(await creator.tokenByIndexOfExtension(extension1.address, 0) - newTokenId1, 0);
+            assert.equal(await creator.tokenByIndexOfExtension(extension1.address, 1) - newTokenId2, 0);
 
             // Burning
             await creator.burn(newTokenId1, {from:anyone});
             await truffleAssert.reverts(creator.tokenURI(newTokenId1), "Nonexistent token");
             assert.equal(await creator.totalSupply(), 2);
-            assert.equal(await creator.balanceOfExtension(extension1.address), 1);
+            assert.equal(await creator.totalSupplyOfExtension(extension1.address), 1);
             // Check burn callback
             assert.equal(await extension1.burntTokens(), 1);
             assert.equal((await extension1.burntTokens()).slice(-1)[0] - newTokenId1, 0);

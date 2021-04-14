@@ -61,19 +61,19 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
     }
 
     /**
-     * @dev See {IERC721Creator-balanceOfExtension}.
+     * @dev See {IERC721Creator-totalSupplyOfExtension}.
      */
-    function balanceOfExtension(address extension) public view virtual override returns (uint256) {
+    function totalSupplyOfExtension(address extension) public view virtual override returns (uint256) {
         require(extension != address(0), "ERC721Creator: balance query for the zero address");
         return _extensionBalances[extension];
     }
 
 
     /**
-     * @dev See {IERC721Creator-tokenOfExtensionByIndex}.
+     * @dev See {IERC721Creator-tokenByIndexOfExtension}.
      */
-    function tokenOfExtensionByIndex(address extension, uint256 index) public view virtual override returns (uint256) {
-        require(index < balanceOfExtension(extension), "ERC721Creator: extension index out of bounds");
+    function tokenByIndexOfExtension(address extension, uint256 index) public view virtual override returns (uint256) {
+        require(index < totalSupplyOfExtension(extension), "ERC721Creator: extension index out of bounds");
         return _extensionTokens[extension][index];
     }
 
@@ -116,7 +116,7 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
         uint256 tokenId = _tokenCount;
 
         // Add to extension token tracking
-        uint256 length = balanceOfExtension(msg.sender);
+        uint256 length = totalSupplyOfExtension(msg.sender);
         _tokenExtension[tokenId] = msg.sender;
         _extensionTokens[msg.sender][length] = tokenId;
         _extensionTokensIndex[tokenId] = length;
@@ -134,7 +134,7 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
         address tokenExtension = _tokenExtension[tokenId];
 
         // Remove from extension token tracking
-        uint256 lastTokenIndex = balanceOfExtension(tokenExtension) - 1;
+        uint256 lastTokenIndex = totalSupplyOfExtension(tokenExtension) - 1;
         uint256 tokenIndex = _extensionTokensIndex[tokenId];
 
         // When the token to delete is the last token, the swap operation is unnecessary

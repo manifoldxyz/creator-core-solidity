@@ -43,7 +43,7 @@ abstract contract ERC721CreatorExtension is ERC165, AdminControl, IERC721Creator
     /**
      * @dev See {IERC721CreatorExtension-onBurn}.
      */
-    function onBurn(address owner, uint256 tokenId) external virtual override returns (bool) {
+    function onBurn(address, uint256) external virtual override returns (bool) {
         require(msg.sender == _creator, "IERC721CreatorExtension: can only be called by token creator");
         return false;
     }

@@ -57,13 +57,17 @@ contract NFT2ERC20 is ReentrancyGuard, ERC20Burnable, AdminControl, INFT2ERC20 {
      * @dev See {INFT2ERC20-burnToken}.
      */
     function burnToken(address tokenContract, uint256[] calldata args, string calldata spec) public override nonReentrant {
-        burnToken(tokenContract, args, spec, address(0x0));
+        _burnToken(tokenContract, args, spec, address(0x0));
     }
 
     /**
      * @dev See {INFT2ERC20-burnToken}.
      */
     function burnToken(address tokenContract, uint256[] calldata args, string calldata spec, address receiver) public override nonReentrant {
+        _burnToken(tokenContract, args, spec, receiver);
+    }
+
+    function _burnToken(address tokenContract, uint256[] calldata args, string calldata spec, address receiver) private {
         require(args.length > 0, "NFT2ERC20: Must provide at least one argument");
         require(_rateEngine != address(0), "NFT2ERC20: Rate Engine not configured");
         require(_specTransferFunction[spec] != bytes4(0x0), "NFT2ERC20: Transfer function not defined for spec");

@@ -8,6 +8,7 @@ pragma solidity ^0.8.0;
 import "openzeppelin-solidity/contracts/utils/introspection/IERC165.sol";
 
 import "../../../../access/AdminControl.sol";
+import "../../../../libraries/RealMath.sol";
 import "./IERC721RateEngine.sol";
 
 contract ERC721RateEngine is AdminControl, IERC721RateEngine {
@@ -62,6 +63,7 @@ contract ERC721RateEngine is AdminControl, IERC721RateEngine {
      * @dev See {INFT2ERC20RateEngine-getRate}.
      */
     function getRate(uint256 totalSupply, address tokenContract, uint256[] calldata args, string calldata spec) external view override returns (uint256) {
+        require(_enabled, "ERC721RateEngine: Disabled");
         require(args.length == 1, "ERC721RateEngine: Invalid arguments");
         require(keccak256(bytes(spec)) == keccak256(bytes('erc721')), "ERC721RateEngine: Only ERC721 currently supported");
         uint8 rateClass;
@@ -70,14 +72,13 @@ contract ERC721RateEngine is AdminControl, IERC721RateEngine {
         } else {
            rateClass = _erc721ContractRateClass[tokenContract];
         }
-        require(rateClass != 0, "ERC721RateEngine: Rate class for token not configured.");
+        require(rateClass != 0, "ERC721RateEngine: Rate class for token not configured");
 
-        uint256 e = totalSupply/(1000000 * (10 ** 18));
-        uint256 m = 0.5**e;
+        uint256 m = RealMath.rpowApprox(500000000000000000, totalSupply/1000000, 100000000);
         if (rateClass == 1) {
-            return m*(1000 * (10 ** 18));
+            return m*1000;
         } else if (rateClass == 2) {
-            return (m**2)*(2 * (10 ** 18));
+            return RealMath.rmul(m, m)<<1;
         }
         revert("ERC721RateEngine: Rate class for token not configured.");
     }

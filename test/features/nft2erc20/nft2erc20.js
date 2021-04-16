@@ -31,6 +31,7 @@ contract('NFT2ERC20', function ([creator, ...accounts]) {
         it('access test', async function () {
             await truffleAssert.reverts(token.setRateEngine(anyone, {from:anyone}), "AdminControl: Must be the contract owner or admin to call this function");
             await truffleAssert.reverts(token.setTransferFunction('erc721', '0x12345678', {from:anyone}), "AdminControl: Must be the contract owner or admin to call this function");
+            await truffleAssert.reverts(token.setTreasury(another, 1000, {from:anyone}), "AdminControl: Must be the contract owner or admin to call this function");
         });
 
         it('functionality test', async function () {
@@ -67,6 +68,20 @@ contract('NFT2ERC20', function ([creator, ...accounts]) {
             await token.burnToken(mock1155.address, valuesArray, 'erc1155', {from:another});
             assert.equal(await mock1155.balanceOf(another, 1155), 8);
             assert.equal(await token.balanceOf(another), 20);
+        });
+
+        it('basis points test', async function () {
+            await truffleAssert.reverts(token.setTreasury(anyone, 10001, {from:owner}), "NFT2ERC20:  basisPoints must be less than 10000 (100%)");
+            await token.setTreasury(anyone, 1000, {from:owner});
+            await mock721.testMint(another, 721);
+            assert.equal(await mock721.balanceOf(another), 1);
+            token.setRateEngine(mockRateEngine.address, {from:owner});
+            await token.setTransferFunction('erc721', '0x23b872dd', {from:owner});
+            await mock721.approve(token.address, 721, {from:another});
+            await token.burnToken(mock721.address, [721], 'erc721', {from:another});
+            assert.equal(await mock721.balanceOf(another), 0);
+            assert.equal(await token.balanceOf(another), 10);
+            assert.equal(await token.balanceOf(anyone), 1);
         });
     });
 

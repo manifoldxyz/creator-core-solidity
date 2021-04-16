@@ -15,6 +15,8 @@ import "../../access/AdminControl.sol";
 contract NFT2ERC20 is ReentrancyGuard, ERC20Burnable, AdminControl, INFT2ERC20 {
 
     address private _rateEngine;
+    address private _treasury;
+    uint128 private _treasuryBasisPoints;
     
     mapping (string => bytes4) private _specTransferFunction;
 
@@ -37,6 +39,22 @@ contract NFT2ERC20 is ReentrancyGuard, ERC20Burnable, AdminControl, INFT2ERC20 {
     function setRateEngine(address rateEngine_) external override adminRequired {
         require(ERC165Checker.supportsInterface(rateEngine_, type(INFT2ERC20RateEngine).interfaceId), "NFT2ERC20: Must implement INFT2ERC20RateEngine");
         _rateEngine = rateEngine_;
+    }
+
+    /*
+     * @dev See {INFT2ERC20-setTreasury}
+     */
+    function setTreasury(address treasury, uint128 basisPoints) external override adminRequired {
+        require(basisPoints < 10000, "NFT2ERC20:  basisPoints must be less than 10000 (100%)");
+        _treasury = treasury;
+        _treasuryBasisPoints = basisPoints;
+    }
+
+    /*
+     * @dev See {INFT2ERC20-getTreasury}
+     */
+    function getTreasury() external view override returns (address, uint128) {
+        return (_treasury, _treasuryBasisPoints);
     }
 
     /**
@@ -94,6 +112,15 @@ contract NFT2ERC20 is ReentrancyGuard, ERC20Burnable, AdminControl, INFT2ERC20 {
             _mint(receiver, rate);
             emit Swapped(receiver, tokenContract, args, spec, rate);
         }
+
+        // Treasury gets additional minted ash
+        if (_treasuryBasisPoints > 0 && _treasury != address(0x0)) {
+            uint256 treasuryRate = (rate*_treasuryBasisPoints)/10000;
+            if (treasuryRate > 0) {
+                _mint(_treasury, treasuryRate);
+            }
+        }
+
     }
 
     

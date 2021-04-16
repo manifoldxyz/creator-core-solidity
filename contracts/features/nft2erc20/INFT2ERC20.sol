@@ -14,6 +14,16 @@ interface INFT2ERC20 is IAdminControl, IERC20 {
     function setRateEngine(address rateEngine_) external;
 
     /*
+     * @dev sets the amount of tokens the treasury gets on every burn
+     */
+    function setTreasury(address treasury, uint128 basisPoints) external;
+
+    /*
+     * @dev gets the treasury configuration
+     */
+    function getTreasury() external view returns(address, uint128);
+
+    /*
      * @dev gets the rate engine
      */
     function rateEngine() external view returns(address);

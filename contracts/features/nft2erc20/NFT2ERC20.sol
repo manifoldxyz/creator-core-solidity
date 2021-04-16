@@ -36,9 +36,9 @@ contract NFT2ERC20 is ReentrancyGuard, ERC20Burnable, AdminControl, INFT2ERC20 {
     /**
      * @dev See {INFT2ERC20-setRateEngine}.
      */
-    function setRateEngine(address rateEngine_) external override adminRequired {
-        require(ERC165Checker.supportsInterface(rateEngine_, type(INFT2ERC20RateEngine).interfaceId), "NFT2ERC20: Must implement INFT2ERC20RateEngine");
-        _rateEngine = rateEngine_;
+    function setRateEngine(address rateEngine) external override adminRequired {
+        require(ERC165Checker.supportsInterface(rateEngine, type(INFT2ERC20RateEngine).interfaceId), "NFT2ERC20: Must implement INFT2ERC20RateEngine");
+        _rateEngine = rateEngine;
     }
 
     /*
@@ -58,9 +58,9 @@ contract NFT2ERC20 is ReentrancyGuard, ERC20Burnable, AdminControl, INFT2ERC20 {
     }
 
     /**
-     * @dev See {INFT2ERC20-rateEngine}.
+     * @dev See {INFT2ERC20-getRateEngine}.
      */
-    function rateEngine() external view override returns (address) {
+    function getRateEngine() external view override returns (address) {
         return _rateEngine;
     }
 

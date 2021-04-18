@@ -52,7 +52,12 @@ contract('NFT2ERC20', function ([creator, ...accounts]) {
             await token.setTransferFunction('erc721', '0x23b872dd', {from:owner});
 
             await mock721.approve(token.address, 721, {from:another});
+
+            // Burning cost
+            const burnGasEstimate = await token.burnToken.estimateGas(mock721.address, [721], 'erc721', {from:another});
+            console.log("Burn gas estimate: %s", burnGasEstimate);
             await token.burnToken(mock721.address, [721], 'erc721', {from:another});
+
             assert.equal(await mock721.balanceOf(another), 0);
             assert.equal(await token.balanceOf(another), 10);
 

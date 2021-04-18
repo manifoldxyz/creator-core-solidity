@@ -66,6 +66,10 @@ contract('ERC721Creator', function ([creator, ...accounts]) {
             const badExtension = await MockContract.new();
             await truffleAssert.reverts(creator.registerExtension(badExtension.address, 'http://badextension/', {from:owner}), "Must implement IERC721CreatorExtension");
 
+            // Minting cost
+            const mintGasEstimate = await extension1.testMint.estimateGas(anyone);
+            console.log("Extension mint gas estimate: %s", mintGasEstimate);
+
             // Test minting
             await extension1.testMint(anyone);
             let newTokenId1 = (await extension1.mintedTokens()).slice(-1)[0];

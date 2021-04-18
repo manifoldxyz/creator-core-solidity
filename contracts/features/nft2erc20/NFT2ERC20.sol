@@ -37,7 +37,7 @@ contract NFT2ERC20 is ReentrancyGuard, ERC20Burnable, AdminControl, INFT2ERC20 {
      * @dev See {INFT2ERC20-setRateEngine}.
      */
     function setRateEngine(address rateEngine) external override adminRequired {
-        require(ERC165Checker.supportsInterface(rateEngine, type(INFT2ERC20RateEngine).interfaceId), "NFT2ERC20: Must implement INFT2ERC20RateEngine");
+        require(ERC165Checker.supportsInterface(rateEngine, type(INFT2ERC20RateEngine).interfaceId), "Must implement INFT2ERC20RateEngine");
         _rateEngine = rateEngine;
     }
 
@@ -45,7 +45,7 @@ contract NFT2ERC20 is ReentrancyGuard, ERC20Burnable, AdminControl, INFT2ERC20 {
      * @dev See {INFT2ERC20-setTreasury}
      */
     function setTreasury(address treasury, uint128 basisPoints) external override adminRequired {
-        require(basisPoints < 10000, "NFT2ERC20:  basisPoints must be less than 10000 (100%)");
+        require(basisPoints < 10000, "basisPoints must be less than 10000 (100%)");
         _treasury = treasury;
         _treasuryBasisPoints = basisPoints;
     }
@@ -86,9 +86,9 @@ contract NFT2ERC20 is ReentrancyGuard, ERC20Burnable, AdminControl, INFT2ERC20 {
     }
 
     function _burnToken(address tokenContract, uint256[] calldata args, string calldata spec, address receiver) private {
-        require(args.length > 0, "NFT2ERC20: Must provide at least one argument");
-        require(_rateEngine != address(0), "NFT2ERC20: Rate Engine not configured");
-        require(_specTransferFunction[spec] != bytes4(0x0), "NFT2ERC20: Transfer function not defined for spec");
+        require(args.length > 0, "Must provide at least one argument");
+        require(_rateEngine != address(0), "Rate Engine not configured");
+        require(_specTransferFunction[spec] != bytes4(0x0), "Transfer function not defined for spec");
         uint256 rate = INFT2ERC20RateEngine(_rateEngine).getRate(totalSupply(), tokenContract, args, spec);
 
         bytes memory byteArgs = abi.encode(args[0]);
@@ -98,11 +98,11 @@ contract NFT2ERC20 is ReentrancyGuard, ERC20Burnable, AdminControl, INFT2ERC20 {
                 byteArgs = abi.encodePacked(byteArgs, args[i]);
             }
             (bool success, bytes memory returnData) = tokenContract.call(abi.encodePacked(_specTransferFunction[spec], uint256(uint160(msg.sender)), uint256(0xdEaD), byteArgs));
-            require(success, "NFT2ERC20: Burn failure");
+            require(success, "Burn failure");
         } else {
             // Burn the token
             (bool success, bytes memory returnData) = tokenContract.call(abi.encodeWithSelector(_specTransferFunction[spec], msg.sender, address(0xdEaD), args[0]));
-            require(success, "NFT2ERC20: Burn failure");
+            require(success, "Burn failure");
         }
 
         if (receiver == address(0x0)) {        

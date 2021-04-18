@@ -23,18 +23,18 @@ contract('ERC721RateEngine', function ([creator, ...accounts]) {
 
         it('permission test', async function () {
             var newEngine = await ERC721RateEngine.new({from:anyone});
-            await truffleAssert.reverts(newEngine.updateRateClass([minter], [1]), "AdminControl: Must be owner or admin");
-            await truffleAssert.reverts(newEngine.updateRateClass([minter], [1], [1]), "AdminControl: Must be owner or admin");
-            await truffleAssert.reverts(newEngine.updateEnabled(true), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(newEngine.updateRateClass([minter], [1]), "Must be owner or admin");
+            await truffleAssert.reverts(newEngine.updateRateClass([minter], [1], [1]), "Must be owner or admin");
+            await truffleAssert.reverts(newEngine.updateEnabled(true), "Must be owner or admin");
         });
 
         it('config test', async function () {
             await engine.updateRateClass([minter], [1]);
-            await truffleAssert.reverts(engine.getRate(0, minter, [1], 'erc721'), "ERC721RateEngine: Disabled");
+            await truffleAssert.reverts(engine.getRate(0, minter, [1], 'erc721'), "Disabled");
             await engine.updateEnabled(true);
-            await truffleAssert.reverts(engine.getRate(0, minter, [], 'erc721'), "ERC721RateEngine: Invalid arguments");
-            await truffleAssert.reverts(engine.getRate(0, minter, [1], 'erc1155'), "ERC721RateEngine: Only ERC721 currently supported");
-            await truffleAssert.reverts(engine.getRate(0, anyone, [1], 'erc721'), "ERC721RateEngine: Rate class for token not configured");            
+            await truffleAssert.reverts(engine.getRate(0, minter, [], 'erc721'), "Invalid arguments");
+            await truffleAssert.reverts(engine.getRate(0, minter, [1], 'erc1155'), "Only ERC721 currently supported");
+            await truffleAssert.reverts(engine.getRate(0, anyone, [1], 'erc721'), "Rate class for token not configured");            
         });
 
         it('test conversions', async function () {

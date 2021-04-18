@@ -47,7 +47,7 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
      * @dev Only allows registered extensions to call the specified function
      */
     modifier extensionRequired() {
-        require(_extensions.contains(msg.sender), "ERC721Creator: Must be registered extension");
+        require(_extensions.contains(msg.sender), "Must be registered extension");
         _;
     }   
 
@@ -107,7 +107,7 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
      * @dev See {IERC721Creator-registerExtension}.
      */
     function registerExtension(address extension, string calldata baseURI) external override adminRequired returns (bool) {
-        require(ERC165Checker.supportsInterface(extension, type(IERC721CreatorExtension).interfaceId), "ERC721Creator: Must implement IERC721CreatorExtension");
+        require(ERC165Checker.supportsInterface(extension, type(IERC721CreatorExtension).interfaceId), "Must implement IERC721CreatorExtension");
         _extensionBaseURI[extension] = baseURI;
         emit ExtensionRegistered(extension, msg.sender);
         return _extensions.add(extension);
@@ -132,7 +132,7 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
      * @dev See {IERC721Creator-setTokenURI}.
      */
     function setTokenURI(uint256 tokenId, string calldata uri) external override extensionRequired {
-        require(_tokenExtension[tokenId] == msg.sender, "ERC721Creator: Invalid token");
+        require(_tokenExtension[tokenId] == msg.sender, "Invalid token");
         _tokenURIs[tokenId] = uri;
     }
 
@@ -140,11 +140,11 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
      * @dev See {IERC721Creator-setMintPermissions}.
      */
     function setMintPermissions(address extension, address permissions) external override adminRequired {
-         require(_extensions.contains(extension), "ERC721Creator: Invalid extension");
-         require(permissions == address(0x0) || ERC165Checker.supportsInterface(permissions, type(IERC721CreatorMintPermissions).interfaceId), "ERC721Creator: Invalid address");
+         require(_extensions.contains(extension), "Invalid extension");
+         require(permissions == address(0x0) || ERC165Checker.supportsInterface(permissions, type(IERC721CreatorMintPermissions).interfaceId), "Invalid address");
          if (_extensionPermissions[extension] != permissions) {
              _extensionPermissions[extension] = permissions;
-             //emit MintPermissionsUpdated(extension, permissions, msg.sender);
+             emit MintPermissionsUpdated(extension, permissions, msg.sender);
          }
     }
 

@@ -29,9 +29,9 @@ contract('NFT2ERC20', function ([creator, ...accounts]) {
         });
 
         it('access test', async function () {
-            await truffleAssert.reverts(token.setRateEngine(anyone, {from:anyone}), "AdminControl: Must be the contract owner or admin to call this function");
-            await truffleAssert.reverts(token.setTransferFunction('erc721', '0x12345678', {from:anyone}), "AdminControl: Must be the contract owner or admin to call this function");
-            await truffleAssert.reverts(token.setTreasury(another, 1000, {from:anyone}), "AdminControl: Must be the contract owner or admin to call this function");
+            await truffleAssert.reverts(token.setRateEngine(anyone, {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(token.setTransferFunction('erc721', '0x12345678', {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(token.setTreasury(another, 1000, {from:anyone}), "AdminControl: Must be owner or admin");
         });
 
         it('functionality test', async function () {

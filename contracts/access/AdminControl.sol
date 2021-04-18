@@ -27,7 +27,7 @@ abstract contract AdminControl is Ownable, IAdminControl, ERC165 {
      * @dev Only allows approved admins to call the specified function
      */
     modifier adminRequired() {
-        require(owner() == msg.sender || _admins.contains(msg.sender), "AdminControl: Must be the contract owner or admin to call this function");
+        require(owner() == msg.sender || _admins.contains(msg.sender), "AdminControl: Must be owner or admin");
         _;
     }   
 

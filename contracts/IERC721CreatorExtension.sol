@@ -26,5 +26,5 @@ interface IERC721CreatorExtension is IERC165, IAdminControl {
     /**
      * @dev callback handler for burn events
      */
-    function onBurn(address owner, uint256 tokenId) external returns (bool);
+    function onBurn(address owner, uint256 tokenId) external;
 }

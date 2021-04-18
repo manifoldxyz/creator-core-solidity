@@ -11,6 +11,7 @@ interface IERC721Creator is IAdminControl, IERC721Enumerable {
 
     event ExtensionRegistered(address indexed extension, address indexed sender);
     event ExtensionUnregistered(address indexed extension, address indexed sender);
+    event MintPermissionsUpdated(address indexed extension, address indexed permissions, address indexed sender);
 
     /**
      * @dev gets address of all extensions
@@ -60,6 +61,11 @@ interface IERC721Creator is IAdminControl, IERC721Enumerable {
      * @dev set the tokenURI of a token extension.  Can only be called by extension that minted token.
      */
     function setTokenURI(uint256 tokenId, string calldata uri) external;
+
+    /**
+     * @dev set a permissions contract for an extension.  Used to control minting.
+     */
+    function setMintPermissions(address extension, address permissions) external;
 
     /**
      * @dev mint a token. Can only be called by a registered extension.

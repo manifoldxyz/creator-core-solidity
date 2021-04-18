@@ -23,9 +23,9 @@ contract('ERC721RateEngine', function ([creator, ...accounts]) {
 
         it('permission test', async function () {
             var newEngine = await ERC721RateEngine.new({from:anyone});
-            await truffleAssert.reverts(newEngine.updateRateClass([minter], [1]), "AdminControl: Must be the contract owner or admin to call this function");
-            await truffleAssert.reverts(newEngine.updateRateClass([minter], [1], [1]), "AdminControl: Must be the contract owner or admin to call this function");
-            await truffleAssert.reverts(newEngine.updateEnabled(true), "AdminControl: Must be the contract owner or admin to call this function");
+            await truffleAssert.reverts(newEngine.updateRateClass([minter], [1]), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(newEngine.updateRateClass([minter], [1], [1]), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(newEngine.updateEnabled(true), "AdminControl: Must be owner or admin");
         });
 
         it('config test', async function () {

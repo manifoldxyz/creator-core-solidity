@@ -11,6 +11,7 @@ import "openzeppelin-solidity/contracts/utils/introspection/ERC165Checker.sol";
 import "openzeppelin-solidity/contracts/utils/structs/EnumerableSet.sol";
 import "./IERC721Creator.sol";
 import "./IERC721CreatorExtension.sol";
+import "./IERC721CreatorMintPermissions.sol";
 import "./access/AdminControl.sol";
 
 contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC721Creator {
@@ -21,6 +22,7 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
 
     // Track registered extensions data
     EnumerableSet.AddressSet private _extensions;
+    mapping (address => address) private _extensionPermissions;
     
     // For enumerating tokens for a given extension
     mapping (address => uint256) private _extensionBalances;
@@ -31,7 +33,6 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
     mapping (address => mapping(address => uint256)) private _extensionBalancesByOwner;
     mapping (address => mapping(address => mapping(uint256 => uint256))) private _extensionTokensByOwner;
     mapping (uint256 => uint256) private _extensionTokensIndexByOwner;
-
 
     // For tracking which extension a token was minted by
     mapping (uint256 => address) private _tokenExtension;
@@ -46,7 +47,7 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
      * @dev Only allows registered extensions to call the specified function
      */
     modifier extensionRequired() {
-        require(_extensions.contains(msg.sender), "ERC721Creator: Must be a registered extension to call this function");
+        require(_extensions.contains(msg.sender), "ERC721Creator: Must be registered extension");
         _;
     }   
 
@@ -76,25 +77,21 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
      * @dev See {IERC721Creator-totalSupplyOfExtension}.
      */
     function totalSupplyOfExtension(address extension) public view virtual override returns (uint256) {
-        require(extension != address(0), "ERC721Creator: balance query for the zero address");
         return _extensionBalances[extension];
     }
-
 
     /**
      * @dev See {IERC721Creator-tokenByIndexOfExtension}.
      */
     function tokenByIndexOfExtension(address extension, uint256 index) public view virtual override returns (uint256) {
-        require(index < totalSupplyOfExtension(extension), "ERC721Creator: extension index out of bounds");
+        require(index < totalSupplyOfExtension(extension), "Index out of bounds");
         return _extensionTokens[extension][index];
     }
-
 
     /**
      * @dev See {IERC721Creator-extensionBalanceOf}.
      */
     function extensionBalanceOf(address extension, address owner) public view virtual override returns (uint256) {
-        require(owner != address(0), "ERC721Creator: balance query for the zero address");
         return _extensionBalancesByOwner[extension][owner];
     }
 
@@ -102,7 +99,7 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
      * @dev See {IERC721Cerator-extensionTokenOfOwnerByIndex}.
      */
     function extensionTokenOfOwnerByIndex(address extension, address owner, uint256 index) public view virtual override returns (uint256) {
-        require(index < extensionBalanceOf(extension, owner), "ERC721Creator: owner index out of bounds");
+        require(index < extensionBalanceOf(extension, owner), "Index out of bounds");
         return _extensionTokensByOwner[extension][owner][index];
     }
 
@@ -135,8 +132,20 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
      * @dev See {IERC721Creator-setTokenURI}.
      */
     function setTokenURI(uint256 tokenId, string calldata uri) external override extensionRequired {
-        require(_tokenExtension[tokenId] == msg.sender, "ERC721Creator: Only callable by extension that created this token");
+        require(_tokenExtension[tokenId] == msg.sender, "ERC721Creator: Invalid token");
         _tokenURIs[tokenId] = uri;
+    }
+
+    /**
+     * @dev See {IERC721Creator-setMintPermissions}.
+     */
+    function setMintPermissions(address extension, address permissions) external override adminRequired {
+         require(_extensions.contains(extension), "ERC721Creator: Invalid extension");
+         require(permissions == address(0x0) || ERC165Checker.supportsInterface(permissions, type(IERC721CreatorMintPermissions).interfaceId), "ERC721Creator: Invalid address");
+         if (_extensionPermissions[extension] != permissions) {
+             _extensionPermissions[extension] = permissions;
+             //emit MintPermissionsUpdated(extension, permissions, msg.sender);
+         }
     }
 
     /**
@@ -145,6 +154,11 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
     function mint(address to) external override nonReentrant extensionRequired virtual returns(uint256) {
         _tokenCount++;
         uint256 tokenId = _tokenCount;
+        address permissions = _extensionPermissions[msg.sender];
+
+        if (permissions != address(0x0)) {
+            IERC721CreatorMintPermissions(permissions).approveMint(msg.sender, tokenId, to);
+        }
 
         // Track the extension that minted the token
         _tokenExtension[tokenId] = msg.sender;
@@ -233,7 +247,7 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
         }
         
         // Callback to originating extension
-        require(IERC721CreatorExtension(tokenExtension).onBurn(owner, tokenId));
+        IERC721CreatorExtension(tokenExtension).onBurn(owner, tokenId);
     }
     
 

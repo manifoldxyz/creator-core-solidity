@@ -24,8 +24,8 @@ contract MockERC721CreatorExtension is ERC721CreatorExtension {
         return _burntTokens;
     }
 
-    function onBurn(address, uint256 tokenId) external override returns (bool) {
+    function onBurn(address to, uint256 tokenId) public override {
+        ERC721CreatorExtension.onBurn(to, tokenId);
         _burntTokens.push(tokenId);
-        return tokenId >= 0;
     }
 }

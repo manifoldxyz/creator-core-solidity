@@ -2,6 +2,7 @@ const truffleAssert = require('truffle-assertions');
 
 const ERC721Creator = artifacts.require("ERC721Creator");
 const MockERC721CreatorExtension = artifacts.require("MockERC721CreatorExtension");
+const MockERC721CreatorMintPermissions = artifacts.require("MockERC721CreatorMintPermissions");
 const MockContract = artifacts.require("MockContract");
 
 contract('ERC721Creator', function ([creator, ...accounts]) {
@@ -15,6 +16,11 @@ contract('ERC721Creator', function ([creator, ...accounts]) {
            anyone,
            ] = accounts;
 
+    it('creator gas', async function () {
+        const creatorGasEstimate = await ERC721Creator.new.estimateGas(name, symbol, {from:owner});
+        console.log("ERC721Creator gas estimate: %s", creatorGasEstimate);
+    });
+
     describe('ERC721Creator', function() {
         var creator;
 
@@ -23,18 +29,27 @@ contract('ERC721Creator', function ([creator, ...accounts]) {
         });
 
         it('creator permission test', async function () {
-            await truffleAssert.reverts(creator.registerExtension(anyone, 'http://extension', {from:anyone}), "AdminControl: Must be the contract owner or admin to call this function");
-            await truffleAssert.reverts(creator.unregisterExtension(anyone, {from:anyone}), "AdminControl: Must be the contract owner or admin to call this function");
-            await truffleAssert.reverts(creator.setBaseTokenURI('http://extension', {from:anyone}), "ERC721Creator: Must be a registered extension to call this function");
-            await truffleAssert.reverts(creator.setTokenURI(1, 'http://extension', {from:anyone}), "ERC721Creator: Must be a registered extension to call this function");
-            await truffleAssert.reverts(creator.mint(anyone, {from:anyone}), "ERC721Creator: Must be a registered extension to call this function");
+            await truffleAssert.reverts(creator.registerExtension(anyone, 'http://extension', {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(creator.unregisterExtension(anyone, {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(creator.setBaseTokenURI('http://extension', {from:anyone}), "ERC721Creator: Must be registered extension");
+            await truffleAssert.reverts(creator.setTokenURI(1, 'http://extension', {from:anyone}), "ERC721Creator: Must be registered extension");
+            await truffleAssert.reverts(creator.setMintPermissions(anyone, anyone, {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(creator.mint(anyone, {from:anyone}), "ERC721Creator: Must be registered extension");
+        });
+
+        it('creator access test', async function () {
+            await truffleAssert.reverts(creator.tokenByIndexOfExtension(anyone, 1), "Index out of bounds");
+            await truffleAssert.reverts(creator.extensionTokenOfOwnerByIndex(anyone, anyone, 1), "Index out of bounds");
         });
 
         it('extension functionality test', async function () {
             assert.equal((await creator.getExtensions()).length, 0);
 
+            await truffleAssert.reverts(MockERC721CreatorExtension.new(anyone), "ERC721CreatorExtension: Must implement IERC721Creator");
+
             const extension1 = await MockERC721CreatorExtension.new(creator.address);
             assert.equal((await creator.getExtensions()).length, 0);
+            await truffleAssert.reverts(extension1.onBurn(anyone, 1), "ERC721CreatorExtension: can only be called by token creator");
 
             await creator.registerExtension(extension1.address, 'http://extension1/', {from:owner});
             assert.equal((await creator.getExtensions()).length, 1);
@@ -96,7 +111,7 @@ contract('ERC721Creator', function ([creator, ...accounts]) {
             // Removing extension should prevent further access
             await creator.unregisterExtension(extension1.address, {from:owner});
             assert.equal((await creator.getExtensions()).length, 1);
-            await truffleAssert.reverts(extension1.testMint(anyone), "ERC721Creator: Must be a registered extension to call this function");
+            await truffleAssert.reverts(extension1.testMint(anyone), "ERC721Creator: Must be registered extension");
 
             // URI's should still be ok, tokens should still exist
             assert.equal(await creator.tokenURI(newTokenId1), 'http://extension1/'+newTokenId1);
@@ -129,6 +144,32 @@ contract('ERC721Creator', function ([creator, ...accounts]) {
             assert.equal(await extension1.burntTokens(), 1);
             assert.equal((await extension1.burntTokens()).slice(-1)[0] - newTokenId1, 0);
             
+        });
+
+        it('permissions functionality test', async function () {
+            const extension1 = await MockERC721CreatorExtension.new(creator.address);
+            await creator.registerExtension(extension1.address, 'http://extension1/', {from:owner});
+            
+            const extension2 = await MockERC721CreatorExtension.new(creator.address);
+            await creator.registerExtension(extension2.address, 'http://extension2/', {from:owner});
+
+            await truffleAssert.reverts(MockERC721CreatorMintPermissions.new(anyone), "ERC721CreatorMintPermissions: Must implement IERC721Creator");
+            const permissions = await MockERC721CreatorMintPermissions.new(creator.address);
+            await truffleAssert.reverts(permissions.approveMint(anyone, 1, anyone), "ERC721CreatorMintPermissions: can only be called by token creator");
+            
+            await truffleAssert.reverts(creator.setMintPermissions(extension1.address, anyone, {from:owner}), "ERC721Creator: Invalid address");
+            await creator.setMintPermissions(extension1.address, permissions.address, {from:owner});
+            
+            await extension1.testMint(anyone);
+            await extension2.testMint(anyone);
+
+            permissions.setApproveEnabled(false);
+            await truffleAssert.reverts(extension1.testMint(anyone), "MockERC721CreatorMintPermissions: Disabled");
+            await extension2.testMint(anyone);
+
+            await creator.setMintPermissions(extension1.address, '0x0000000000000000000000000000000000000000', {from:owner});
+            await extension1.testMint(anyone);
+            await extension2.testMint(anyone);
         });
     });
 

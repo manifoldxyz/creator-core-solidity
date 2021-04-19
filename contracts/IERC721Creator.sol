@@ -79,4 +79,9 @@ interface IERC721Creator is IAdminControl, IERC721Enumerable {
      */
     function burn(uint256 tokenId) external;
 
+    /**
+     * @dev get the extension of a given token
+     */
+    function tokenExtension(uint256 tokenId) external view returns (address);
+
 }

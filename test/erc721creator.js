@@ -77,6 +77,7 @@ contract('ERC721Creator', function ([creator, ...accounts]) {
             assert.equal(await creator.totalSupplyOfExtension(extension1.address), 1);
             assert.equal(await creator.extensionBalanceOf(extension1.address, owner), 0);
             assert.equal(await creator.extensionBalanceOf(extension1.address, anyone), 1);
+            assert.equal(await creator.tokenExtension(newTokenId1), extension1.address);
 
             await extension1.testMint(another);
             let newTokenId2 = (await extension1.mintedTokens()).slice(-1)[0];

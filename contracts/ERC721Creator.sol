@@ -184,28 +184,28 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
      * @dev See {IERC721Creator-burn}.
      */
     function burn(uint256 tokenId) external override nonReentrant virtual {
-        address tokenExtension = _tokenExtension[tokenId];
+        address tokenExtension_ = _tokenExtension[tokenId];
         address owner = ownerOf(tokenId);
 
         /*************************************************
          *  START: Remove from extension token tracking
          *************************************************/
 
-        uint256 lastTokenIndex = totalSupplyOfExtension(tokenExtension) - 1;
+        uint256 lastTokenIndex = totalSupplyOfExtension(tokenExtension_) - 1;
         uint256 tokenIndex = _extensionTokensIndex[tokenId];
 
         // When the token to delete is the last token, the swap operation is unnecessary
         if (tokenIndex != lastTokenIndex) {
-            uint256 lastTokenId = _extensionTokens[tokenExtension][lastTokenIndex];
+            uint256 lastTokenId = _extensionTokens[tokenExtension_][lastTokenIndex];
 
-            _extensionTokens[tokenExtension][tokenIndex] = lastTokenId; // Move the last token to the slot of the to-delete token
+            _extensionTokens[tokenExtension_][tokenIndex] = lastTokenId; // Move the last token to the slot of the to-delete token
             _extensionTokensIndex[lastTokenId] = tokenIndex; // Update the moved token's index
         }
-        _extensionBalances[tokenExtension] -= 1;
+        _extensionBalances[tokenExtension_] -= 1;
 
         // This also deletes the contents at the last position of the array
         delete _extensionTokensIndex[tokenId];
-        delete _extensionTokens[tokenExtension][lastTokenIndex];
+        delete _extensionTokens[tokenExtension_][lastTokenIndex];
 
         /*************************************************
          * END
@@ -216,21 +216,21 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
          *  START: Remove from extension token tracking by owner
          ********************************************************/
 
-        uint256 lastTokenIndexByOwner = extensionBalanceOf(tokenExtension, owner) - 1;
+        uint256 lastTokenIndexByOwner = extensionBalanceOf(tokenExtension_, owner) - 1;
         uint256 tokenIndexByOwner = _extensionTokensIndexByOwner[tokenId];
 
         // When the token to delete is the last token, the swap operation is unnecessary
         if (tokenIndexByOwner != lastTokenIndexByOwner) {
-            uint256 lastTokenIdByOwner = _extensionTokensByOwner[tokenExtension][owner][lastTokenIndexByOwner];
+            uint256 lastTokenIdByOwner = _extensionTokensByOwner[tokenExtension_][owner][lastTokenIndexByOwner];
 
-            _extensionTokensByOwner[tokenExtension][owner][tokenIndexByOwner] = lastTokenIdByOwner; // Move the last token to the slot of the to-delete token
+            _extensionTokensByOwner[tokenExtension_][owner][tokenIndexByOwner] = lastTokenIdByOwner; // Move the last token to the slot of the to-delete token
             _extensionTokensIndexByOwner[lastTokenIdByOwner] = tokenIndexByOwner; // Update the moved token's index
         }
-        _extensionBalancesByOwner[tokenExtension][owner] -= 1;
+        _extensionBalancesByOwner[tokenExtension_][owner] -= 1;
 
         // This also deletes the contents at the last position of the array
         delete _extensionTokensIndexByOwner[tokenId];
-        delete _extensionTokensByOwner[tokenExtension][owner][lastTokenIndexByOwner];
+        delete _extensionTokensByOwner[tokenExtension_][owner][lastTokenIndexByOwner];
 
         /********************************************************
          *  END
@@ -247,9 +247,16 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
         }
         
         // Callback to originating extension
-        IERC721CreatorExtension(tokenExtension).onBurn(owner, tokenId);
+        IERC721CreatorExtension(tokenExtension_).onBurn(owner, tokenId);
     }
     
+    /**
+     * @dev See {IERC721Creator-tokenExtension}.
+     */
+    function tokenExtension(uint256 tokenId) external view virtual override returns (address) {
+        require(_exists(tokenId), "Nonexistent token");
+        return _tokenExtension[tokenId];
+    }
 
     /**
      * @dev See {IERC721Metadata-tokenURI}.

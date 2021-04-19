@@ -29,9 +29,9 @@ contract('NFT2ERC20', function ([creator, ...accounts]) {
         });
 
         it('access test', async function () {
-            await truffleAssert.reverts(token.setRateEngine(anyone, {from:anyone}), "Must be owner or admin");
-            await truffleAssert.reverts(token.setTransferFunction('erc721', '0x12345678', {from:anyone}), "Must be owner or admin");
-            await truffleAssert.reverts(token.setTreasury(another, 1000, {from:anyone}), "Must be owner or admin");
+            await truffleAssert.reverts(token.setRateEngine(anyone, {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(token.setTransferFunction('erc721', '0x12345678', {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(token.setTreasury(another, 1000, {from:anyone}), "AdminControl: Must be owner or admin");
         });
 
         it('functionality test', async function () {
@@ -41,13 +41,13 @@ contract('NFT2ERC20', function ([creator, ...accounts]) {
             await mock1155.testMint(another, 1155, 10, "0x0");
             assert.equal(await mock1155.balanceOf(another, 1155), 10);
             
-            await truffleAssert.reverts(token.burnToken(mock721.address, [721], 'erc721'), "Rate Engine not configured");
+            await truffleAssert.reverts(token.burnToken(mock721.address, [721], 'erc721'), "NFT2ERC20: Rate Engine not configured");
 
-            await truffleAssert.reverts(token.setRateEngine(anyone, {from:owner}), "Must implement INFT2ERC20RateEngine");
+            await truffleAssert.reverts(token.setRateEngine(anyone, {from:owner}), "NFT2ERC20: Must implement INFT2ERC20RateEngine");
 
             token.setRateEngine(mockRateEngine.address, {from:owner});
 
-            await truffleAssert.reverts(token.burnToken(mock721.address, [721], 'erc721'), "Transfer function not defined for spec");
+            await truffleAssert.reverts(token.burnToken(mock721.address, [721], 'erc721'), "NFT2ERC20: Transfer function not defined for spec");
 
             await token.setTransferFunction('erc721', '0x23b872dd', {from:owner});
 
@@ -76,7 +76,7 @@ contract('NFT2ERC20', function ([creator, ...accounts]) {
         });
 
         it('basis points test', async function () {
-            await truffleAssert.reverts(token.setTreasury(anyone, 10001, {from:owner}), "basisPoints must be less than 10000 (100%)");
+            await truffleAssert.reverts(token.setTreasury(anyone, 10001, {from:owner}), "NFT2ERC20: basisPoints must be less than 10000 (100%)");
             await token.setTreasury(anyone, 1000, {from:owner});
             await mock721.testMint(another, 721);
             assert.equal(await mock721.balanceOf(another), 1);

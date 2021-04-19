@@ -14,7 +14,7 @@ abstract contract ERC721CreatorExtension is ERC165, AdminControl, IERC721Creator
      address internal immutable _creator;
 
      constructor(address creator_) {
-         require(ERC165Checker.supportsInterface(creator_, type(IERC721Creator).interfaceId), "Must implement IERC721Creator");
+         require(ERC165Checker.supportsInterface(creator_, type(IERC721Creator).interfaceId), "ERC721CreatorExtension: Must implement IERC721Creator");
          _creator = creator_;
      }
 
@@ -44,6 +44,6 @@ abstract contract ERC721CreatorExtension is ERC165, AdminControl, IERC721Creator
      * @dev See {IERC721CreatorExtension-onBurn}.
      */
     function onBurn(address, uint256) public virtual override {
-        require(msg.sender == _creator, "Can only be called by token creator");
+        require(msg.sender == _creator, "ERC721CreatorExtension: Can only be called by token creator");
     }
 }

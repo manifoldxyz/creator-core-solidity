@@ -31,10 +31,34 @@ contract('ERC721Creator', function ([creator, ...accounts]) {
         it('creator permission test', async function () {
             await truffleAssert.reverts(creator.registerExtension(anyone, 'http://extension', {from:anyone}), "AdminControl: Must be owner or admin");
             await truffleAssert.reverts(creator.unregisterExtension(anyone, {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(creator.blacklistExtension(anyone, {from:anyone}), "AdminControl: Must be owner or admin");
             await truffleAssert.reverts(creator.setBaseTokenURI('http://extension', {from:anyone}), "ERC721Creator: Must be registered extension");
             await truffleAssert.reverts(creator.setTokenURI(1, 'http://extension', {from:anyone}), "ERC721Creator: Must be registered extension");
             await truffleAssert.reverts(creator.setMintPermissions(anyone, anyone, {from:anyone}), "AdminControl: Must be owner or admin");
             await truffleAssert.reverts(creator.mint(anyone, {from:anyone}), "ERC721Creator: Must be registered extension");
+        });
+        
+        it('blacklist extension test', async function() {
+            await creator.blacklistExtension(anyone, {from:owner});
+            await truffleAssert.reverts(creator.totalSupplyOfExtension(anyone), "ERC721Creator: Extension blacklisted");
+            await truffleAssert.reverts(creator.tokenByIndexOfExtension(anyone, 1), "ERC721Creator: Extension blacklisted");
+            await truffleAssert.reverts(creator.extensionBalanceOf(anyone, another), "ERC721Creator: Extension blacklisted");
+            await truffleAssert.reverts(creator.extensionTokenOfOwnerByIndex(anyone, another, 1), "ERC721Creator: Extension blacklisted");
+
+            const extension1 = await MockERC721CreatorExtension.new(creator.address);
+            await creator.blacklistExtension(extension1.address, {from:owner});
+            await truffleAssert.reverts(creator.registerExtension(extension1.address, 'http://extension1', {from:owner}), "ERC721Creator: Extension blacklisted");
+
+            const extension2 = await MockERC721CreatorExtension.new(creator.address);
+            await creator.registerExtension(extension2.address, 'http://extension2/', {from:owner});
+            await extension2.testMint(anyone);
+            let newTokenId = (await extension2.mintedTokens()).slice(-1)[0];
+            await creator.tokenURI(newTokenId);
+            await creator.tokenExtension(newTokenId);
+            await creator.blacklistExtension(extension2.address, {from:owner});
+            await truffleAssert.reverts(creator.tokenURI(newTokenId), "ERC721Creator: Extension blacklisted");
+            await truffleAssert.reverts(creator.tokenExtension(newTokenId), "ERC721Creator: Extension blacklisted");
+            
         });
 
         it('creator access test', async function () {

@@ -22,6 +22,7 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
 
     // Track registered extensions data
     EnumerableSet.AddressSet private _extensions;
+    EnumerableSet.AddressSet private _blacklistedExtensions;
     mapping (address => address) private _extensionPermissions;
     
     // For enumerating tokens for a given extension
@@ -51,6 +52,14 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
         _;
     }   
 
+    /**
+     * @dev Only allows non-blacklisted extensions
+     */
+    modifier nonBlacklistRequired(address extension) {
+        require(!_blacklistedExtensions.contains(extension), "ERC721Creator: Extension blacklisted");
+        _;
+    }   
+
     constructor (string memory _name, string memory _symbol) ERC721(_name, _symbol) {
     }
 
@@ -76,14 +85,14 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
     /**
      * @dev See {IERC721Creator-totalSupplyOfExtension}.
      */
-    function totalSupplyOfExtension(address extension) public view virtual override returns (uint256) {
+    function totalSupplyOfExtension(address extension) public view virtual override nonBlacklistRequired(extension) returns (uint256) {
         return _extensionBalances[extension];
     }
 
     /**
      * @dev See {IERC721Creator-tokenByIndexOfExtension}.
      */
-    function tokenByIndexOfExtension(address extension, uint256 index) public view virtual override returns (uint256) {
+    function tokenByIndexOfExtension(address extension, uint256 index) public view virtual override nonBlacklistRequired(extension) returns (uint256) {
         require(index < totalSupplyOfExtension(extension), "ERC721Creator: Index out of bounds");
         return _extensionTokens[extension][index];
     }
@@ -91,14 +100,14 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
     /**
      * @dev See {IERC721Creator-extensionBalanceOf}.
      */
-    function extensionBalanceOf(address extension, address owner) public view virtual override returns (uint256) {
+    function extensionBalanceOf(address extension, address owner) public view virtual override nonBlacklistRequired(extension) returns (uint256) {
         return _extensionBalancesByOwner[extension][owner];
     }
 
     /*
      * @dev See {IERC721Cerator-extensionTokenOfOwnerByIndex}.
      */
-    function extensionTokenOfOwnerByIndex(address extension, address owner, uint256 index) public view virtual override returns (uint256) {
+    function extensionTokenOfOwnerByIndex(address extension, address owner, uint256 index) public view virtual override nonBlacklistRequired(extension) returns (uint256) {
         require(index < extensionBalanceOf(extension, owner), "ERC721Creator: Index out of bounds");
         return _extensionTokensByOwner[extension][owner][index];
     }
@@ -106,19 +115,37 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
     /**
      * @dev See {IERC721Creator-registerExtension}.
      */
-    function registerExtension(address extension, string calldata baseURI) external override adminRequired returns (bool) {
+    function registerExtension(address extension, string calldata baseURI) external override adminRequired nonBlacklistRequired(extension) {
         require(ERC165Checker.supportsInterface(extension, type(IERC721CreatorExtension).interfaceId), "ERC721Creator: Must implement IERC721CreatorExtension");
-        _extensionBaseURI[extension] = baseURI;
-        emit ExtensionRegistered(extension, msg.sender);
-        return _extensions.add(extension);
+        if (!_extensions.contains(extension)) {
+            _extensionBaseURI[extension] = baseURI;
+            emit ExtensionRegistered(extension, msg.sender);
+            _extensions.add(extension);
+        }
     }
 
     /**
      * @dev See {IERC721Creator-unregisterExtension}.
      */
-    function unregisterExtension(address extension) external override adminRequired returns (bool) {
-        emit ExtensionUnregistered(extension, msg.sender);
-        return _extensions.remove(extension);
+    function unregisterExtension(address extension) external override adminRequired {
+       if (_extensions.contains(extension)) {
+           emit ExtensionUnregistered(extension, msg.sender);
+           _extensions.remove(extension);
+       }
+    }
+
+    /**
+     * @dev See {IERC721Creator-blacklistExtension}.
+     */
+    function blacklistExtension(address extension) external override adminRequired {
+       if (_extensions.contains(extension)) {
+           emit ExtensionUnregistered(extension, msg.sender);
+           _extensions.remove(extension);
+       }
+       if (!_blacklistedExtensions.contains(extension)) {
+           emit ExtensionBlacklisted(extension, msg.sender);
+           _blacklistedExtensions.add(extension);
+       }
     }
 
     /**
@@ -253,21 +280,25 @@ contract ERC721Creator is ReentrancyGuard, ERC721Enumerable, AdminControl, IERC7
     /**
      * @dev See {IERC721Creator-tokenExtension}.
      */
-    function tokenExtension(uint256 tokenId) external view virtual override returns (address) {
+    function tokenExtension(uint256 tokenId) public view virtual override returns (address) {
         require(_exists(tokenId), "Nonexistent token");
-        return _tokenExtension[tokenId];
+
+        address extension = _tokenExtension[tokenId];
+        require(!_blacklistedExtensions.contains(extension), "ERC721Creator: Extension blacklisted");
+
+        return extension;
     }
 
     /**
      * @dev See {IERC721Metadata-tokenURI}.
      */
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
-        require(_exists(tokenId), "Nonexistent token");
+        address extension = tokenExtension(tokenId);
         
         if (bytes(_tokenURIs[tokenId]).length != 0) {
             return _tokenURIs[tokenId];
         }
-        return string(abi.encodePacked(_extensionBaseURI[_tokenExtension[tokenId]], tokenId.toString()));
+        return string(abi.encodePacked(_extensionBaseURI[extension], tokenId.toString()));
     }
     
 }

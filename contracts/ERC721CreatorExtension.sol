@@ -13,9 +13,9 @@ import "./access/AdminControl.sol";
 abstract contract ERC721CreatorExtension is ERC165, AdminControl, IERC721CreatorExtension {
      address internal immutable _creator;
 
-     constructor(address creator_) {
-         require(ERC165Checker.supportsInterface(creator_, type(IERC721Creator).interfaceId), "ERC721CreatorExtension: Must implement IERC721Creator");
-         _creator = creator_;
+     constructor(address creator) {
+         require(ERC165Checker.supportsInterface(creator, type(IERC721Creator).interfaceId), "ERC721CreatorExtension: Must implement IERC721Creator");
+         _creator = creator;
      }
 
     /**

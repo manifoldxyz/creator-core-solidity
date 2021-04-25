@@ -1,4 +1,4 @@
-# solidity-creator-core
+# manifoldxyz-creator-core-solidity
 
 Using truffle framework
 

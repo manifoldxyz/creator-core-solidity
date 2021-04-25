@@ -6,9 +6,9 @@ pragma solidity ^0.8.0;
 
 import "openzeppelin-solidity/contracts/utils/introspection/ERC165.sol";
 import "openzeppelin-solidity/contracts/utils/introspection/ERC165Checker.sol";
+import "solidity-libraries/contracts/access/AdminControl.sol";
 import "./IERC721Creator.sol";
 import "./IERC721CreatorExtension.sol";
-import "./access/AdminControl.sol";
 
 abstract contract ERC721CreatorExtension is ERC165, AdminControl, IERC721CreatorExtension {
      address internal immutable _creator;

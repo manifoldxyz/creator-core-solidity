@@ -1,5 +1,5 @@
 {
-  "name": "socks-creator-core",
+  "name": "solidity-creator-core",
   "version": "1.0.0",
   "description": "",
   "main": "truffle-config.js",
@@ -17,12 +17,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/manifoldxyz/socks-creator-core.git"
+    "url": "git+https://github.com/manifoldxyz/solidity-creator-core.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/manifoldxyz/socks-creator-core/issues"
+    "url": "https://github.com/manifoldxyz/solidity-creator-core/issues"
   },
-  "homepage": "https://github.com/manifoldxyz/socks-creator-core#readme"
+  "homepage": "https://github.com/manifoldxyz/solidity-creator-core#readme"
 }

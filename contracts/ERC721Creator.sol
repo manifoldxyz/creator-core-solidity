@@ -9,7 +9,7 @@ import "openzeppelin-solidity/contracts/security/ReentrancyGuard.sol";
 import "openzeppelin-solidity/contracts/utils/Strings.sol";
 import "openzeppelin-solidity/contracts/utils/introspection/ERC165Checker.sol";
 import "openzeppelin-solidity/contracts/utils/structs/EnumerableSet.sol";
-import "solidity-libraries/contracts/access/AdminControl.sol";
+import "manifoldxyz-libraries-solidity/contracts/access/AdminControl.sol";
 import "./IERC721Creator.sol";
 import "./IERC721CreatorExtension.sol";
 import "./IERC721CreatorMintPermissions.sol";

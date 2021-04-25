@@ -1,5 +1,5 @@
 {
-  "name": "solidity-creator-core",
+  "name": "creator-core-solidity",
   "version": "1.0.0",
   "description": "",
   "main": "truffle-config.js",
@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "openzeppelin-solidity": "^4.0.0",
-    "solidity-libraries": "git+ssh://git@github.com/manifoldxyz/solidity-libraries.git"
+    "manifoldxyz-libraries-solidity": "git+ssh://git@github.com/manifoldxyz/libraries-solidity.git"
   },
   "devDependencies": {
     "truffle-assertions": "^0.9.2"
@@ -18,12 +18,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/manifoldxyz/solidity-creator-core.git"
+    "url": "git+https://github.com/manifoldxyz/creator-core-solidity.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/manifoldxyz/solidity-creator-core/issues"
+    "url": "https://github.com/manifoldxyz/creator-core-solidity/issues"
   },
-  "homepage": "https://github.com/manifoldxyz/solidity-creator-core#readme"
+  "homepage": "https://github.com/manifoldxyz/creator-core-solidity#readme"
 }

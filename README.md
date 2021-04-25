@@ -1,4 +1,4 @@
-# socks-creator-core
+# solidity-creator-core
 
 Using truffle framework
 

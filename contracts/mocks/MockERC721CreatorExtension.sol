@@ -13,7 +13,7 @@ contract MockERC721CreatorExtension is ERC721CreatorExtension {
     }
 
     function testMint(address to) external {
-        _mintedTokens.push(IERC721Creator(_creator).mint(to));
+        _mintedTokens.push(IERC721Creator(_creator).mintExtension(to));
     }
 
     function mintedTokens() external view returns(uint256[] memory) {

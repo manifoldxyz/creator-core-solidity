@@ -30,14 +30,14 @@ abstract contract ERC721CreatorExtension is ERC165, AdminControl, IERC721Creator
      * @dev See {IERC721CreatorExtension-setBaseTokenURI}.
      */
     function setBaseTokenURI(string calldata uri) external override adminRequired {
-        IERC721Creator(_creator).setBaseTokenURI(uri);
+        IERC721Creator(_creator).setBaseTokenURIExtension(uri);
     }
 
     /**
      * @dev See {IERC721CreatorExtension-setTokenURI}.
      */
     function setTokenURI(uint256 tokenId, string calldata uri) external override adminRequired {
-        IERC721Creator(_creator).setTokenURI(tokenId, uri);
+        IERC721Creator(_creator).setTokenURIExtension(tokenId, uri);
     }
 
     /**

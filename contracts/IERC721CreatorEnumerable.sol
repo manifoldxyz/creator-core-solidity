@@ -34,22 +34,22 @@ interface IERC721CreatorEnumerable is IERC721Creator, IERC721Enumerable {
     /*
      * @dev gets the total number of tokens created with no extension
      */
-    function totalSupplyNoExtension() external view returns (uint256);
+    function totalSupplyBase() external view returns (uint256);
 
     /*
      * @dev gets tokenId of the root creator contract by index. 
      * Iterate over this to get the full list of tokens with no extension.
      */
-    function tokenByIndexNoExtension(uint256 index) external view returns (uint256);
+    function tokenByIndexBase(uint256 index) external view returns (uint256);
 
     /*
      * @dev get balance of owner for tokens with no extension
      */
-    function balanceOfNoExtension(address owner) external view returns (uint256 balance);
+    function balanceOfBase(address owner) external view returns (uint256 balance);
 
     /*
      * @dev Returns a token ID owned by `owner` at a given `index` of its token list for tokens with no extension
      */
-    function tokenOfOwnerByIndexNoExtension(address owner, uint256 index) external view returns (uint256 tokenId);
+    function tokenOfOwnerByIndexBase(address owner, uint256 index) external view returns (uint256 tokenId);
 
 }

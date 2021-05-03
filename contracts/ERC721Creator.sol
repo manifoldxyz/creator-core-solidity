@@ -120,23 +120,34 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
      * @dev See {IERC721Creator-setTokenURIExtension}.
      */
     function setTokenURIExtension(uint256 tokenId, string calldata uri) external override extensionRequired {
+        if (_tokenExtension[tokenId] == msg.sender) {
+            _tokenURIs[tokenId] = uri;
+        } else if (_tokenExtension[tokenId] != address(0)) {
+            revert("ERC721Creator: Only creator extension can set token URI");
+        } else {
         require(_tokenExtension[tokenId] == msg.sender, "ERC721Creator: Invalid token");
-        _tokenURIs[tokenId] = uri;
+            revert("ERC721Creator: Invalid token");
+        }
     }
 
     /**
-     * @dev See {IERC721Creator-setBaseTokenURINoExtension}.
+     * @dev See {IERC721Creator-setBaseTokenURIBase}.
      */
-    function setBaseTokenURINoExtension(string calldata uri) external override adminRequired {
+    function setBaseTokenURI(string calldata uri) external override adminRequired {
         _extensionBaseURI[address(this)] = uri;
     }
 
     /**
-     * @dev See {IERC721Creator-setTokenURINoExtension}.
+     * @dev See {IERC721Creator-setTokenURIBase}.
      */
-    function setTokenURINoExtension(uint256 tokenId, string calldata uri) external override adminRequired {
-        require(_tokenExtension[tokenId] == address(this), "ERC721Creator: Invalid token");
-        _tokenURIs[tokenId] = uri;
+    function setTokenURI(uint256 tokenId, string calldata uri) external override adminRequired {
+        if (_tokenExtension[tokenId] == address(this)) {
+            _tokenURIs[tokenId] = uri;
+        } else if (_tokenExtension[tokenId] != address(0)) {
+            revert("ERC721Creator: Only creator extension can set token URI");
+        } else {
+            revert("ERC721Creator: Invalid token");
+        }
     }
 
     /**
@@ -152,13 +163,13 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
     }
 
     /**
-     * @dev See {IERC721Creator-mintNoExtension}.
+     * @dev See {IERC721Creator-mintBase}.
      */
-    function mintNoExtension(address to) public override nonReentrant adminRequired virtual returns(uint256) {
-        return _mintNoExtension(to);
+    function mintBase(address to) public override nonReentrant adminRequired virtual returns(uint256) {
+        return _mintBase(to);
     }
 
-    function _mintNoExtension(address to) internal virtual returns(uint256) {
+    function _mintBase(address to) internal virtual returns(uint256) {
         _tokenCount++;
         uint256 tokenId = _tokenCount;
 
@@ -202,7 +213,7 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
     }
 
     function _burn(uint256 tokenId) internal override(ERC721) virtual {
-        address tokenExtension_ = _tokenExtension[tokenId];
+        address extension = _tokenExtension[tokenId];
         address owner = ownerOf(tokenId);
          
         // Delete token origin extension tracking
@@ -216,8 +227,8 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
         }
         
         // Callback to originating extension
-        if (tokenExtension_ != address(this)) {
-           IERC721CreatorExtension(tokenExtension_).onBurn(owner, tokenId);
+        if (extension != address(this)) {
+           IERC721CreatorExtension(extension).onBurn(owner, tokenId);
         }
     }
     
@@ -228,6 +239,8 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
         require(_exists(tokenId), "Nonexistent token");
 
         address extension = _tokenExtension[tokenId];
+
+        require(extension != address(this), "ERC721Creator: No extension for token");
         require(!_blacklistedExtensions.contains(extension), "ERC721Creator: Extension blacklisted");
 
         return extension;
@@ -237,8 +250,11 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
      * @dev See {IERC721Metadata-tokenURI}.
      */
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
-        address extension = tokenExtension(tokenId);
-        
+        require(_exists(tokenId), "Nonexistent token");
+
+        address extension = _tokenExtension[tokenId];
+        require(!_blacklistedExtensions.contains(extension), "ERC721Creator: Extension blacklisted");
+
         if (bytes(_tokenURIs[tokenId]).length != 0) {
             return _tokenURIs[tokenId];
         }

@@ -73,53 +73,53 @@ contract ERC721CreatorEnumerable is ERC721Creator, ERC721Enumerable, IERC721Crea
     }
 
     /**
-     * @dev See {IERC721CreatorEnumerable-totalSupplyNoExtension}.
+     * @dev See {IERC721CreatorEnumerable-totalSupplyBase}.
      */
-    function totalSupplyNoExtension() public view virtual override returns (uint256) {
+    function totalSupplyBase() public view virtual override returns (uint256) {
         return _extensionBalances[address(this)];
     }
 
     /**
-     * @dev See {IERC721CreatorEnumerable-tokenByIndexNoExtension}.
+     * @dev See {IERC721CreatorEnumerable-tokenByIndexBase}.
      */
-    function tokenByIndexNoExtension(uint256 index) external view virtual override returns (uint256) {
-        require(index < totalSupplyNoExtension(), "ERC721Creator: Index out of bounds");
+    function tokenByIndexBase(uint256 index) external view virtual override returns (uint256) {
+        require(index < totalSupplyBase(), "ERC721Creator: Index out of bounds");
         return _extensionTokens[address(this)][index];
     }
 
     /**
-     * @dev See {IERC721CreatorEnumerable-balanceOfNoExtension}.
+     * @dev See {IERC721CreatorEnumerable-balanceOfBase}.
      */
-    function balanceOfNoExtension(address owner) public view virtual override returns (uint256) {
+    function balanceOfBase(address owner) public view virtual override returns (uint256) {
         return _extensionBalancesByOwner[address(this)][owner];
     }
 
     /*
-     * @dev See {IERC721CeratorEnumerable-tokenOfOwnerByIndeNoExtension}.
+     * @dev See {IERC721CeratorEnumerable-tokenOfOwnerByIndeBase}.
      */
-    function tokenOfOwnerByIndexNoExtension(address owner, uint256 index) external view virtual override returns (uint256) {
-        require(index < balanceOfNoExtension(owner), "ERC721Creator: Index out of bounds");
+    function tokenOfOwnerByIndexBase(address owner, uint256 index) external view virtual override returns (uint256) {
+        require(index < balanceOfBase(owner), "ERC721Creator: Index out of bounds");
         return _extensionTokensByOwner[address(this)][owner][index];
     }
 
     /**
-     * @dev See {IERC721Creator-mintNoExtension}.
+     * @dev See {IERC721Creator-mintBase}.
      */
-    function mintNoExtension(address to) public override(ERC721Creator, IERC721Creator) nonReentrant adminRequired virtual returns(uint256) {
-        return _mintNoExtension(to);
+    function mintBase(address to) public override(ERC721Creator, IERC721Creator) nonReentrant adminRequired virtual returns(uint256) {
+        return _mintBase(to);
     }
 
-    function _mintNoExtension(address to) internal override(ERC721Creator) virtual returns(uint256) {
-        uint256 tokenId = ERC721Creator._mintNoExtension(to);
+    function _mintBase(address to) internal override(ERC721Creator) virtual returns(uint256) {
+        uint256 tokenId = ERC721Creator._mintBase(to);
 
         // Add to extension token tracking
-        uint256 length = totalSupplyNoExtension();
+        uint256 length = totalSupplyBase();
         _extensionTokens[address(this)][length] = tokenId;
         _extensionTokensIndex[tokenId] = length;
         _extensionBalances[address(this)] += 1;
 
         // Add to extension token tracking by owner
-        uint256 lengthByOwner = balanceOfNoExtension(to);
+        uint256 lengthByOwner = balanceOfBase(to);
         _extensionTokensByOwner[address(this)][to][lengthByOwner] = tokenId;
         _extensionTokensIndexByOwner[tokenId] = lengthByOwner;
         _extensionBalancesByOwner[address(this)][to] += 1;        

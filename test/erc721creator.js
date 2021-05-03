@@ -37,10 +37,10 @@ contract('ERC721Creator', function ([creator, ...accounts]) {
             await truffleAssert.reverts(creator.blacklistExtension(anyone, {from:anyone}), "AdminControl: Must be owner or admin");
             await truffleAssert.reverts(creator.setBaseTokenURIExtension('http://extension', {from:anyone}), "ERC721Creator: Must be registered extension");
             await truffleAssert.reverts(creator.setTokenURIExtension(1, 'http://extension', {from:anyone}), "ERC721Creator: Must be registered extension");
-            await truffleAssert.reverts(creator.setBaseTokenURINoExtension('http://base', {from:anyone}),"AdminControl: Must be owner or admin");
-            await truffleAssert.reverts(creator.setTokenURINoExtension(1, 'http://base', {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(creator.setBaseTokenURI('http://base', {from:anyone}),"AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(creator.setTokenURI(1, 'http://base', {from:anyone}), "AdminControl: Must be owner or admin");
             await truffleAssert.reverts(creator.setMintPermissions(anyone, anyone, {from:anyone}), "AdminControl: Must be owner or admin");
-            await truffleAssert.reverts(creator.mintNoExtension(anyone, {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(creator.mintBase(anyone, {from:anyone}), "AdminControl: Must be owner or admin");
             await truffleAssert.reverts(creator.mintExtension(anyone, {from:anyone}), "ERC721Creator: Must be registered extension");
         });
         
@@ -66,7 +66,7 @@ contract('ERC721Creator', function ([creator, ...accounts]) {
         it('creator extension functionality test', async function () {
             assert.equal((await creator.getExtensions()).length, 0);
 
-            await creator.setBaseTokenURINoExtension("http://base/", {from:owner});
+            await creator.setBaseTokenURI("http://base/", {from:owner});
             await truffleAssert.reverts(MockERC721CreatorExtension.new(anyone), "ERC721CreatorExtension: Must implement IERC721Creator");
 
             const extension1 = await MockERC721CreatorExtension.new(creator.address);
@@ -89,8 +89,8 @@ contract('ERC721Creator', function ([creator, ...accounts]) {
             await truffleAssert.reverts(creator.registerExtension(badExtension.address, 'http://badextension/', {from:owner}), "ERC721Creator: Must implement IERC721CreatorExtension");
 
             // Minting cost
-            const mintNoExtension = await creator.mintNoExtension.estimateGas(anyone, {from:owner});
-            console.log("No Extension mint gas estimate: %s", mintNoExtension);
+            const mintBase = await creator.mintBase.estimateGas(anyone, {from:owner});
+            console.log("No Extension mint gas estimate: %s", mintBase);
             const mintGasEstimate = await extension1.testMint.estimateGas(anyone);
             console.log("Extension mint gas estimate: %s", mintGasEstimate);
 
@@ -108,8 +108,9 @@ contract('ERC721Creator', function ([creator, ...accounts]) {
             await extension1.testMint(anyone);
             let newTokenId4 = 4;
 
-            await creator.mintNoExtension(anyone, {from:owner});
+            await creator.mintBase(anyone, {from:owner});
             let newTokenId5 = 5;
+            await truffleAssert.reverts(creator.tokenExtension(newTokenId5), "ERC721Creator: No extension");
 
             // Check URI's
             assert.equal(await creator.tokenURI(newTokenId1), 'http://extension1/'+newTokenId1);
@@ -206,7 +207,7 @@ contract('ERC721Creator', function ([creator, ...accounts]) {
         it('creator enumerable functionality test', async function () {
             assert.equal((await creator.getExtensions()).length, 0);
 
-            await creator.setBaseTokenURINoExtension("http://base/", {from:owner});
+            await creator.setBaseTokenURI("http://base/", {from:owner});
             await truffleAssert.reverts(MockERC721CreatorExtension.new(anyone), "ERC721CreatorExtension: Must implement IERC721Creator");
 
             const extension1 = await MockERC721CreatorExtension.new(creator.address);
@@ -229,8 +230,8 @@ contract('ERC721Creator', function ([creator, ...accounts]) {
             await truffleAssert.reverts(creator.registerExtension(badExtension.address, 'http://badextension/', {from:owner}), "ERC721Creator: Must implement IERC721CreatorExtension");
 
             // Minting cost
-            const mintNoExtension = await creator.mintNoExtension.estimateGas(anyone, {from:owner});
-            console.log("No Extension mint gas estimate: %s", mintNoExtension);
+            const mintBase = await creator.mintBase.estimateGas(anyone, {from:owner});
+            console.log("No Extension mint gas estimate: %s", mintBase);
             const mintGasEstimate = await extension1.testMint.estimateGas(anyone);
             console.log("Extension mint gas estimate: %s", mintGasEstimate);
 
@@ -270,12 +271,13 @@ contract('ERC721Creator', function ([creator, ...accounts]) {
             assert.equal(await creator.balanceOfExtension(extension1.address, another), 1);
             assert.equal(await creator.balanceOfExtension(extension2.address, anyone), 1);
 
-            await creator.mintNoExtension(anyone, {from:owner});
+            await creator.mintBase(anyone, {from:owner});
             assert.equal(await creator.totalSupply(), 5);
-            assert.equal(await creator.totalSupplyNoExtension(), 1);
-            assert.equal(await creator.balanceOfNoExtension(anyone), 1);
-            let newTokenId5 = await creator.tokenByIndexNoExtension(0);
-            assert.equal(newTokenId5-await creator.tokenOfOwnerByIndexNoExtension(anyone, 0), 0);
+            assert.equal(await creator.totalSupplyBase(), 1);
+            assert.equal(await creator.balanceOfBase(anyone), 1);
+            let newTokenId5 = await creator.tokenByIndexBase(0);
+            assert.equal(newTokenId5-await creator.tokenOfOwnerByIndexBase(anyone, 0), 0);
+            await truffleAssert.reverts(creator.tokenExtension(newTokenId5), "ERC721Creator: No extension");
 
             // Check URI's
             assert.equal(await creator.tokenURI(newTokenId1), 'http://extension1/'+newTokenId1);
@@ -323,8 +325,8 @@ contract('ERC721Creator', function ([creator, ...accounts]) {
             await creator.burn(newTokenId5, {from:anyone});
             await truffleAssert.reverts(creator.tokenURI(newTokenId1), "Nonexistent token");
             assert.equal(await creator.totalSupply(), 3);
-            assert.equal(await creator.totalSupplyNoExtension(), 0);
-            assert.equal(await creator.balanceOfNoExtension(owner), 0);
+            assert.equal(await creator.totalSupplyBase(), 0);
+            assert.equal(await creator.balanceOfBase(owner), 0);
         });
 
         it('creator enumerable permissions functionality test', async function () {

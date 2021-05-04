@@ -30,6 +30,7 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
 
     // The baseURI for a given extension
     mapping (address => string) private _extensionBaseURI;
+    mapping (address => bool) private _extensionBaseURIIdentical;
 
     // Mapping for token URIs
     mapping (uint256 => string) private _tokenURIs;
@@ -76,9 +77,22 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
      * @dev See {IERC721Creator-registerExtension}.
      */
     function registerExtension(address extension, string calldata baseURI) external override adminRequired nonBlacklistRequired(extension) {
+        _registerExtension(extension, baseURI, false);
+    }
+
+    /**
+     * @dev See {IERC721Creator-registerExtension}.
+     */
+    function registerExtension(address extension, string calldata baseURI, bool baseURIIdentical) external override adminRequired nonBlacklistRequired(extension) {
+        _registerExtension(extension, baseURI, baseURIIdentical);
+    }
+
+
+    function _registerExtension(address extension, string calldata baseURI, bool baseURIIdentical) internal {
         require(ERC165Checker.supportsInterface(extension, type(IERC721CreatorExtension).interfaceId), "ERC721Creator: Must implement IERC721CreatorExtension");
         if (!_extensions.contains(extension)) {
             _extensionBaseURI[extension] = baseURI;
+            _extensionBaseURIIdentical[extension] = baseURIIdentical;
             emit ExtensionRegistered(extension, msg.sender);
             _extensions.add(extension);
         }
@@ -113,7 +127,19 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
      * @dev See {IERC721Creator-setBaseTokenURIExtension}.
      */
     function setBaseTokenURIExtension(string calldata uri) external override extensionRequired {
+        _setBaseTokenURIExtension(uri, false);
+    }
+
+    /**
+     * @dev See {IERC721Creator-setBaseTokenURIExtension}.
+     */
+    function setBaseTokenURIExtension(string calldata uri, bool identical) external override extensionRequired {
+        _setBaseTokenURIExtension(uri, identical);
+    }
+
+    function _setBaseTokenURIExtension(string calldata uri, bool identical) internal {
         _extensionBaseURI[msg.sender] = uri;
+        _extensionBaseURIIdentical[msg.sender] = identical;
     }
 
     /**
@@ -258,7 +284,11 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
         if (bytes(_tokenURIs[tokenId]).length != 0) {
             return _tokenURIs[tokenId];
         }
-        return string(abi.encodePacked(_extensionBaseURI[extension], tokenId.toString()));
+        if (!_extensionBaseURIIdentical[extension]) {
+            return string(abi.encodePacked(_extensionBaseURI[extension], tokenId.toString()));
+        } else {
+            return _extensionBaseURI[extension];
+        }
     }
     
 }

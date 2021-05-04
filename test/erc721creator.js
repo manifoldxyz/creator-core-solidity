@@ -6,10 +6,10 @@ const MockERC721CreatorExtension = artifacts.require("MockERC721CreatorExtension
 const MockERC721CreatorMintPermissions = artifacts.require("MockERC721CreatorMintPermissions");
 const MockContract = artifacts.require("MockContract");
 
-contract('ERC721Creator', function ([creator, ...accounts]) {
+contract('ERC721Creator', function ([minter_account, ...accounts]) {
     const name = 'Token';
     const symbol = 'NFT';
-    const minter = creator;
+    const minter = minter_account;
     const [
            owner,
            newOwner,
@@ -33,9 +33,11 @@ contract('ERC721Creator', function ([creator, ...accounts]) {
 
         it('creator permission test', async function () {
             await truffleAssert.reverts(creator.registerExtension(anyone, 'http://extension', {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(creator.registerExtension(anyone, 'http://extension', true), "AdminControl: Must be owner or admin");
             await truffleAssert.reverts(creator.unregisterExtension(anyone, {from:anyone}), "AdminControl: Must be owner or admin");
             await truffleAssert.reverts(creator.blacklistExtension(anyone, {from:anyone}), "AdminControl: Must be owner or admin");
             await truffleAssert.reverts(creator.setBaseTokenURIExtension('http://extension', {from:anyone}), "ERC721Creator: Must be registered extension");
+            await truffleAssert.reverts(creator.setBaseTokenURIExtension('http://extension', true), "ERC721Creator: Must be registered extension");
             await truffleAssert.reverts(creator.setTokenURIExtension(1, 'http://extension', {from:anyone}), "ERC721Creator: Must be registered extension");
             await truffleAssert.reverts(creator.setBaseTokenURI('http://base', {from:anyone}),"AdminControl: Must be owner or admin");
             await truffleAssert.reverts(creator.setTokenURI(1, 'http://base', {from:anyone}), "AdminControl: Must be owner or admin");

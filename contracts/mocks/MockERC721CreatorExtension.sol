@@ -2,18 +2,19 @@
 
 pragma solidity ^0.8.0;
 
-import "../ERC721CreatorExtension.sol";
-import "../IERC721Creator.sol";
+import "../extensions/ERC721CreatorExtensionBurnable.sol";
 
-contract MockERC721CreatorExtension is ERC721CreatorExtension {
+contract MockERC721CreatorExtension is ERC721CreatorExtensionBurnable {
     uint256 [] _mintedTokens;
     uint256 [] _burntTokens;
+    address _creator;
     
-    constructor(address creator_) ERC721CreatorExtension (creator_) {
+    constructor(address creator) {
+        _creator = creator;
     }
 
     function testMint(address to) external {
-        _mintedTokens.push(IERC721Creator(_creator).mintExtension(to));
+        _mintedTokens.push(_mint(_creator, to));
     }
 
     function mintedTokens() external view returns(uint256[] memory) {
@@ -25,7 +26,7 @@ contract MockERC721CreatorExtension is ERC721CreatorExtension {
     }
 
     function onBurn(address to, uint256 tokenId) public override {
-        ERC721CreatorExtension.onBurn(to, tokenId);
+        ERC721CreatorExtensionBurnable.onBurn(to, tokenId);
         _burntTokens.push(tokenId);
     }
 }

@@ -69,11 +69,10 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             assert.equal((await creator.getExtensions()).length, 0);
 
             await creator.setBaseTokenURI("http://base/", {from:owner});
-            await truffleAssert.reverts(MockERC721CreatorExtension.new(anyone), "ERC721CreatorExtension: Must implement IERC721Creator");
 
             const extension1 = await MockERC721CreatorExtension.new(creator.address);
             assert.equal((await creator.getExtensions()).length, 0);
-            await truffleAssert.reverts(extension1.onBurn(anyone, 1), "ERC721CreatorExtension: Can only be called by token creator");
+            await truffleAssert.reverts(extension1.onBurn(anyone, 1), "ERC721CreatorExtensionBurnable: Can only be called by token creator");
 
             await creator.registerExtension(extension1.address, 'http://extension1/', {from:owner});
             assert.equal((await creator.getExtensions()).length, 1);
@@ -85,10 +84,6 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             await creator.approveAdmin(another, {from:owner});
             await creator.registerExtension(extension2.address, 'http://extension2/', {from:another});
             assert.equal((await creator.getExtensions()).length, 2);
-
-            // Prevents registration of bad extensions
-            const badExtension = await MockContract.new();
-            await truffleAssert.reverts(creator.registerExtension(badExtension.address, 'http://badextension/', {from:owner}), "ERC721Creator: Must implement IERC721CreatorExtension");
 
             // Minting cost
             const mintBase = await creator.mintBase.estimateGas(anyone, {from:owner});
@@ -210,11 +205,10 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             assert.equal((await creator.getExtensions()).length, 0);
 
             await creator.setBaseTokenURI("http://base/", {from:owner});
-            await truffleAssert.reverts(MockERC721CreatorExtension.new(anyone), "ERC721CreatorExtension: Must implement IERC721Creator");
 
             const extension1 = await MockERC721CreatorExtension.new(creator.address);
             assert.equal((await creator.getExtensions()).length, 0);
-            await truffleAssert.reverts(extension1.onBurn(anyone, 1), "ERC721CreatorExtension: Can only be called by token creator");
+            await truffleAssert.reverts(extension1.onBurn(anyone, 1), "ERC721CreatorExtensionBurnable: Can only be called by token creator");
 
             await creator.registerExtension(extension1.address, 'http://extension1/', {from:owner});
             assert.equal((await creator.getExtensions()).length, 1);
@@ -226,10 +220,6 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             await creator.approveAdmin(another, {from:owner});
             await creator.registerExtension(extension2.address, 'http://extension2/', {from:another});
             assert.equal((await creator.getExtensions()).length, 2);
-
-            // Prevents registration of bad extensions
-            const badExtension = await MockContract.new();
-            await truffleAssert.reverts(creator.registerExtension(badExtension.address, 'http://badextension/', {from:owner}), "ERC721Creator: Must implement IERC721CreatorExtension");
 
             // Minting cost
             const mintBase = await creator.mintBase.estimateGas(anyone, {from:owner});

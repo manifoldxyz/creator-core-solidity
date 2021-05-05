@@ -10,9 +10,9 @@ import "openzeppelin-solidity/contracts/utils/Strings.sol";
 import "openzeppelin-solidity/contracts/utils/introspection/ERC165Checker.sol";
 import "openzeppelin-solidity/contracts/utils/structs/EnumerableSet.sol";
 import "manifoldxyz-libraries-solidity/contracts/access/AdminControl.sol";
+import "./extensions/IERC721CreatorExtensionBurnable.sol";
+import "./permissions/IERC721CreatorMintPermissions.sol";
 import "./IERC721Creator.sol";
-import "./IERC721CreatorExtension.sol";
-import "./IERC721CreatorMintPermissions.sol";
 
 contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator {
     using Strings for uint256;
@@ -89,7 +89,6 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
 
 
     function _registerExtension(address extension, string calldata baseURI, bool baseURIIdentical) internal {
-        require(ERC165Checker.supportsInterface(extension, type(IERC721CreatorExtension).interfaceId), "ERC721Creator: Must implement IERC721CreatorExtension");
         if (!_extensions.contains(extension)) {
             _extensionBaseURI[extension] = baseURI;
             _extensionBaseURIIdentical[extension] = baseURIIdentical;
@@ -274,9 +273,11 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
             delete _tokenURIs[tokenId];
         }
         
-        // Callback to originating extension
+        // Callback to originating extension if needed
         if (extension != address(this)) {
-           IERC721CreatorExtension(extension).onBurn(owner, tokenId);
+           if (ERC165Checker.supportsInterface(extension, type(IERC721CreatorExtensionBurnable).interfaceId)) {
+               IERC721CreatorExtensionBurnable(extension).onBurn(owner, tokenId);
+           }
         }
     }
     

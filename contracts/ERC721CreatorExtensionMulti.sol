@@ -11,7 +11,7 @@ import "./ERC721CreatorExtension.sol";
 abstract contract ERC721CreatorExtensionMulti is ERC721CreatorExtension, IERC721CreatorExtensionMulti {
     using EnumerableSet for EnumerableSet.AddressSet;
 
-    EnumerableSet.AddressSet private _creators;
+    EnumerableSet.AddressSet internal _creators;
 
     constructor(address[] memory creators) {
         for (uint i = 0; i < creators.length; i++) {

@@ -106,11 +106,18 @@ contract ERC721CreatorEnumerable is ERC721Creator, ERC721Enumerable, IERC721Crea
      * @dev See {IERC721Creator-mintBase}.
      */
     function mintBase(address to) public override(ERC721Creator, IERC721Creator) nonReentrant adminRequired virtual returns(uint256) {
-        return _mintBase(to);
+        return _mintBase(to, "");
     }
 
-    function _mintBase(address to) internal override(ERC721Creator) virtual returns(uint256) {
-        uint256 tokenId = ERC721Creator._mintBase(to);
+    /**
+     * @dev See {IERC721Creator-mintBase}.
+     */
+    function mintBase(address to, string calldata uri) public override(ERC721Creator, IERC721Creator) nonReentrant adminRequired virtual returns(uint256) {
+        return _mintBase(to, uri);
+    }
+
+    function _mintBase(address to, string memory uri) internal override(ERC721Creator) virtual returns(uint256) {
+        uint256 tokenId = ERC721Creator._mintBase(to, uri);
 
         // Add to extension token tracking
         uint256 length = totalSupplyBase();
@@ -131,11 +138,18 @@ contract ERC721CreatorEnumerable is ERC721Creator, ERC721Enumerable, IERC721Crea
      * @dev See {IERC721Creator-extensionMint}.
      */
     function mintExtension(address to) public override(ERC721Creator, IERC721Creator) nonReentrant extensionRequired virtual returns(uint256) {
-        return _mintExtension(to);
+        return _mintExtension(to, "");
     }
 
-    function _mintExtension(address to) internal override(ERC721Creator) virtual returns(uint256) {
-        uint256 tokenId = ERC721Creator._mintExtension(to);
+    /**
+     * @dev See {IERC721Creator-extensionMint}.
+     */
+    function mintExtension(address to, string calldata uri) public override(ERC721Creator, IERC721Creator) nonReentrant extensionRequired virtual returns(uint256) {
+        return _mintExtension(to, uri);
+    }
+
+    function _mintExtension(address to, string memory uri) internal override(ERC721Creator) virtual returns(uint256) {
+        uint256 tokenId = ERC721Creator._mintExtension(to, uri);
 
         // Add to extension token tracking
         uint256 length = totalSupplyExtension(msg.sender);

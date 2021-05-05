@@ -84,10 +84,22 @@ interface IERC721Creator is IAdminControl, IERC721 {
     function mintBase(address to) external returns (uint256);
 
     /**
+     * @dev mint a token with no extension. Can only be called by an admin.
+     * Returns tokenId minted
+     */
+    function mintBase(address to, string calldata uri) external returns (uint256);
+
+    /**
      * @dev mint a token. Can only be called by a registered extension.
      * Returns tokenId minted
      */
     function mintExtension(address to) external returns (uint256);
+
+    /**
+     * @dev mint a token. Can only be called by a registered extension.
+     * Returns tokenId minted
+     */
+    function mintExtension(address to, string calldata uri) external returns (uint256);
 
     /**
      * @dev burn a token. Can only be called by token owner or approved address.

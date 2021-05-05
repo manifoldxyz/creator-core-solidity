@@ -192,10 +192,17 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
      * @dev See {IERC721Creator-mintBase}.
      */
     function mintBase(address to) public override nonReentrant adminRequired virtual returns(uint256) {
-        return _mintBase(to);
+        return _mintBase(to, "");
     }
 
-    function _mintBase(address to) internal virtual returns(uint256) {
+    /**
+     * @dev See {IERC721Creator-mintBase}.
+     */
+    function mintBase(address to, string calldata uri) public override nonReentrant adminRequired virtual returns(uint256) {
+        return _mintBase(to, uri);
+    }
+
+    function _mintBase(address to, string memory uri) internal virtual returns(uint256) {
         _tokenCount++;
         uint256 tokenId = _tokenCount;
 
@@ -204,6 +211,10 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
 
         _safeMint(to, tokenId);
 
+        if (bytes(uri).length > 0) {
+            _tokenURIs[tokenId] = uri;
+        }
+
         return tokenId;
     }
 
@@ -211,10 +222,17 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
      * @dev See {IERC721Creator-extensionMint}.
      */
     function mintExtension(address to) public override nonReentrant extensionRequired virtual returns(uint256) {
-        return _mintExtension(to);
+        return _mintExtension(to, "");
     }
 
-    function _mintExtension(address to) internal virtual returns(uint256) {
+    /**
+     * @dev See {IERC721Creator-extensionMint}.
+     */
+    function mintExtension(address to, string calldata uri) public override nonReentrant extensionRequired virtual returns(uint256) {
+        return _mintExtension(to, uri);
+    }
+
+    function _mintExtension(address to, string memory uri) internal virtual returns(uint256) {
         _tokenCount++;
         uint256 tokenId = _tokenCount;
         address permissions = _extensionPermissions[msg.sender];
@@ -227,6 +245,10 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
         _tokenExtension[tokenId] = msg.sender;
 
         _safeMint(to, tokenId);
+
+        if (bytes(uri).length > 0) {
+            _tokenURIs[tokenId] = uri;
+        }
 
         return tokenId;
     }

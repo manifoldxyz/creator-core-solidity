@@ -132,7 +132,7 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
 
             // Check burn callback
             assert.equal(await extension1.burntTokens(), 1);
-            assert.equal((await extension1.burntTokens()).slice(-1)[0] - newTokenId1, 0);
+            assert.deepEqual((await extension1.burntTokens()).slice(-1)[0], web3.utils.toBN(newTokenId1));
 
             await creator.burn(newTokenId5, {from:anyone});
             await truffleAssert.reverts(creator.tokenURI(newTokenId1), "Nonexistent token");
@@ -268,7 +268,7 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             assert.equal(await creator.totalSupplyBase(), 1);
             assert.equal(await creator.balanceOfBase(anyone), 1);
             let newTokenId5 = await creator.tokenByIndexBase(0);
-            assert.equal(newTokenId5-await creator.tokenOfOwnerByIndexBase(anyone, 0), 0);
+            assert.deepEqual(newTokenId5, await creator.tokenOfOwnerByIndexBase(anyone, 0));
             await truffleAssert.reverts(creator.tokenExtension(newTokenId5), "ERC721Creator: No extension");
 
             // Check URI's
@@ -290,12 +290,12 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             assert.equal(await creator.totalSupply(), 5);
             assert.equal(await creator.totalSupplyExtension(extension1.address), 3);
 
-            assert.equal(await creator.tokenByIndexExtension(extension1.address, 0) - newTokenId1, 0);
-            assert.equal(await creator.tokenByIndexExtension(extension1.address, 1) - newTokenId2, 0);
-            assert.equal(await creator.tokenByIndexExtension(extension1.address, 2) - newTokenId4, 0);
-            assert.equal(await creator.tokenOfOwnerByIndexExtension(extension1.address, anyone, 0) - newTokenId1, 0);
-            assert.equal(await creator.tokenOfOwnerByIndexExtension(extension1.address, anyone, 1) - newTokenId4, 0);
-            assert.equal(await creator.tokenOfOwnerByIndexExtension(extension1.address, another, 0) - newTokenId2, 0);
+            assert.deepEqual(await creator.tokenByIndexExtension(extension1.address, 0), newTokenId1);
+            assert.deepEqual(await creator.tokenByIndexExtension(extension1.address, 1), newTokenId2);
+            assert.deepEqual(await creator.tokenByIndexExtension(extension1.address, 2), newTokenId4);
+            assert.deepEqual(await creator.tokenOfOwnerByIndexExtension(extension1.address, anyone, 0), newTokenId1);
+            assert.deepEqual(await creator.tokenOfOwnerByIndexExtension(extension1.address, anyone, 1), newTokenId4);
+            assert.deepEqual(await creator.tokenOfOwnerByIndexExtension(extension1.address, another, 0), newTokenId2);
 
             // Burning
             await creator.burn(newTokenId1, {from:anyone});
@@ -307,12 +307,12 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             assert.equal(await creator.balanceOfExtension(extension2.address, anyone), 1);
             assert.equal(await creator.balanceOfExtension(extension1.address, another), 1);
             // Index shift after burn
-            assert.equal(await creator.tokenByIndexExtension(extension1.address, 0) - newTokenId4, 0);
-            assert.equal(await creator.tokenByIndexExtension(extension1.address, 1) - newTokenId2, 0);
-            assert.equal(await creator.tokenOfOwnerByIndexExtension(extension1.address, anyone, 0) - newTokenId4, 0);
+            assert.deepEqual(await creator.tokenByIndexExtension(extension1.address, 0), newTokenId4);
+            assert.deepEqual(await creator.tokenByIndexExtension(extension1.address, 1), newTokenId2);
+            assert.deepEqual(await creator.tokenOfOwnerByIndexExtension(extension1.address, anyone, 0), newTokenId4);
             // Check burn callback
             assert.equal(await extension1.burntTokens(), 1);
-            assert.equal((await extension1.burntTokens()).slice(-1)[0] - newTokenId1, 0);
+            assert.deepEqual((await extension1.burntTokens()).slice(-1)[0], newTokenId1);
 
             await creator.burn(newTokenId5, {from:anyone});
             await truffleAssert.reverts(creator.tokenURI(newTokenId1), "Nonexistent token");

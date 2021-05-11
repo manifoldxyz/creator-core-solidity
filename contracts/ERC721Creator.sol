@@ -65,8 +65,8 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
     /**
      * @dev See {IERC721Creator-getExtensions}.
      */
-    function getExtensions() external view override returns (address[] memory) {
-        address[] memory extensions = new address[](_extensions.length());
+    function getExtensions() external view override returns (address[] memory extensions) {
+        extensions = new address[](_extensions.length());
         for (uint i = 0; i < _extensions.length(); i++) {
             extensions[i] = _extensions.at(i);
         }
@@ -201,9 +201,9 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
         return _mintBase(to, uri);
     }
 
-    function _mintBase(address to, string memory uri) internal virtual returns(uint256) {
+    function _mintBase(address to, string memory uri) internal virtual returns(uint256 tokenId) {
         _tokenCount++;
-        uint256 tokenId = _tokenCount;
+        tokenId = _tokenCount;
 
         // Track the extension that minted the token
         _tokenExtension[tokenId] = address(this);
@@ -231,9 +231,9 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
         return _mintExtension(to, uri);
     }
 
-    function _mintExtension(address to, string memory uri) internal virtual returns(uint256) {
+    function _mintExtension(address to, string memory uri) internal virtual returns(uint256 tokenId) {
         _tokenCount++;
-        uint256 tokenId = _tokenCount;
+        tokenId = _tokenCount;
         address permissions = _extensionPermissions[msg.sender];
 
         if (permissions != address(0x0)) {
@@ -284,10 +284,10 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
     /**
      * @dev See {IERC721Creator-tokenExtension}.
      */
-    function tokenExtension(uint256 tokenId) public view virtual override returns (address) {
+    function tokenExtension(uint256 tokenId) public view virtual override returns (address extension) {
         require(_exists(tokenId), "Nonexistent token");
 
-        address extension = _tokenExtension[tokenId];
+        extension = _tokenExtension[tokenId];
 
         require(extension != address(this), "ERC721Creator: No extension for token");
         require(!_blacklistedExtensions.contains(extension), "ERC721Creator: Extension blacklisted");

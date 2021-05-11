@@ -116,8 +116,8 @@ contract ERC721CreatorEnumerable is ERC721Creator, ERC721Enumerable, IERC721Crea
         return _mintBase(to, uri);
     }
 
-    function _mintBase(address to, string memory uri) internal override(ERC721Creator) virtual returns(uint256) {
-        uint256 tokenId = ERC721Creator._mintBase(to, uri);
+    function _mintBase(address to, string memory uri) internal override(ERC721Creator) virtual returns(uint256 tokenId) {
+        tokenId = ERC721Creator._mintBase(to, uri);
 
         // Add to extension token tracking
         uint256 length = totalSupplyBase();
@@ -148,8 +148,8 @@ contract ERC721CreatorEnumerable is ERC721Creator, ERC721Enumerable, IERC721Crea
         return _mintExtension(to, uri);
     }
 
-    function _mintExtension(address to, string memory uri) internal override(ERC721Creator) virtual returns(uint256) {
-        uint256 tokenId = ERC721Creator._mintExtension(to, uri);
+    function _mintExtension(address to, string memory uri) internal override(ERC721Creator) virtual returns(uint256 tokenId) {
+        tokenId = ERC721Creator._mintExtension(to, uri);
 
         // Add to extension token tracking
         uint256 length = totalSupplyExtension(msg.sender);

@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 /// @author: manifold.xyz
 
-import "openzeppelin-solidity/contracts/token/ERC1155/ERC1155.sol";
+import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 
 contract MockERC1155 is ERC1155 {
 

@@ -7,7 +7,7 @@
     "test": "test"
   },
   "dependencies": {
-    "openzeppelin-solidity": "^4.0.0",
+    "@openzeppelin/contracts": "^4.0.0",
     "manifoldxyz-libraries-solidity": "git+ssh://git@github.com/manifoldxyz/libraries-solidity.git"
   },
   "devDependencies": {

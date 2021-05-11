@@ -4,9 +4,9 @@ pragma solidity ^0.8.0;
 
 /// @author: manifold.xyz
 
-import "openzeppelin-solidity/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import "openzeppelin-solidity/contracts/utils/Strings.sol";
-import "openzeppelin-solidity/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "./ERC721Creator.sol";
 import "./IERC721CreatorEnumerable.sol";
 

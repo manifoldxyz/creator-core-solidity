@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 /// @author: manifold.xyz
 
-import "openzeppelin-solidity/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "manifoldxyz-libraries-solidity/contracts/access/IAdminControl.sol";
 
 interface IERC721Creator is IAdminControl, IERC721 {

@@ -12,6 +12,7 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "manifoldxyz-libraries-solidity/contracts/access/AdminControl.sol";
 import "./extensions/IERC721CreatorExtensionBase.sol";
 import "./extensions/IERC721CreatorExtensionBurnable.sol";
+import "./extensions/IERC721CreatorExtensionTokenURI.sol";
 import "./permissions/IERC721CreatorMintPermissions.sol";
 import "./IERC721Creator.sol";
 
@@ -309,6 +310,11 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
         if (bytes(_tokenURIs[tokenId]).length != 0) {
             return _tokenURIs[tokenId];
         }
+
+        if (ERC165Checker.supportsInterface(extension, type(IERC721CreatorExtensionTokenURI).interfaceId)) {
+            return IERC721CreatorExtensionTokenURI(extension).tokenURI(address(this), tokenId);
+        }
+
         if (!_extensionBaseURIIdentical[extension]) {
             return string(abi.encodePacked(_extensionBaseURI[extension], tokenId.toString()));
         } else {

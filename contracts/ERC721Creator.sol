@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "manifoldxyz-libraries-solidity/contracts/access/AdminControl.sol";
+import "./extensions/IERC721CreatorExtensionBase.sol";
 import "./extensions/IERC721CreatorExtensionBurnable.sol";
 import "./permissions/IERC721CreatorMintPermissions.sol";
 import "./IERC721Creator.sol";
@@ -89,6 +90,7 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
 
 
     function _registerExtension(address extension, string calldata baseURI, bool baseURIIdentical) internal {
+        require(ERC165Checker.supportsInterface(extension, type(IERC721CreatorExtensionBase).interfaceId), "ERC721Creator: Extension must implement IERC721CreatorExtensionBase");
         if (!_extensions.contains(extension)) {
             _extensionBaseURI[extension] = baseURI;
             _extensionBaseURIIdentical[extension] = baseURIIdentical;
@@ -179,12 +181,12 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
      * @dev See {IERC721Creator-setMintPermissions}.
      */
     function setMintPermissions(address extension, address permissions) external override adminRequired {
-         require(_extensions.contains(extension), "ERC721Creator: Invalid extension");
-         require(permissions == address(0x0) || ERC165Checker.supportsInterface(permissions, type(IERC721CreatorMintPermissions).interfaceId), "ERC721Creator: Invalid address");
-         if (_extensionPermissions[extension] != permissions) {
-             _extensionPermissions[extension] = permissions;
-             emit MintPermissionsUpdated(extension, permissions, msg.sender);
-         }
+        require(_extensions.contains(extension), "ERC721Creator: Invalid extension");
+        require(permissions == address(0x0) || ERC165Checker.supportsInterface(permissions, type(IERC721CreatorMintPermissions).interfaceId), "ERC721Creator: Invalid address");
+        if (_extensionPermissions[extension] != permissions) {
+            _extensionPermissions[extension] = permissions;
+            emit MintPermissionsUpdated(extension, permissions, msg.sender);
+        }
     }
 
     /**

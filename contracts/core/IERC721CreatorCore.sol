@@ -4,9 +4,10 @@ pragma solidity ^0.8.0;
 
 /// @author: manifold.xyz
 
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-
-interface IERC721CreatorCore is IERC721 {
+/**
+ * Core creator contract interface
+ */
+interface IERC721CreatorCore {
 
     event ExtensionRegistered(address indexed extension, address indexed sender);
     event ExtensionUnregistered(address indexed extension, address indexed sender);

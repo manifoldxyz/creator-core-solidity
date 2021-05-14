@@ -7,7 +7,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "manifoldxyz-libraries-solidity/contracts/access/AdminControl.sol";
-import "../IERC721CreatorCore.sol";
+import "../core/IERC721CreatorCore.sol";
 import "./IERC721CreatorMintPermissions.sol";
 
 abstract contract ERC721CreatorMintPermissions is ERC165, AdminControl, IERC721CreatorMintPermissions {
@@ -29,7 +29,7 @@ abstract contract ERC721CreatorMintPermissions is ERC165, AdminControl, IERC721C
     /**
      * @dev See {IERC721CreatorMintPermissions-approveMint}.
      */
-    function approveMint(address, uint256, address) public virtual override {
+    function approveMint(address, address, uint256) public virtual override {
         require(msg.sender == _creator, "ERC721CreatorMintPermissions: Can only be called by token creator");
     }
      

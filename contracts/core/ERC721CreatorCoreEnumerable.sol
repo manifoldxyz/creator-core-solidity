@@ -4,13 +4,12 @@ pragma solidity ^0.8.0;
 
 /// @author: manifold.xyz
 
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "./ERC721CreatorCore.sol";
 import "./IERC721CreatorCoreEnumerable.sol";
 
-abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, ERC721Enumerable, IERC721CreatorCoreEnumerable {
+abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721CreatorCoreEnumerable {
     using Strings for uint256;
     using EnumerableSet for EnumerableSet.AddressSet;
 
@@ -25,25 +24,10 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, ERC721Enumer
     mapping (uint256 => uint256) private _extensionTokensIndexByOwner;
 
     /**
-     * @dev See {IERC165-supportsInterface}.
-     */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC721CreatorCore, ERC721Enumerable) returns (bool) {
-        return interfaceId == type(IERC721CreatorCoreEnumerable).interfaceId
-            || super.supportsInterface(interfaceId);
-    }
-
-    /**
      * @dev See {IERC721CreatorCoreEnumerable-totalSupplyExtension}.
      */
     function totalSupplyExtension(address extension) public view virtual override nonBlacklistRequired(extension) returns (uint256) {
         return _extensionBalances[extension];
-    }
-
-    /**
-     * @dev See {ERC721Enumerable-_beforeTokenTransfer}.
-     */
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual override(ERC721, ERC721Enumerable) {
-        ERC721Enumerable._beforeTokenTransfer(from, to, tokenId);
     }
 
     /**
@@ -100,9 +84,7 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, ERC721Enumer
     }
 
 
-    function _mintBase(address to, string memory uri) internal override(ERC721CreatorCore) virtual returns(uint256 tokenId) {
-        tokenId = ERC721CreatorCore._mintBase(to, uri);
-
+    function _postMintBase(address to, uint256 tokenId) internal virtual override {
         // Add to extension token tracking
         uint256 length = totalSupplyBase();
         _extensionTokens[address(this)][length] = tokenId;
@@ -113,14 +95,10 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, ERC721Enumer
         uint256 lengthByOwner = balanceOfBase(to);
         _extensionTokensByOwner[address(this)][to][lengthByOwner] = tokenId;
         _extensionTokensIndexByOwner[tokenId] = lengthByOwner;
-        _extensionBalancesByOwner[address(this)][to] += 1;        
-
-        return tokenId;
+        _extensionBalancesByOwner[address(this)][to] += 1;
     }
 
-    function _mintExtension(address to, string memory uri) internal override(ERC721CreatorCore) virtual returns(uint256 tokenId) {
-        tokenId = ERC721CreatorCore._mintExtension(to, uri);
-
+    function _postMintExtension(address to, uint256 tokenId) internal virtual override {
         // Add to extension token tracking
         uint256 length = totalSupplyExtension(msg.sender);
         _extensionTokens[msg.sender][length] = tokenId;
@@ -132,13 +110,10 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, ERC721Enumer
         _extensionTokensByOwner[msg.sender][to][lengthByOwner] = tokenId;
         _extensionTokensIndexByOwner[tokenId] = lengthByOwner;
         _extensionBalancesByOwner[msg.sender][to] += 1;        
-
-        return tokenId;
     }
     
-    function _burn(uint256 tokenId) internal override(ERC721CreatorCore, ERC721) virtual {
-        address tokenExtension_ = _tokenExtension[tokenId];
-        address owner = ownerOf(tokenId);
+    function _preBurn(address owner, uint256 tokenId) internal override(ERC721CreatorCore) virtual {
+        address tokenExtension_ = _tokensExtension[tokenId];
 
         /*************************************************
          *  START: Remove from extension token tracking
@@ -189,14 +164,7 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, ERC721Enumer
          *  END
          ********************************************************/
          
-         ERC721CreatorCore._burn(tokenId);
-    }
-
-    /**
-     * @dev See {IERC721Metadata-tokenURI}.
-     */
-    function tokenURI(uint256 tokenId) public view virtual override(ERC721CreatorCore, ERC721) returns (string memory) {
-        return ERC721CreatorCore.tokenURI(tokenId);
+         ERC721CreatorCore._preBurn(owner, tokenId);
     }
 
 }

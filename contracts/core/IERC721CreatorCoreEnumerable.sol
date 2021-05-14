@@ -4,11 +4,9 @@ pragma solidity ^0.8.0;
 
 /// @author: manifold.xyz
 
-import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
-
 import "./IERC721CreatorCore.sol";
 
-interface IERC721CreatorCoreEnumerable is IERC721CreatorCore, IERC721Enumerable {
+interface IERC721CreatorCoreEnumerable is IERC721CreatorCore {
 
     /*
      * @dev gets the total number of tokens created by the extension (unburned)

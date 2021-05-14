@@ -241,7 +241,7 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
 
             await truffleAssert.reverts(MockERC721CreatorMintPermissions.new(anyone), "ERC721CreatorMintPermissions: Must implement IERC721Creator");
             const permissions = await MockERC721CreatorMintPermissions.new(creator.address);
-            await truffleAssert.reverts(permissions.approveMint(anyone, 1, anyone), "ERC721CreatorMintPermissions: Can only be called by token creator");
+            await truffleAssert.reverts(permissions.approveMint(anyone, anyone, 1), "ERC721CreatorMintPermissions: Can only be called by token creator");
             
             await truffleAssert.reverts(creator.setMintPermissions(extension1.address, anyone, {from:owner}), "ERC721Creator: Invalid address");
             await creator.setMintPermissions(extension1.address, permissions.address, {from:owner});
@@ -424,7 +424,7 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
 
             await truffleAssert.reverts(MockERC721CreatorMintPermissions.new(anyone), "ERC721CreatorMintPermissions: Must implement IERC721Creator");
             const permissions = await MockERC721CreatorMintPermissions.new(creator.address);
-            await truffleAssert.reverts(permissions.approveMint(anyone, 1, anyone), "ERC721CreatorMintPermissions: Can only be called by token creator");
+            await truffleAssert.reverts(permissions.approveMint(anyone, anyone, 1), "ERC721CreatorMintPermissions: Can only be called by token creator");
             
             await truffleAssert.reverts(creator.setMintPermissions(extension1.address, anyone, {from:owner}), "ERC721Creator: Invalid address");
             await creator.setMintPermissions(extension1.address, permissions.address, {from:owner});

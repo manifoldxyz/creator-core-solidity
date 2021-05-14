@@ -15,8 +15,8 @@ contract MockERC721CreatorMintPermissions is ERC721CreatorMintPermissions {
         _approveEnabled = enabled;
     }
 
-    function approveMint(address extension, uint256 tokenId, address to) public override {
-        ERC721CreatorMintPermissions.approveMint(extension, tokenId, to);
+    function approveMint(address extension, address to, uint256 tokenId) public override {
+        ERC721CreatorMintPermissions.approveMint(extension, to, tokenId);
         require(_approveEnabled, "MockERC721CreatorMintPermissions: Disabled");
     }
 }

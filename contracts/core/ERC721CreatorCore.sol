@@ -5,17 +5,18 @@ pragma solidity ^0.8.0;
 /// @author: manifold.xyz
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import "./extensions/IERC721CreatorExtensionBase.sol";
-import "./extensions/IERC721CreatorExtensionBurnable.sol";
-import "./extensions/IERC721CreatorExtensionTokenURI.sol";
-import "./permissions/IERC721CreatorMintPermissions.sol";
+
+import "../extensions/IERC721CreatorExtensionBase.sol";
+import "../extensions/IERC721CreatorExtensionBurnable.sol";
+import "../extensions/IERC721CreatorExtensionTokenURI.sol";
+import "../permissions/IERC721CreatorMintPermissions.sol";
+
 import "./IERC721CreatorCore.sol";
 
-abstract contract ERC721CreatorCore is ReentrancyGuard, ERC721, IERC721CreatorCore {
+abstract contract ERC721CreatorCore is ReentrancyGuard, IERC721CreatorCore {
     using Strings for uint256;
     using EnumerableSet for EnumerableSet.AddressSet;
 
@@ -27,7 +28,7 @@ abstract contract ERC721CreatorCore is ReentrancyGuard, ERC721, IERC721CreatorCo
     mapping (address => address) private _extensionPermissions;
     
     // For tracking which extension a token was minted by
-    mapping (uint256 => address) internal _tokenExtension;
+    mapping (uint256 => address) internal _tokensExtension;
 
     // The baseURI for a given extension
     mapping (address => string) private _extensionBaseURI;
@@ -37,7 +38,7 @@ abstract contract ERC721CreatorCore is ReentrancyGuard, ERC721, IERC721CreatorCo
     mapping (address => string) private _extensionURIPrefix;
 
     // Mapping for token URIs
-    mapping (uint256 => string) private _tokenURIs;
+    mapping (uint256 => string) internal _tokenURIs;
 
     /**
      * @dev Only allows registered extensions to call the specified function
@@ -54,14 +55,6 @@ abstract contract ERC721CreatorCore is ReentrancyGuard, ERC721, IERC721CreatorCo
         require(!_blacklistedExtensions.contains(extension), "ERC721Creator: Extension blacklisted");
         _;
     }   
-
-    /**
-     * @dev See {IERC165-supportsInterface}.
-     */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC721) returns (bool) {
-        return interfaceId == type(IERC721CreatorCore).interfaceId
-            || super.supportsInterface(interfaceId);
-    }
 
     /**
      * @dev See {IERC721Creator-getExtensions}.
@@ -131,7 +124,7 @@ abstract contract ERC721CreatorCore is ReentrancyGuard, ERC721, IERC721CreatorCo
      * @dev Set token uri for a token of an extension
      */
     function _setTokenURIExtension(uint256 tokenId, string calldata uri) internal {
-        require(_tokenExtension[tokenId] == msg.sender, "ERC721Creator: Invalid token");
+        require(_tokensExtension[tokenId] == msg.sender, "ERC721Creator: Invalid token");
         _tokenURIs[tokenId] = uri;
     }
 
@@ -154,7 +147,7 @@ abstract contract ERC721CreatorCore is ReentrancyGuard, ERC721, IERC721CreatorCo
      * @dev Set token uri for a token with no extension
      */
     function _setTokenURI(uint256 tokenId, string calldata uri) internal {
-        require(_tokenExtension[tokenId] == address(this), "ERC721Creator: Invalid token");
+        require(_tokensExtension[tokenId] == address(this), "ERC721Creator: Invalid token");
         _tokenURIs[tokenId] = uri;
     }
 
@@ -171,98 +164,10 @@ abstract contract ERC721CreatorCore is ReentrancyGuard, ERC721, IERC721CreatorCo
     }
 
     /**
-     * @dev Mint token with no extension
+     * @dev Retrieve a token's URI
      */
-    function _mintBase(address to, string memory uri) internal virtual returns(uint256 tokenId) {
-        _tokenCount++;
-        tokenId = _tokenCount;
-
-        // Track the extension that minted the token
-        _tokenExtension[tokenId] = address(this);
-
-        _safeMint(to, tokenId);
-
-        if (bytes(uri).length > 0) {
-            _tokenURIs[tokenId] = uri;
-        }
-
-        return tokenId;
-    }
-
-
-    /**
-     * @dev Mint token via extension
-     */
-    function _mintExtension(address to, string memory uri) internal virtual returns(uint256 tokenId) {
-        _tokenCount++;
-        tokenId = _tokenCount;
-
-        if (_extensionPermissions[msg.sender] != address(0x0)) {
-            IERC721CreatorMintPermissions(_extensionPermissions[msg.sender]).approveMint(msg.sender, tokenId, to);
-        }
-
-        // Track the extension that minted the token
-        _tokenExtension[tokenId] = msg.sender;
-
-        _safeMint(to, tokenId);
-
-        if (bytes(uri).length > 0) {
-            _tokenURIs[tokenId] = uri;
-        }
-
-        return tokenId;
-    }
-    
-    /**
-     * @dev See {IERC721Creator-burn}.
-     */
-    function burn(uint256 tokenId) public override nonReentrant virtual {
-        _burn(tokenId);
-    }
-
-    function _burn(uint256 tokenId) internal override(ERC721) virtual {
-        address extension = _tokenExtension[tokenId];
-        address owner = ownerOf(tokenId);
-         
-        // Delete token origin extension tracking
-        delete _tokenExtension[tokenId];
-
-        ERC721._burn(tokenId);
-
-        // Clear metadata (if any)
-         if (bytes(_tokenURIs[tokenId]).length != 0) {
-            delete _tokenURIs[tokenId];
-        }
-        
-        // Callback to originating extension if needed
-        if (extension != address(this)) {
-           if (ERC165Checker.supportsInterface(extension, type(IERC721CreatorExtensionBurnable).interfaceId)) {
-               IERC721CreatorExtensionBurnable(extension).onBurn(owner, tokenId);
-           }
-        }
-    }
-    
-    /**
-     * @dev See {IERC721Creator-tokenExtension}.
-     */
-    function tokenExtension(uint256 tokenId) public view virtual override returns (address extension) {
-        require(_exists(tokenId), "Nonexistent token");
-
-        extension = _tokenExtension[tokenId];
-
-        require(extension != address(this), "ERC721Creator: No extension for token");
-        require(!_blacklistedExtensions.contains(extension), "ERC721Creator: Extension blacklisted");
-
-        return extension;
-    }
-
-    /**
-     * @dev See {IERC721Metadata-tokenURI}.
-     */
-    function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
-        require(_exists(tokenId), "Nonexistent token");
-
-        address extension = _tokenExtension[tokenId];
+    function _tokenURI(uint256 tokenId) internal view returns (string memory) {
+        address extension = _tokensExtension[tokenId];
         require(!_blacklistedExtensions.contains(extension), "ERC721Creator: Extension blacklisted");
 
         if (bytes(_tokenURIs[tokenId]).length != 0) {
@@ -282,5 +187,57 @@ abstract contract ERC721CreatorCore is ReentrancyGuard, ERC721, IERC721CreatorCo
             return _extensionBaseURI[extension];
         }
     }
+
+    /**
+     * Check if an extension can mint
+     */
+    function _checkMintPermissions(address extension, address to, uint256 tokenId) internal {
+        if (_extensionPermissions[extension] != address(0x0)) {
+            IERC721CreatorMintPermissions(_extensionPermissions[extension]).approveMint(msg.sender, to, tokenId);
+        }
+    }
+
+    /**
+     * Get token extension
+     */
+    function _tokenExtension(uint256 tokenId) internal view returns (address extension) {
+        extension = _tokensExtension[tokenId];
+
+        require(extension != address(this), "ERC721Creator: No extension for token");
+        require(!_blacklistedExtensions.contains(extension), "ERC721Creator: Extension blacklisted");
+
+        return extension;
+    }
+
+    /**
+     * Override for post mint actions
+     */
+    function _postMintBase(address, uint256) internal virtual {}
+
     
+    /**
+     * Override for post mint actions
+     */
+    function _postMintExtension(address, uint256) internal virtual {}
+
+    
+    /**
+     * Pre-burning metadata cleanup
+     */
+    function _preBurn(address owner, uint256 tokenId) internal virtual {
+        // Clear metadata (if any)
+        if (bytes(_tokenURIs[tokenId]).length != 0) {
+            delete _tokenURIs[tokenId];
+        }
+
+        // Callback to originating extension if needed
+        if (_tokensExtension[tokenId] != address(this)) {
+           if (ERC165Checker.supportsInterface(_tokensExtension[tokenId], type(IERC721CreatorExtensionBurnable).interfaceId)) {
+               IERC721CreatorExtensionBurnable(_tokensExtension[tokenId]).onBurn(owner, tokenId);
+           }
+        }
+
+        // Delete token origin extension tracking
+        delete _tokensExtension[tokenId];
+    }
 }

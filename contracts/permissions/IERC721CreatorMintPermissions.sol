@@ -15,5 +15,5 @@ interface IERC721CreatorMintPermissions is IERC165, IAdminControl {
     /**
      * @dev get approval to mint
      */
-    function approveMint(address extension, uint256 tokenId, address to) external;
+    function approveMint(address extension, address to, uint256 tokenId) external;
 }

@@ -6,7 +6,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 
-import "../IERC721CreatorCore.sol";
+import "../core/IERC721CreatorCore.sol";
 import "./IERC721CreatorExtensionBurnable.sol";
 import "./ERC721CreatorExtensionBase.sol";
 

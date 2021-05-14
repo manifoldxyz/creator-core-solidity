@@ -4,10 +4,12 @@ pragma solidity ^0.8.0;
 
 /// @author: manifold.xyz
 
-import "./ERC721Creator.sol";
-import "./ERC721CreatorCoreEnumerable.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 
-contract ERC721CreatorEnumerable is ERC721Creator, ERC721CreatorCoreEnumerable {
+import "./ERC721Creator.sol";
+import "./core/ERC721CreatorCoreEnumerable.sol";
+
+contract ERC721CreatorEnumerable is ERC721Creator, ERC721CreatorCoreEnumerable, ERC721Enumerable {
 
     constructor (string memory _name, string memory _symbol) ERC721Creator(_name, _symbol) {
     }
@@ -15,29 +17,28 @@ contract ERC721CreatorEnumerable is ERC721Creator, ERC721CreatorCoreEnumerable {
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721Creator, ERC721CreatorCoreEnumerable) returns (bool) {
-        return ERC721Creator.supportsInterface(interfaceId) || ERC721CreatorCoreEnumerable.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721Creator, ERC721Enumerable) returns (bool) {
+        return interfaceId == type(IERC721CreatorCoreEnumerable).interfaceId || ERC721Creator.supportsInterface(interfaceId) || ERC721Enumerable.supportsInterface(interfaceId);
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual override(ERC721, ERC721CreatorCoreEnumerable) {
-        ERC721CreatorCoreEnumerable._beforeTokenTransfer(from, to, tokenId);
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual override(ERC721, ERC721Enumerable) {
+        ERC721Enumerable._beforeTokenTransfer(from, to, tokenId);
     }
 
-
-    function _mintBase(address to, string memory uri) internal override(ERC721CreatorCore, ERC721CreatorCoreEnumerable) virtual returns(uint256 tokenId) {
-        return ERC721CreatorCoreEnumerable._mintBase(to, uri);
+    function _postMintBase(address to, uint256 tokenId) internal override(ERC721CreatorCore, ERC721CreatorCoreEnumerable) virtual {
+        ERC721CreatorCoreEnumerable._postMintBase(to, tokenId);
     }
 
-    function _mintExtension(address to, string memory uri) internal override(ERC721CreatorCore, ERC721CreatorCoreEnumerable) virtual returns(uint256 tokenId) {
-        return ERC721CreatorCoreEnumerable._mintExtension(to, uri);
+    function _postMintExtension(address to, uint256 tokenId) internal override(ERC721CreatorCore, ERC721CreatorCoreEnumerable) virtual {
+        ERC721CreatorCoreEnumerable._postMintExtension(to, tokenId);
     }
 
-    function _burn(uint256 tokenId) internal override(ERC721CreatorCore, ERC721CreatorCoreEnumerable) virtual {
-        ERC721CreatorCoreEnumerable._burn(tokenId);
+    function _preBurn(address owner, uint256 tokenId) internal override(ERC721CreatorCore, ERC721CreatorCoreEnumerable) virtual {
+        ERC721CreatorCoreEnumerable._preBurn(owner, tokenId);
     }
 
-    function tokenURI(uint256 tokenId) public view virtual override(ERC721CreatorCore, ERC721CreatorCoreEnumerable) returns (string memory) {
-        return ERC721CreatorCore.tokenURI(tokenId);
+    function tokenURI(uint256 tokenId) public view virtual override(ERC721Creator, ERC721) returns (string memory) {
+        return ERC721Creator.tokenURI(tokenId);
     }
 
 }

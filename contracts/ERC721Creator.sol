@@ -158,14 +158,22 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
      * @dev See {IERC721Creator-setTokenURIExtension}.
      */
     function setTokenURIExtension(uint256 tokenId, string calldata uri) external override extensionRequired {
-        if (_tokenExtension[tokenId] == msg.sender) {
-            _tokenURIs[tokenId] = uri;
-        } else if (_tokenExtension[tokenId] != address(0)) {
-            revert("ERC721Creator: Only creator extension can set token URI");
-        } else {
-        require(_tokenExtension[tokenId] == msg.sender, "ERC721Creator: Invalid token");
-            revert("ERC721Creator: Invalid token");
+        _setTokenURIExtension(tokenId, uri);
+    }
+
+    /**
+     * @dev See {IERC721Creator-setTokenURIExtension}.
+     */
+    function setTokenURIExtension(uint256[] memory tokenIds, string[] calldata uris) external override extensionRequired {
+        require(tokenIds.length == uris.length, "ERC721Creator: Invalid input");
+        for (uint i = 0; i < tokenIds.length; i++) {
+            _setTokenURIExtension(tokenIds[i], uris[i]);            
         }
+    }
+
+    function _setTokenURIExtension(uint256 tokenId, string calldata uri) internal {
+        require(_tokenExtension[tokenId] == msg.sender, "ERC721Creator: Invalid token");
+        _tokenURIs[tokenId] = uri;
     }
 
     /**
@@ -183,16 +191,25 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
     }
 
     /**
-     * @dev See {IERC721Creator-setTokenURIBase}.
+     * @dev See {IERC721Creator-setTokenURI}.
      */
     function setTokenURI(uint256 tokenId, string calldata uri) external override adminRequired {
-        if (_tokenExtension[tokenId] == address(this)) {
-            _tokenURIs[tokenId] = uri;
-        } else if (_tokenExtension[tokenId] != address(0)) {
-            revert("ERC721Creator: Only creator extension can set token URI");
-        } else {
-            revert("ERC721Creator: Invalid token");
+        _setTokenURI(tokenId, uri);
+    }
+
+    /**
+     * @dev See {IERC721Creator-setTokenURI}.
+     */
+    function setTokenURI(uint256[] memory tokenIds, string[] calldata uris) external override adminRequired {
+        require(tokenIds.length == uris.length, "ERC721Creator: Invalid input");
+        for (uint i = 0; i < tokenIds.length; i++) {
+            _setTokenURI(tokenIds[i], uris[i]);            
         }
+    }
+
+    function _setTokenURI(uint256 tokenId, string calldata uri) internal {
+        require(_tokenExtension[tokenId] == address(this), "ERC721Creator: Invalid token");
+        _tokenURIs[tokenId] = uri;
     }
 
     /**

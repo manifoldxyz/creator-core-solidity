@@ -71,6 +71,11 @@ interface IERC721Creator is IAdminControl, IERC721 {
     function setTokenURIExtension(uint256 tokenId, string calldata uri) external;
 
     /**
+     * @dev set the tokenURI of a token extension for multiple tokens.  Can only be called by extension that minted token.
+     */
+    function setTokenURIExtension(uint256[] memory tokenId, string[] calldata uri) external;
+
+    /**
      * @dev set the baseTokenURI for tokens with no extension.  Can only be called by owner/admin.
      * For tokens with no uri configured, tokenURI will return "uri+tokenId"
      */
@@ -87,6 +92,11 @@ interface IERC721Creator is IAdminControl, IERC721 {
      * @dev set the tokenURI of a token with no extension.  Can only be called by owner/admin.
      */
     function setTokenURI(uint256 tokenId, string calldata uri) external;
+
+    /**
+     * @dev set the tokenURI of multiple tokens with no extension.  Can only be called by owner/admin.
+     */
+    function setTokenURI(uint256[] memory tokenIds, string[] calldata uris) external;
 
     /**
      * @dev set a permissions contract for an extension.  Used to control minting.

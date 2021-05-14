@@ -39,10 +39,12 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             await truffleAssert.reverts(creator.setBaseTokenURIExtension('http://extension', {from:anyone}), "ERC721Creator: Must be registered extension");
             await truffleAssert.reverts(creator.setBaseTokenURIExtension('http://extension', true), "ERC721Creator: Must be registered extension");
             await truffleAssert.reverts(creator.setTokenURIPrefixExtension('http://extension', {from:anyone}), "ERC721Creator: Must be registered extension");
-            await truffleAssert.reverts(creator.setTokenURIExtension(1, 'http://extension', {from:anyone}), "ERC721Creator: Must be registered extension");
+            await truffleAssert.reverts(creator.methods['setTokenURIExtension(uint256,string)'](1, 'http://extension', {from:anyone}), "ERC721Creator: Must be registered extension");
+            await truffleAssert.reverts(creator.methods['setTokenURIExtension(uint256[],string[])']([1], ['http://extension'], {from:anyone}), "ERC721Creator: Must be registered extension");
             await truffleAssert.reverts(creator.setBaseTokenURI('http://base', {from:anyone}),"AdminControl: Must be owner or admin");
             await truffleAssert.reverts(creator.setTokenURIPrefix('http://base', {from:anyone}),"AdminControl: Must be owner or admin");
-            await truffleAssert.reverts(creator.setTokenURI(1, 'http://base', {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(creator.methods['setTokenURI(uint256,string)'](1, 'http://base', {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(creator.methods['setTokenURI(uint256[],string[])']([1], ['http://base'], {from:anyone}), "AdminControl: Must be owner or admin");
             await truffleAssert.reverts(creator.setMintPermissions(anyone, anyone, {from:anyone}), "AdminControl: Must be owner or admin");
             await truffleAssert.reverts(creator.methods['mintBase(address)'](anyone, {from:anyone}), "AdminControl: Must be owner or admin");
             await truffleAssert.reverts(creator.methods['mintBase(address,string)'](anyone, "", {from:anyone}), "AdminControl: Must be owner or admin");
@@ -110,34 +112,63 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             await extension2.testMint(anyone);
             let newTokenId3 = 3;
 
-            await extension1.testMint(anyone, "extension4");
+            await extension1.testMint(anyone);
             let newTokenId4 = 4;
 
-            await creator.methods['mintBase(address)'](anyone, {from:owner});
+            await extension1.testMint(anyone, "extension5");
             let newTokenId5 = 5;
-            await truffleAssert.reverts(creator.tokenExtension(newTokenId5), "ERC721Creator: No extension");
 
-            await creator.methods['mintBase(address,string)'](anyone, "base6", {from:owner});
+            await creator.methods['mintBase(address)'](anyone, {from:owner});
             let newTokenId6 = 6;
             await truffleAssert.reverts(creator.tokenExtension(newTokenId6), "ERC721Creator: No extension");
+
+            await creator.methods['mintBase(address,string)'](anyone, "base7", {from:owner});
+            let newTokenId7 = 7;
+            await truffleAssert.reverts(creator.tokenExtension(newTokenId7), "ERC721Creator: No extension");
+
+            await creator.methods['mintBase(address)'](anyone, {from:owner});
+            let newTokenId8 = 8;
+            await truffleAssert.reverts(creator.tokenExtension(newTokenId8), "ERC721Creator: No extension");
+
+            await creator.methods['mintBase(address)'](anyone, {from:owner});
+            let newTokenId9 = 9;
+            await truffleAssert.reverts(creator.tokenExtension(newTokenId9), "ERC721Creator: No extension");
 
             // Check URI's
             assert.equal(await creator.tokenURI(newTokenId1), 'http://extension1/'+newTokenId1);
             assert.equal(await creator.tokenURI(newTokenId2), 'http://extension1/'+newTokenId2);
             assert.equal(await creator.tokenURI(newTokenId3), 'http://extension2/'+newTokenId3);
-            assert.equal(await creator.tokenURI(newTokenId4), 'extension4');
-            assert.equal(await creator.tokenURI(newTokenId5), 'http://base/'+newTokenId5);
-            assert.equal(await creator.tokenURI(newTokenId6), 'base6');
+            assert.equal(await creator.tokenURI(newTokenId4), 'http://extension1/'+newTokenId4);
+            assert.equal(await creator.tokenURI(newTokenId5), 'extension5');
+            assert.equal(await creator.tokenURI(newTokenId6), 'http://base/'+newTokenId6);
+            assert.equal(await creator.tokenURI(newTokenId7), 'base7');
+            assert.equal(await creator.tokenURI(newTokenId8), 'http://base/'+newTokenId8);
+            assert.equal(await creator.tokenURI(newTokenId9), 'http://base/'+newTokenId9);
 
-            // Set token prefix
+            // Set specific token uris and token prefixes
+            await truffleAssert.reverts(extension1.methods['setTokenURI(address,uint256,string)'](creator.address, newTokenId1, 'bad', {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(extension1.methods['setTokenURI(address,uint256[],string[])'](creator.address, [newTokenId1], ['bad'], {from:anyone}), "AdminControl: Must be owner or admin");
+            await extension1.methods['setTokenURI(address,uint256,string)'](creator.address, newTokenId1, 'set1');
+            await extension1.methods['setTokenURI(address,uint256[],string[])'](creator.address, [newTokenId2], ['set2']);
+            await extension2.methods['setTokenURI(address,uint256,string)'](creator.address, newTokenId3, 'ext2/3');
+            await truffleAssert.reverts(extension1.methods['setTokenURI(address,uint256,string)'](creator.address, newTokenId6, 'bad'), "ERC721Creator: Invalid token");
+            await truffleAssert.reverts(extension1.methods['setTokenURI(address,uint256[],string[])'](creator.address, [newTokenId6], ['bad']), "ERC721Creator: Invalid token");
+            await truffleAssert.reverts(extension1.methods['setTokenURI(address,uint256[],string[])'](creator.address, [], ['bad']), "ERC721Creator: Invalid input");
+            await creator.methods['setTokenURI(uint256,string)'](newTokenId8, 'b8', {from:owner});
+            await creator.methods['setTokenURI(uint256[],string[])']([newTokenId9], ['b9'], {from:owner});
+            await truffleAssert.reverts(creator.methods['setTokenURI(uint256,string)'](newTokenId1, 'bad', {from:owner}), "ERC721Creator: Invalid token");
+            await truffleAssert.reverts(creator.methods['setTokenURI(uint256[],string[])']([newTokenId1], ['bad'], {from:owner}), "ERC721Creator: Invalid token");
+            await truffleAssert.reverts(creator.methods['setTokenURI(uint256[],string[])']([], ['bad'], {from:owner}), "ERC721Creator: Invalid input");
             await creator.setTokenURIPrefix('http://prefix/', {from:owner});
             await extension1.setTokenURIPrefix('http://extension_prefix/');
-            assert.equal(await creator.tokenURI(newTokenId1), 'http://extension1/'+newTokenId1);
-            assert.equal(await creator.tokenURI(newTokenId2), 'http://extension1/'+newTokenId2);
-            assert.equal(await creator.tokenURI(newTokenId3), 'http://extension2/'+newTokenId3);
-            assert.equal(await creator.tokenURI(newTokenId4), 'http://extension_prefix/extension4');
-            assert.equal(await creator.tokenURI(newTokenId5), 'http://base/'+newTokenId5);
-            assert.equal(await creator.tokenURI(newTokenId6), 'http://prefix/base6');
+
+            assert.equal(await creator.tokenURI(newTokenId1), 'http://extension_prefix/set1');
+            assert.equal(await creator.tokenURI(newTokenId2), 'http://extension_prefix/set2');
+            assert.equal(await creator.tokenURI(newTokenId3), 'ext2/3');
+            assert.equal(await creator.tokenURI(newTokenId4), 'http://extension1/'+newTokenId4);
+            assert.equal(await creator.tokenURI(newTokenId5), 'http://extension_prefix/extension5');
+            assert.equal(await creator.tokenURI(newTokenId6), 'http://base/'+newTokenId6);
+            assert.equal(await creator.tokenURI(newTokenId7), 'http://prefix/base7');
 
             // Removing extension should prevent further access
             await creator.unregisterExtension(extension1.address, {from:owner});
@@ -145,9 +176,10 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             await truffleAssert.reverts(extension1.testMint(anyone), "ERC721Creator: Must be registered extension");
 
             // URI's should still be ok, tokens should still exist
-            assert.equal(await creator.tokenURI(newTokenId1), 'http://extension1/'+newTokenId1);
-            assert.equal(await creator.tokenURI(newTokenId2), 'http://extension1/'+newTokenId2);
-            assert.equal(await creator.tokenURI(newTokenId4), 'http://extension_prefix/extension4');
+            assert.equal(await creator.tokenURI(newTokenId1), 'http://extension_prefix/set1');
+            assert.equal(await creator.tokenURI(newTokenId2), 'http://extension_prefix/set2');
+            assert.equal(await creator.tokenURI(newTokenId4), 'http://extension1/'+newTokenId4);
+            assert.equal(await creator.tokenURI(newTokenId5), 'http://extension_prefix/extension5');
 
             // Burning
             await creator.burn(newTokenId1, {from:anyone});

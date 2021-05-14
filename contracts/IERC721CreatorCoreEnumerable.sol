@@ -6,9 +6,9 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 
-import "./IERC721Creator.sol";
+import "./IERC721CreatorCore.sol";
 
-interface IERC721CreatorEnumerable is IERC721Creator, IERC721Enumerable {
+interface IERC721CreatorCoreEnumerable is IERC721CreatorCore, IERC721Enumerable {
 
     /*
      * @dev gets the total number of tokens created by the extension (unburned)

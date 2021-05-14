@@ -6,7 +6,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 
-import "../IERC721Creator.sol";
+import "../IERC721CreatorCore.sol";
 import "./IERC721CreatorExtensionBurnable.sol";
 import "./ERC721CreatorExtensionBase.sol";
 
@@ -37,22 +37,22 @@ abstract contract ERC721CreatorExtensionBurnable is ERC721CreatorExtensionBase, 
     }
 
     function _mint(address creator, address to) internal returns (uint256) {
-        require(ERC165Checker.supportsInterface(creator, type(IERC721Creator).interfaceId), "ERC721CreatorExtensionBurnable: Requires ERC721Creator");
-        uint256 tokenId = IERC721Creator(creator).mintExtension(to);
+        require(ERC165Checker.supportsInterface(creator, type(IERC721CreatorCore).interfaceId), "ERC721CreatorExtensionBurnable: Requires ERC721CreatorCore");
+        uint256 tokenId = IERC721CreatorCore(creator).mintExtension(to);
         _tokenCreators[tokenId] = creator;
         return tokenId;
     }
 
     function _mint(address creator, address to, string memory uri) internal returns (uint256) {
-        require(ERC165Checker.supportsInterface(creator, type(IERC721Creator).interfaceId), "ERC721CreatorExtensionBurnable: Requires ERC721Creator");
-        uint256 tokenId = IERC721Creator(creator).mintExtension(to, uri);
+        require(ERC165Checker.supportsInterface(creator, type(IERC721CreatorCore).interfaceId), "ERC721CreatorExtensionBurnable: Requires ERC721CreatorCore");
+        uint256 tokenId = IERC721CreatorCore(creator).mintExtension(to, uri);
         _tokenCreators[tokenId] = creator;
         return tokenId;
     }
 
     function _mintBatch(address creator, address to, uint16 count) internal returns (uint256[] memory tokenIds) {
-        require(ERC165Checker.supportsInterface(creator, type(IERC721Creator).interfaceId), "ERC721CreatorExtensionBurnable: Requires ERC721Creator");
-        tokenIds = IERC721Creator(creator).mintExtensionBatch(to, count);
+        require(ERC165Checker.supportsInterface(creator, type(IERC721CreatorCore).interfaceId), "ERC721CreatorExtensionBurnable: Requires ERC721CreatorCore");
+        tokenIds = IERC721CreatorCore(creator).mintExtensionBatch(to, count);
         for (uint16 i = 0; i < tokenIds.length; i++) {
             _tokenCreators[tokenIds[i]] = creator;
         }
@@ -60,8 +60,8 @@ abstract contract ERC721CreatorExtensionBurnable is ERC721CreatorExtensionBase, 
     }
 
     function _mintBatch(address creator, address to, string[] memory uris) internal returns (uint256[] memory tokenIds) {
-        require(ERC165Checker.supportsInterface(creator, type(IERC721Creator).interfaceId), "ERC721CreatorExtensionBurnable: Requires ERC721Creator");
-        tokenIds = IERC721Creator(creator).mintExtensionBatch(to, uris);
+        require(ERC165Checker.supportsInterface(creator, type(IERC721CreatorCore).interfaceId), "ERC721CreatorExtensionBurnable: Requires ERC721CreatorCore");
+        tokenIds = IERC721CreatorCore(creator).mintExtensionBatch(to, uris);
         for (uint16 i = 0; i < tokenIds.length; i++) {
             _tokenCreators[tokenIds[i]] = creator;
         }

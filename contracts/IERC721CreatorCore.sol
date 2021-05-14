@@ -5,9 +5,8 @@ pragma solidity ^0.8.0;
 /// @author: manifold.xyz
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "manifoldxyz-libraries-solidity/contracts/access/IAdminControl.sol";
 
-interface IERC721Creator is IAdminControl, IERC721 {
+interface IERC721CreatorCore is IERC721 {
 
     event ExtensionRegistered(address indexed extension, address indexed sender);
     event ExtensionUnregistered(address indexed extension, address indexed sender);

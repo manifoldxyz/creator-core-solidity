@@ -36,7 +36,7 @@ contract MockERC721CreatorExtension is ERC721CreatorExtensionBurnable {
     }
 
     function setTokenURIPrefix(string calldata prefix) external {
-        IERC721Creator(_creator).setTokenURIPrefixExtension(prefix);
+        IERC721CreatorCore(_creator).setTokenURIPrefixExtension(prefix);
     }
 
     function mintedTokens() external view returns(uint256[] memory) {

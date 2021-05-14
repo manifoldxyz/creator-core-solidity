@@ -7,7 +7,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "manifoldxyz-libraries-solidity/contracts/access/AdminControl.sol";
-import "../IERC721Creator.sol";
+import "../IERC721CreatorCore.sol";
 import "./IERC721CreatorExtensionBase.sol";
 
 abstract contract ERC721CreatorExtensionBase is ERC165, AdminControl, IERC721CreatorExtensionBase {
@@ -23,28 +23,32 @@ abstract contract ERC721CreatorExtensionBase is ERC165, AdminControl, IERC721Cre
      * @dev See {IERC721CreatorExtension-setBaseTokenURI}.
      */
     function setBaseTokenURI(address creator, string calldata uri) external override adminRequired {
-        IERC721Creator(creator).setBaseTokenURIExtension(uri);
+        require(ERC165Checker.supportsInterface(creator, type(IERC721CreatorCore).interfaceId), "ERC721CreatorExtension: Requires ERC721CreatorCore");
+        IERC721CreatorCore(creator).setBaseTokenURIExtension(uri);
     }
 
     /**
      * @dev See {IERC721CreatorExtension-setBaseTokenURI}.
      */
     function setBaseTokenURI(address creator, string calldata uri, bool identical) external override adminRequired {
-        IERC721Creator(creator).setBaseTokenURIExtension(uri, identical);
+        require(ERC165Checker.supportsInterface(creator, type(IERC721CreatorCore).interfaceId), "ERC721CreatorExtension: Requires ERC721CreatorCore");
+        IERC721CreatorCore(creator).setBaseTokenURIExtension(uri, identical);
     }
 
     /**
      * @dev See {IERC721CreatorExtension-setTokenURI}.
      */
     function setTokenURI(address creator, uint256 tokenId, string calldata uri) external override adminRequired {
-        IERC721Creator(creator).setTokenURIExtension(tokenId, uri);
+        require(ERC165Checker.supportsInterface(creator, type(IERC721CreatorCore).interfaceId), "ERC721CreatorExtension: Requires ERC721CreatorCore");
+        IERC721CreatorCore(creator).setTokenURIExtension(tokenId, uri);
     }
 
     /**
      * @dev See {IERC721CreatorExtension-setTokenURI}.
      */
     function setTokenURI(address creator, uint256[] calldata tokenIds, string[] calldata uris) external override adminRequired {
-        IERC721Creator(creator).setTokenURIExtension(tokenIds, uris);
+        require(ERC165Checker.supportsInterface(creator, type(IERC721CreatorCore).interfaceId), "ERC721CreatorExtension: Requires ERC721CreatorCore");
+        IERC721CreatorCore(creator).setTokenURIExtension(tokenIds, uris);
     }
 
 }

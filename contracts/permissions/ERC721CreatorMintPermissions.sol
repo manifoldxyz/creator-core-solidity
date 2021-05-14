@@ -7,14 +7,14 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "manifoldxyz-libraries-solidity/contracts/access/AdminControl.sol";
-import "../IERC721Creator.sol";
+import "../IERC721CreatorCore.sol";
 import "./IERC721CreatorMintPermissions.sol";
 
 abstract contract ERC721CreatorMintPermissions is ERC165, AdminControl, IERC721CreatorMintPermissions {
      address internal immutable _creator;
 
      constructor(address creator_) {
-         require(ERC165Checker.supportsInterface(creator_, type(IERC721Creator).interfaceId), "ERC721CreatorMintPermissions: Must implement IERC721Creator");
+         require(ERC165Checker.supportsInterface(creator_, type(IERC721CreatorCore).interfaceId), "ERC721CreatorMintPermissions: Must implement IERC721CreatorCore");
          _creator = creator_;
      }
 

@@ -315,10 +315,9 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
     function _mintExtension(address to, string memory uri) internal virtual returns(uint256 tokenId) {
         _tokenCount++;
         tokenId = _tokenCount;
-        address permissions = _extensionPermissions[msg.sender];
 
-        if (permissions != address(0x0)) {
-            IERC721CreatorMintPermissions(permissions).approveMint(msg.sender, tokenId, to);
+        if (_extensionPermissions[msg.sender] != address(0x0)) {
+            IERC721CreatorMintPermissions(_extensionPermissions[msg.sender]).approveMint(msg.sender, tokenId, to);
         }
 
         // Track the extension that minted the token

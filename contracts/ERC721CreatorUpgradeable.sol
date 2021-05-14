@@ -4,21 +4,26 @@ pragma solidity ^0.8.0;
 
 /// @author: manifold.xyz
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 
-import "manifoldxyz-libraries-solidity/contracts/access/AdminControl.sol";
+import "manifoldxyz-libraries-solidity/contracts/access/AdminControlUpgradeable.sol";
 import "./core/ERC721CreatorCore.sol";
 
-contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
+contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable, ERC721CreatorCore {
 
-    constructor (string memory _name, string memory _symbol) ERC721(_name, _symbol) {
+    /**
+     * Initializer
+     */
+    function initialize(string memory _name, string memory _symbol) public initializer {
+        __ERC721_init(_name, _symbol);
+        __Ownable_init();
     }
 
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, AdminControl) returns (bool) {
-        return interfaceId == type(IERC721CreatorCore).interfaceId || ERC721.supportsInterface(interfaceId) || AdminControl.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721Upgradeable, AdminControlUpgradeable) returns (bool) {
+        return interfaceId == type(IERC721CreatorCore).interfaceId || ERC721Upgradeable.supportsInterface(interfaceId) || AdminControlUpgradeable.supportsInterface(interfaceId);
     }
 
     /**

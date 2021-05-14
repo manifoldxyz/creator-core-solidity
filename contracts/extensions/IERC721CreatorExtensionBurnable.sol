@@ -18,6 +18,11 @@ interface IERC721CreatorExtensionBurnable is IERC721CreatorExtensionBase {
     function mint(address creator, address to) external returns (uint256);
 
     /**
+     * @dev batch mint a token
+     */
+    function mintBatch(address creator, address to, uint16 count) external returns (uint256[] memory);
+
+    /**
      * @dev callback handler for burn events
      */
     function onBurn(address owner, uint256 tokenId) external;

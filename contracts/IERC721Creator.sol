@@ -54,8 +54,16 @@ interface IERC721Creator is IAdminControl, IERC721 {
 
     /**
      * @dev set the baseTokenURI of an extension.  Can only be called by extension.
+     * For tokens with no uri configured, tokenURI will return "uri+tokenId"
      */
     function setBaseTokenURIExtension(string calldata uri, bool identical) external;
+
+    /**
+     * @dev set the common prefix of an extension.  Can only be called by extension.
+     * If configured, and a token has a uri set, tokenURI will return "commonURI+tokenURI"
+     * Useful if you want to use ipfs/arweave
+     */
+    function setTokenURIPrefixExtension(string calldata prefix) external;
 
     /**
      * @dev set the tokenURI of a token extension.  Can only be called by extension that minted token.
@@ -64,8 +72,16 @@ interface IERC721Creator is IAdminControl, IERC721 {
 
     /**
      * @dev set the baseTokenURI for tokens with no extension.  Can only be called by owner/admin.
+     * For tokens with no uri configured, tokenURI will return "uri+tokenId"
      */
     function setBaseTokenURI(string calldata uri) external;
+
+    /**
+     * @dev set the common prefix for tokens with no extension.  Can only be called by owner/admin.
+     * If configured, and a token has a uri set, tokenURI will return "commonURI+tokenURI"
+     * Useful if you want to use ipfs/arweave
+     */
+    function setTokenURIPrefix(string calldata prefix) external;
 
     /**
      * @dev set the tokenURI of a token with no extension.  Can only be called by owner/admin.
@@ -90,6 +106,18 @@ interface IERC721Creator is IAdminControl, IERC721 {
     function mintBase(address to, string calldata uri) external returns (uint256);
 
     /**
+     * @dev batch mint a token with no extension. Can only be called by an admin.
+     * Returns tokenId minted
+     */
+    function mintBaseBatch(address to, uint16 count) external returns (uint256[] memory);
+
+    /**
+     * @dev batch mint a token with no extension. Can only be called by an admin.
+     * Returns tokenId minted
+     */
+    function mintBaseBatch(address to, string[] calldata uris) external returns (uint256[] memory);
+
+    /**
      * @dev mint a token. Can only be called by a registered extension.
      * Returns tokenId minted
      */
@@ -100,6 +128,18 @@ interface IERC721Creator is IAdminControl, IERC721 {
      * Returns tokenId minted
      */
     function mintExtension(address to, string calldata uri) external returns (uint256);
+
+    /**
+     * @dev batch mint a token. Can only be called by a registered extension.
+     * Returns tokenIds minted
+     */
+    function mintExtensionBatch(address to, uint16 count) external returns (uint256[] memory);
+
+    /**
+     * @dev batch mint a token. Can only be called by a registered extension.
+     * Returns tokenId minted
+     */
+    function mintExtensionBatch(address to, string[] calldata uris) external returns (uint256[] memory);
 
     /**
      * @dev burn a token. Can only be called by token owner or approved address.

@@ -17,6 +17,28 @@ contract MockERC721CreatorExtension is ERC721CreatorExtensionBurnable {
         _mintedTokens.push(_mint(_creator, to));
     }
 
+    function testMint(address to, string calldata uri) external {
+        _mintedTokens.push(_mint(_creator, to, uri));
+    }
+
+    function testMintBatch(address to, uint16 count) external {
+        uint256[] memory tokenIds = _mintBatch(_creator, to, count);
+        for (uint i = 0; i < tokenIds.length; i++) {
+            _mintedTokens.push(tokenIds[i]);
+        }
+    }
+
+    function testMintBatch(address to, string[] calldata uris) external {
+        uint256[] memory tokenIds = _mintBatch(_creator, to, uris);
+        for (uint i = 0; i < tokenIds.length; i++) {
+            _mintedTokens.push(tokenIds[i]);
+        }
+    }
+
+    function setTokenURIPrefix(string calldata prefix) external {
+        IERC721Creator(_creator).setTokenURIPrefixExtension(prefix);
+    }
+
     function mintedTokens() external view returns(uint256[] memory) {
         return _mintedTokens;
     }

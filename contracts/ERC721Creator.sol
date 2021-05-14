@@ -34,6 +34,9 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
     mapping (address => string) private _extensionBaseURI;
     mapping (address => bool) private _extensionBaseURIIdentical;
 
+    // The prefix for any tokens with a uri configured
+    mapping (address => string) private _extensionURIPrefix;
+
     // Mapping for token URIs
     mapping (uint256 => string) private _tokenURIs;
 
@@ -145,6 +148,13 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
     }
 
     /**
+     * @dev See {IERC721Creator-setTokenURIPrefixExtension}.
+     */
+    function setTokenURIPrefixExtension(string calldata prefix) external override extensionRequired {
+        _extensionURIPrefix[msg.sender] = prefix;
+    }
+
+    /**
      * @dev See {IERC721Creator-setTokenURIExtension}.
      */
     function setTokenURIExtension(uint256 tokenId, string calldata uri) external override extensionRequired {
@@ -159,10 +169,17 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
     }
 
     /**
-     * @dev See {IERC721Creator-setBaseTokenURIBase}.
+     * @dev See {IERC721Creator-setBaseTokenURI}.
      */
     function setBaseTokenURI(string calldata uri) external override adminRequired {
         _extensionBaseURI[address(this)] = uri;
+    }
+
+    /**
+     * @dev See {IERC721Creator-setTokenURIPrefix}.
+     */
+    function setTokenURIPrefix(string calldata prefix) external override adminRequired {
+        _extensionURIPrefix[address(this)] = prefix;
     }
 
     /**
@@ -204,6 +221,28 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
         return _mintBase(to, uri);
     }
 
+    /**
+     * @dev See {IERC721Creator-mintBaseBatch}.
+     */
+    function mintBaseBatch(address to, uint16 count) public override nonReentrant adminRequired virtual returns(uint256[] memory tokenIds) {
+        tokenIds = new uint256[](count);
+        for (uint16 i = 0; i < count; i++) {
+            tokenIds[i] = _mintBase(to, "");
+        }
+        return tokenIds;
+    }
+
+    /**
+     * @dev See {IERC721Creator-mintBaseBatch}.
+     */
+    function mintBaseBatch(address to, string[] calldata uris) public override nonReentrant adminRequired virtual returns(uint256[] memory tokenIds) {
+        tokenIds = new uint256[](uris.length);
+        for (uint i = 0; i < uris.length; i++) {
+            tokenIds[i] = _mintBase(to, uris[i]);
+        }
+        return tokenIds;
+    }
+
     function _mintBase(address to, string memory uri) internal virtual returns(uint256 tokenId) {
         _tokenCount++;
         tokenId = _tokenCount;
@@ -221,17 +260,39 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
     }
 
     /**
-     * @dev See {IERC721Creator-extensionMint}.
+     * @dev See {IERC721Creator-mintExtension}.
      */
     function mintExtension(address to) public override nonReentrant extensionRequired virtual returns(uint256) {
         return _mintExtension(to, "");
     }
 
     /**
-     * @dev See {IERC721Creator-extensionMint}.
+     * @dev See {IERC721Creator-mintExtension}.
      */
     function mintExtension(address to, string calldata uri) public override nonReentrant extensionRequired virtual returns(uint256) {
         return _mintExtension(to, uri);
+    }
+
+    /**
+     * @dev See {IERC721Creator-mintExtensionBatch}.
+     */
+    function mintExtensionBatch(address to, uint16 count) public override nonReentrant extensionRequired virtual returns(uint256[] memory tokenIds) {
+        tokenIds = new uint256[](count);
+        for (uint16 i = 0; i < count; i++) {
+            tokenIds[i] = _mintExtension(to, "");
+        }
+        return tokenIds;
+    }
+
+    /**
+     * @dev See {IERC721Creator-mintExtensionBatch}.
+     */
+    function mintExtensionBatch(address to, string[] calldata uris) public override nonReentrant extensionRequired virtual returns(uint256[] memory tokenIds) {
+        tokenIds = new uint256[](uris.length);
+        for (uint i = 0; i < uris.length; i++) {
+            tokenIds[i] = _mintExtension(to, uris[i]);
+        }
+        return tokenIds;
     }
 
     function _mintExtension(address to, string memory uri) internal virtual returns(uint256 tokenId) {
@@ -308,6 +369,9 @@ contract ERC721Creator is ReentrancyGuard, ERC721, AdminControl, IERC721Creator 
         require(!_blacklistedExtensions.contains(extension), "ERC721Creator: Extension blacklisted");
 
         if (bytes(_tokenURIs[tokenId]).length != 0) {
+            if (bytes(_extensionURIPrefix[extension]).length != 0) {
+                return string(abi.encodePacked(_extensionURIPrefix[extension],_tokenURIs[tokenId]));
+            }
             return _tokenURIs[tokenId];
         }
 

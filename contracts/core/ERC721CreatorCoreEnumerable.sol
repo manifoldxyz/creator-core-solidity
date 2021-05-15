@@ -9,6 +9,9 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "./ERC721CreatorCore.sol";
 import "./IERC721CreatorCoreEnumerable.sol";
 
+/**
+ * @dev Core ERC721 creator implementation (with enumerable api's)
+ */
 abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721CreatorCoreEnumerable {
     using Strings for uint256;
     using EnumerableSet for EnumerableSet.AddressSet;

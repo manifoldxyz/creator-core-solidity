@@ -10,6 +10,9 @@ import "manifoldxyz-libraries-solidity/contracts/access/AdminControl.sol";
 import "../core/IERC721CreatorCore.sol";
 import "./IERC721CreatorExtensionBase.sol";
 
+/**
+ * @dev Basic implementation of an extension. Provides an interface to set token uri's
+ */
 abstract contract ERC721CreatorExtensionBase is ERC165, AdminControl, IERC721CreatorExtensionBase {
     /**
      * @dev See {IERC165-supportsInterface}.

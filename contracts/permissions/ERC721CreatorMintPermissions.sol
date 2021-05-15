@@ -10,6 +10,10 @@ import "manifoldxyz-libraries-solidity/contracts/access/AdminControl.sol";
 import "../core/IERC721CreatorCore.sol";
 import "./IERC721CreatorMintPermissions.sol";
 
+/**
+ * @dev Basic implementation of a permission contract that works with a singular creator contract.
+ * approveMint requires the sender to be the configured creator.
+ */
 abstract contract ERC721CreatorMintPermissions is ERC165, AdminControl, IERC721CreatorMintPermissions {
      address internal immutable _creator;
 

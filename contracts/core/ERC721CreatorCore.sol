@@ -18,6 +18,9 @@ import "../permissions/IERC721CreatorMintPermissions.sol";
 
 import "./IERC721CreatorCore.sol";
 
+/**
+ * @dev Core ERC721 creator implementation
+ */
 abstract contract ERC721CreatorCore is ReentrancyGuard, IERC721CreatorCore, ERC165 {
     using Strings for uint256;
     using EnumerableSet for EnumerableSet.AddressSet;

@@ -6,6 +6,9 @@ pragma solidity ^0.8.0;
 
 import "./IERC721CreatorCore.sol";
 
+/**
+ * @dev Core ERC721 creator interface (with enumerable api's)
+ */
 interface IERC721CreatorCoreEnumerable is IERC721CreatorCore {
 
     /*

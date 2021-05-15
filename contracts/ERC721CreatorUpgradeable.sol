@@ -9,6 +9,9 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "manifoldxyz-libraries-solidity/contracts/access/AdminControlUpgradeable.sol";
 import "./core/ERC721CreatorCore.sol";
 
+/**
+ * @dev ERC721Creator implementation (using transparent upgradeable proxy)
+ */
 contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable, ERC721CreatorCore {
 
     /**

@@ -9,6 +9,9 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "./ERC721Creator.sol";
 import "./core/ERC721CreatorCoreEnumerable.sol";
 
+/**
+ * @dev ERC721Creator implementation (with enumerable api's)
+ */
 contract ERC721CreatorEnumerable is ERC721Creator, ERC721CreatorCoreEnumerable, ERC721Enumerable {
 
     constructor (string memory _name, string memory _symbol) ERC721Creator(_name, _symbol) {

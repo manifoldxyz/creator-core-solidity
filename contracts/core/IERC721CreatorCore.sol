@@ -7,7 +7,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
 /**
- * Core creator contract interface
+ * @dev Core ERC721 creator interface
  */
 interface IERC721CreatorCore is IERC165 {
 

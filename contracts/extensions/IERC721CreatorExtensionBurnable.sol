@@ -7,7 +7,9 @@ pragma solidity ^0.8.0;
 import "./IERC721CreatorExtensionBase.sol";
 
 /**
- * @dev Required interface of an ERC721Creator compliant extension contracts.
+ * @dev Your extension is required to implement this interface if it wishes
+ * to receive the onBurn callback whenever a token the extension created is
+ * burned
  */
 interface IERC721CreatorExtensionBurnable is IERC721CreatorExtensionBase {
     event CreatorAdded(address indexed creator, address indexed sender);

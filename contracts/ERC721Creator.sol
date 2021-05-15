@@ -9,6 +9,9 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "manifoldxyz-libraries-solidity/contracts/access/AdminControl.sol";
 import "./core/ERC721CreatorCore.sol";
 
+/**
+ * @dev ERC721Creator implementation
+ */
 contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
 
     constructor (string memory _name, string memory _symbol) ERC721(_name, _symbol) {

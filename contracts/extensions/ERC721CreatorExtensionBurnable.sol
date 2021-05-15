@@ -10,6 +10,11 @@ import "../core/IERC721CreatorCore.sol";
 import "./IERC721CreatorExtensionBurnable.sol";
 import "./ERC721CreatorExtensionBase.sol";
 
+/**
+ * @dev Suggested implementation for extensions that want to receive onBurn callbacks
+ * Mint tracks the creators/tokens created, and onBurn only accepts callbacks from
+ * the creator of a token created.
+ */
 abstract contract ERC721CreatorExtensionBurnable is ERC721CreatorExtensionBase, IERC721CreatorExtensionBurnable {
 
     mapping (uint256 => address) private _tokenCreators;

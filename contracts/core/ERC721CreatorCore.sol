@@ -44,9 +44,9 @@ abstract contract ERC721CreatorCore is ReentrancyGuard, IERC721CreatorCore, ERC1
     
     // Royalty configurations
     mapping (address => address payable[]) internal _extensionRoyaltyReceivers;
-    mapping (address => uint256[]) internal _extensionRoyaltyBasisPoints;
+    mapping (address => uint256[]) internal _extensionRoyaltyBPS;
     mapping (uint256 => address payable[]) internal _tokenRoyaltyReceivers;
-    mapping (uint256 => uint256[]) internal _tokenRoyaltyBasisPoints;
+    mapping (uint256 => uint256[]) internal _tokenRoyaltyBPS;
 
     /**
      * @dev See {IERC165-supportsInterface}.
@@ -261,7 +261,7 @@ abstract contract ERC721CreatorCore is ReentrancyGuard, IERC721CreatorCore, ERC1
     }
 
     function getFeeBps(uint256 id) external view virtual override returns (uint[] memory) {
-        return _getRoyaltyBasisPoints(id);
+        return _getRoyaltyBPS(id);
     }
     
     /**
@@ -279,13 +279,13 @@ abstract contract ERC721CreatorCore is ReentrancyGuard, IERC721CreatorCore, ERC1
     /**
      * Helper to get royalty basis points for a token
      */
-    function _getRoyaltyBasisPoints(uint256 tokenId) view internal returns (uint256[] storage) {
-        if (_tokenRoyaltyBasisPoints[tokenId].length > 0) {
-            return _tokenRoyaltyBasisPoints[tokenId];
-        } else if (_extensionRoyaltyBasisPoints[_tokensExtension[tokenId]].length > 0) {
-            return _extensionRoyaltyBasisPoints[_tokensExtension[tokenId]];
+    function _getRoyaltyBPS(uint256 tokenId) view internal returns (uint256[] storage) {
+        if (_tokenRoyaltyBPS[tokenId].length > 0) {
+            return _tokenRoyaltyBPS[tokenId];
+        } else if (_extensionRoyaltyBPS[_tokensExtension[tokenId]].length > 0) {
+            return _extensionRoyaltyBPS[_tokensExtension[tokenId]];
         }
-        return _extensionRoyaltyBasisPoints[address(this)];        
+        return _extensionRoyaltyBPS[address(this)];        
     }
 
     /**
@@ -304,19 +304,19 @@ abstract contract ERC721CreatorCore is ReentrancyGuard, IERC721CreatorCore, ERC1
     /**
      * Helper to update royalites
      */
-    function _updateRoyalties(address payable[] storage receivers, uint256[] storage basisPoints, address payable[] calldata newReceivers, uint256[] calldata newBasisPoints) internal {
+    function _updateRoyalties(address payable[] storage receivers, uint256[] storage basisPoints, address payable[] calldata newReceivers, uint256[] calldata newBPS) internal {
         require(receivers.length == basisPoints.length, "ERC721Creator: Invalid input");
-        require(newReceivers.length == newBasisPoints.length, "ERC721Creator: Invalid input");
+        require(newReceivers.length == newBPS.length, "ERC721Creator: Invalid input");
         uint256 totalRoyalties;
         for (uint i = 0; i < newReceivers.length; i++) {
             if (i < receivers.length) {
                 receivers[i] = newReceivers[i];
-                basisPoints[i] = newBasisPoints[i];
+                basisPoints[i] = newBPS[i];
             } else {
                 receivers.push(newReceivers[i]);
-                basisPoints.push(newBasisPoints[i]);
+                basisPoints.push(newBPS[i]);
             }
-            totalRoyalties += newBasisPoints[i];
+            totalRoyalties += newBPS[i];
         }
         require(totalRoyalties < 10000, "ERC721Creator: Invalid total royalties");
     }
@@ -326,8 +326,8 @@ abstract contract ERC721CreatorCore is ReentrancyGuard, IERC721CreatorCore, ERC1
      */
     function _setRoyalties(uint256 tokenId, address payable[] calldata receivers, uint256[] calldata basisPoints) internal {
         require(receivers.length == basisPoints.length, "ERC721Creator: Invalid input");
-        _shortenRoyalties(_tokenRoyaltyReceivers[tokenId], _tokenRoyaltyBasisPoints[tokenId], receivers.length);
-        _updateRoyalties(_tokenRoyaltyReceivers[tokenId], _tokenRoyaltyBasisPoints[tokenId], receivers, basisPoints);
+        _shortenRoyalties(_tokenRoyaltyReceivers[tokenId], _tokenRoyaltyBPS[tokenId], receivers.length);
+        _updateRoyalties(_tokenRoyaltyReceivers[tokenId], _tokenRoyaltyBPS[tokenId], receivers, basisPoints);
         emit RoyaltiesUpdated(tokenId, receivers, basisPoints);
     }
 
@@ -336,8 +336,8 @@ abstract contract ERC721CreatorCore is ReentrancyGuard, IERC721CreatorCore, ERC1
      */
     function _setRoyaltiesExtension(address extension, address payable[] calldata receivers, uint256[] calldata basisPoints) internal {
         require(receivers.length == basisPoints.length, "ERC721Creator: Invalid input");
-        _shortenRoyalties(_extensionRoyaltyReceivers[extension], _extensionRoyaltyBasisPoints[extension], receivers.length);
-        _updateRoyalties(_extensionRoyaltyReceivers[extension], _extensionRoyaltyBasisPoints[extension], receivers, basisPoints);
+        _shortenRoyalties(_extensionRoyaltyReceivers[extension], _extensionRoyaltyBPS[extension], receivers.length);
+        _updateRoyalties(_extensionRoyaltyReceivers[extension], _extensionRoyaltyBPS[extension], receivers, basisPoints);
         if (extension == address(this)) {
             emit DefaultRoyaltiesUpdated(receivers, basisPoints);
         } else {

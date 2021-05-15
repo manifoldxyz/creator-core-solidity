@@ -290,7 +290,7 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
      */
     function getRoyalties(uint256 tokenId) external view virtual override returns (address payable[] memory, uint256[] memory) {
         require(_exists(tokenId), "Nonexistent token");
-        return (_getRoyaltyReceivers(tokenId), _getRoyaltyBasisPoints(tokenId));
+        return (_getRoyaltyReceivers(tokenId), _getRoyaltyBPS(tokenId));
     }
 
     /**

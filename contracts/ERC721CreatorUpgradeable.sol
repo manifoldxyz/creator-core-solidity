@@ -22,8 +22,8 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721Upgradeable, AdminControlUpgradeable) returns (bool) {
-        return interfaceId == type(IERC721CreatorCore).interfaceId || ERC721Upgradeable.supportsInterface(interfaceId) || AdminControlUpgradeable.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721Upgradeable, ERC721CreatorCore, AdminControlUpgradeable) returns (bool) {
+        return ERC721CreatorCore.supportsInterface(interfaceId) || ERC721Upgradeable.supportsInterface(interfaceId) || AdminControlUpgradeable.supportsInterface(interfaceId);
     }
 
     /**
@@ -261,6 +261,36 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
     function burn(uint256 tokenId) public override nonReentrant virtual {
         _preBurn(ownerOf(tokenId), tokenId);
         _burn(tokenId);
+    }
+
+    /**
+     * @dev See {IERC721CreatorCore-setRoyalties}.
+     */
+    function setRoyalties(address payable[] calldata receivers, uint256[] calldata basisPoints) external override adminRequired {
+        _setRoyaltiesExtension(address(this), receivers, basisPoints);
+    }
+
+    /**
+     * @dev See {IERC721CreatorCore-setRoyalties}.
+     */
+    function setRoyalties(uint256 tokenId, address payable[] calldata receivers, uint256[] calldata basisPoints) external override adminRequired {
+        require(_exists(tokenId), "Nonexistent token");
+        _setRoyalties(tokenId, receivers, basisPoints);
+    }
+
+    /**
+     * @dev See {IERC721CreatorCore-setRoyaltiesExtension}.
+     */
+    function setRoyaltiesExtension(address extension, address payable[] calldata receivers, uint256[] calldata basisPoints) external override adminRequired {
+        _setRoyaltiesExtension(extension, receivers, basisPoints);
+    }
+
+    /**
+     * @dev {See IERC721CreatorCore-getRoyalties}.
+     */
+    function getRoyalties(uint256 tokenId) external view virtual override returns (address payable[] memory, uint256[] memory) {
+        require(_exists(tokenId), "Nonexistent token");
+        return (_getRoyaltyReceivers(tokenId), _getRoyaltyBasisPoints(tokenId));
     }
 
     /**

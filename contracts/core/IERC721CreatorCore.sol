@@ -4,15 +4,20 @@ pragma solidity ^0.8.0;
 
 /// @author: manifold.xyz
 
+import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+
 /**
  * Core creator contract interface
  */
-interface IERC721CreatorCore {
+interface IERC721CreatorCore is IERC165 {
 
     event ExtensionRegistered(address indexed extension, address indexed sender);
     event ExtensionUnregistered(address indexed extension, address indexed sender);
     event ExtensionBlacklisted(address indexed extension, address indexed sender);
     event MintPermissionsUpdated(address indexed extension, address indexed permissions, address indexed sender);
+    event RoyaltiesUpdated(uint256 indexed tokenId, address payable[] receivers, uint256[] basisPoints);
+    event DefaultRoyaltiesUpdated(address payable[] receivers, uint256[] basisPoints);
+    event ExtensionRoyaltiesUpdated(address indexed extension, address payable[] receivers, uint256[] basisPoints);
 
     /**
      * @dev gets address of all extensions
@@ -161,5 +166,28 @@ interface IERC721CreatorCore {
      * @dev get the extension of a given token
      */
     function tokenExtension(uint256 tokenId) external view returns (address);
+
+    /**
+     * @dev Set default royalties
+     */
+    function setRoyalties(address payable[] calldata receivers, uint256[] calldata basisPoints) external;
+
+    /**
+     * @dev Set royalties of a token
+     */
+    function setRoyalties(uint256 tokenId, address payable[] calldata receivers, uint256[] calldata basisPoints) external;
+
+    /**
+     * @dev Set royalties of an extension
+     */
+    function setRoyaltiesExtension(address extension, address payable[] calldata receivers, uint256[] calldata basisPoints) external;
+
+    /**
+     * @dev Get royalites of a token.  Returns list of receivers and basisPoints
+     */
+    function getRoyalties(uint256 tokenId) external view returns (address payable[] memory, uint256[] memory);
+    
+    function getFeeRecipients(uint256 id) external view returns (address payable[] memory);
+    function getFeeBps(uint256 id) external view returns (uint[] memory);
 
 }

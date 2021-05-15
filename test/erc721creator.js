@@ -54,6 +54,9 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             await truffleAssert.reverts(creator.methods['mintExtension(address,string)'](anyone, "", {from:anyone}), "ERC721Creator: Must be registered extension");
             await truffleAssert.reverts(creator.methods['mintExtensionBatch(address,uint16)'](anyone, 1, {from:anyone}), "ERC721Creator: Must be registered extension");
             await truffleAssert.reverts(creator.methods['mintExtensionBatch(address,string[])'](anyone, [""], {from:anyone}), "ERC721Creator: Must be registered extension");
+            await truffleAssert.reverts(creator.methods['setRoyalties(address[],uint256[])']([anyone], [100], {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(creator.methods['setRoyalties(uint256,address[],uint256[])'](1, [anyone], [100], {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(creator.methods['setRoyaltiesExtension(address,address[],uint256[])'](anyone, [anyone], [100], {from:anyone}), "AdminControl: Must be owner or admin");
         });
         
         it('creator blacklist extension test', async function() {
@@ -440,6 +443,98 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             await extension1.testMint(anyone);
             await extension2.testMint(anyone);
         });
+
+        it('royalites update test', async function () {
+            await truffleAssert.reverts(creator.getRoyalties(1), "Nonexistent token");
+            await truffleAssert.reverts(creator.methods['setRoyalties(uint256,address[],uint256[])'](1,[anyone],[123], {from:owner}), "Nonexistent token");
+
+            await creator.mintBase(anyone, {from:owner});
+            var tokenId1 = 1;
+            var results;
+
+            // No royalties
+            results = await creator.getRoyalties(tokenId1);
+            assert.equal(results[0].length, 0);
+            assert.equal(results[1].length, 0);
+
+            await truffleAssert.reverts(creator.methods['setRoyalties(uint256,address[],uint256[])'](tokenId1,[anyone,another],[9999,1], {from:owner}), "ERC721Creator: Invalid total royalties");
+            await truffleAssert.reverts(creator.methods['setRoyalties(uint256,address[],uint256[])'](tokenId1,[anyone],[1,2], {from:owner}), "ERC721Creator: Invalid input");
+            await truffleAssert.reverts(creator.methods['setRoyalties(uint256,address[],uint256[])'](tokenId1,[anyone,another],[1], {from:owner}), "ERC721Creator: Invalid input");
+            
+            // Set token royalties
+            await creator.methods['setRoyalties(uint256,address[],uint256[])'](tokenId1,[anyone,another],[123,456],{from:owner});
+            results = await creator.getRoyalties(tokenId1);
+            assert.equal(results[0].length, 2);
+            assert.equal(results[1].length, 2);
+
+            const extension = await MockERC721CreatorExtension.new(creator.address);
+            await creator.registerExtension(extension.address, 'http://extension/', {from:owner});
+            await extension.testMint(anyone);
+            var tokenId2 = 2;
+
+            // No royalties
+            results = await creator.getRoyalties(tokenId2);
+            assert.equal(results[0].length, 0);
+            assert.equal(results[1].length, 0);
+
+            await truffleAssert.reverts(creator.methods['setRoyaltiesExtension(address,address[],uint256[])'](extension.address,[anyone,another],[9999,1], {from:owner}), "ERC721Creator: Invalid total royalties");
+            await truffleAssert.reverts(creator.methods['setRoyaltiesExtension(address,address[],uint256[])'](extension.address,[anyone],[1,2], {from:owner}), "ERC721Creator: Invalid input");
+            await truffleAssert.reverts(creator.methods['setRoyaltiesExtension(address,address[],uint256[])'](extension.address,[anyone,another],[1], {from:owner}), "ERC721Creator: Invalid input");
+            
+            // Set royalties
+            await creator.methods['setRoyaltiesExtension(address,address[],uint256[])'](extension.address,[anyone],[123], {from:owner});
+            results = await creator.getRoyalties(tokenId2);
+            assert.equal(results[0].length, 1);
+            assert.equal(results[1].length, 1);
+
+            await creator.mintBase(anyone, {from:owner});
+            var tokenId3 = 3;
+            await extension.testMint(anyone);
+            var tokenId4 = 4;
+            results = await creator.getRoyalties(tokenId3);
+            assert.equal(results[0].length, 0);
+            assert.equal(results[1].length, 0);
+            results = await creator.getRoyalties(tokenId4);
+            assert.equal(results[0].length, 1);
+            assert.equal(results[1].length, 1);
+            
+            // Set default royalties
+            await truffleAssert.reverts(creator.methods['setRoyalties(address[],uint256[])']([anyone,another],[9999,1], {from:owner}), "ERC721Creator: Invalid total royalties");
+            await truffleAssert.reverts(creator.methods['setRoyalties(address[],uint256[])']([anyone],[1,2], {from:owner}), "ERC721Creator: Invalid input");
+            await truffleAssert.reverts(creator.methods['setRoyalties(address[],uint256[])']([anyone,another],[1], {from:owner}), "ERC721Creator: Invalid input");
+            await creator.methods['setRoyalties(address[],uint256[])']([another],[456], {from:owner});
+            results = await creator.getRoyalties(tokenId1);
+            assert.equal(results[0].length, 2);
+            assert.equal(results[1].length, 2);
+            results = await creator.getRoyalties(tokenId2);
+            assert.equal(results[0].length, 1);
+            assert.equal(results[1].length, 1);
+            assert.equal(results[0],anyone);
+            results = await creator.getRoyalties(tokenId3);
+            assert.equal(results[0].length, 1);
+            assert.equal(results[1].length, 1);
+            assert.equal(results[0][0],another);
+            results = await creator.getRoyalties(tokenId4);
+            assert.equal(results[0].length, 1);
+            assert.equal(results[1].length, 1);
+            assert.equal(results[0][0],anyone);
+            
+            // Unset royalties
+            await creator.methods['setRoyalties(address[],uint256[])']([],[], {from:owner});
+            results = await creator.getRoyalties(tokenId3);
+            assert.equal(results[0].length, 0);
+            assert.equal(results[1].length, 0);
+            results = await creator.getRoyalties(tokenId4);
+            assert.equal(results[0].length, 1);
+            assert.equal(results[1].length, 1);
+            assert.equal(results[0][0],anyone);
+            await creator.methods['setRoyaltiesExtension(address,address[],uint256[])'](extension.address,[],[], {from:owner});
+            results = await creator.getRoyalties(tokenId4);
+            assert.equal(results[0].length, 0);
+            assert.equal(results[1].length, 0);
+        });
+
+
     });
 
 });

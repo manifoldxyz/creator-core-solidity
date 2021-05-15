@@ -24,6 +24,14 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
     mapping (uint256 => uint256) private _extensionTokensIndexByOwner;
 
     /**
+     * @dev See {IERC165-supportsInterface}.
+     */
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721CreatorCore, IERC165) returns (bool) {
+        return interfaceId == type(IERC721CreatorCoreEnumerable).interfaceId || super.supportsInterface(interfaceId);
+    }
+
+
+    /**
      * @dev See {IERC721CreatorCoreEnumerable-totalSupplyExtension}.
      */
     function totalSupplyExtension(address extension) public view virtual override nonBlacklistRequired(extension) returns (uint256) {

@@ -6,6 +6,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
@@ -16,7 +17,7 @@ import "../permissions/IERC721CreatorMintPermissions.sol";
 
 import "./IERC721CreatorCore.sol";
 
-abstract contract ERC721CreatorCore is ReentrancyGuard, IERC721CreatorCore {
+abstract contract ERC721CreatorCore is ReentrancyGuard, IERC721CreatorCore, ERC165 {
     using Strings for uint256;
     using EnumerableSet for EnumerableSet.AddressSet;
 
@@ -37,8 +38,22 @@ abstract contract ERC721CreatorCore is ReentrancyGuard, IERC721CreatorCore {
     // The prefix for any tokens with a uri configured
     mapping (address => string) private _extensionURIPrefix;
 
-    // Mapping for token URIs
+    // Mapping for individual token URIs
     mapping (uint256 => string) internal _tokenURIs;
+
+    
+    // Royalty configurations
+    mapping (address => address payable[]) internal _extensionRoyaltyReceivers;
+    mapping (address => uint256[]) internal _extensionRoyaltyBasisPoints;
+    mapping (uint256 => address payable[]) internal _tokenRoyaltyReceivers;
+    mapping (uint256 => uint256[]) internal _tokenRoyaltyBasisPoints;
+
+    /**
+     * @dev See {IERC165-supportsInterface}.
+     */
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
+        return interfaceId == type(IERC721CreatorCore).interfaceId || super.supportsInterface(interfaceId);
+    }
 
     /**
      * @dev Only allows registered extensions to call the specified function
@@ -240,4 +255,95 @@ abstract contract ERC721CreatorCore is ReentrancyGuard, IERC721CreatorCore {
         // Delete token origin extension tracking
         delete _tokensExtension[tokenId];
     }
+
+    function getFeeRecipients(uint256 id) external view virtual override returns (address payable[] memory) {
+        return _getRoyaltyReceivers(id);
+    }
+
+    function getFeeBps(uint256 id) external view virtual override returns (uint[] memory) {
+        return _getRoyaltyBasisPoints(id);
+    }
+    
+    /**
+     * Helper to get royalty receivers for a token
+     */
+    function _getRoyaltyReceivers(uint256 tokenId) view internal returns (address payable[] storage) {
+        if (_tokenRoyaltyReceivers[tokenId].length > 0) {
+            return _tokenRoyaltyReceivers[tokenId];
+        } else if (_extensionRoyaltyReceivers[_tokensExtension[tokenId]].length > 0) {
+            return _extensionRoyaltyReceivers[_tokensExtension[tokenId]];
+        }
+        return _extensionRoyaltyReceivers[address(this)];        
+    }
+
+    /**
+     * Helper to get royalty basis points for a token
+     */
+    function _getRoyaltyBasisPoints(uint256 tokenId) view internal returns (uint256[] storage) {
+        if (_tokenRoyaltyBasisPoints[tokenId].length > 0) {
+            return _tokenRoyaltyBasisPoints[tokenId];
+        } else if (_extensionRoyaltyBasisPoints[_tokensExtension[tokenId]].length > 0) {
+            return _extensionRoyaltyBasisPoints[_tokensExtension[tokenId]];
+        }
+        return _extensionRoyaltyBasisPoints[address(this)];        
+    }
+
+    /**
+     * Helper to shorten royalties arrays if it is too long
+     */
+    function _shortenRoyalties(address payable[] storage receivers, uint256[] storage basisPoints, uint256 targetLength) internal {
+        require(receivers.length == basisPoints.length, "ERC721Creator: Invalid input");
+        if (targetLength < receivers.length) {
+            for (uint i = receivers.length; i > targetLength; i--) {
+                receivers.pop();
+                basisPoints.pop();
+            }
+        }
+    }
+
+    /**
+     * Helper to update royalites
+     */
+    function _updateRoyalties(address payable[] storage receivers, uint256[] storage basisPoints, address payable[] calldata newReceivers, uint256[] calldata newBasisPoints) internal {
+        require(receivers.length == basisPoints.length, "ERC721Creator: Invalid input");
+        require(newReceivers.length == newBasisPoints.length, "ERC721Creator: Invalid input");
+        uint256 totalRoyalties;
+        for (uint i = 0; i < newReceivers.length; i++) {
+            if (i < receivers.length) {
+                receivers[i] = newReceivers[i];
+                basisPoints[i] = newBasisPoints[i];
+            } else {
+                receivers.push(newReceivers[i]);
+                basisPoints.push(newBasisPoints[i]);
+            }
+            totalRoyalties += newBasisPoints[i];
+        }
+        require(totalRoyalties < 10000, "ERC721Creator: Invalid total royalties");
+    }
+
+    /**
+     * Set royalties for a token
+     */
+    function _setRoyalties(uint256 tokenId, address payable[] calldata receivers, uint256[] calldata basisPoints) internal {
+        require(receivers.length == basisPoints.length, "ERC721Creator: Invalid input");
+        _shortenRoyalties(_tokenRoyaltyReceivers[tokenId], _tokenRoyaltyBasisPoints[tokenId], receivers.length);
+        _updateRoyalties(_tokenRoyaltyReceivers[tokenId], _tokenRoyaltyBasisPoints[tokenId], receivers, basisPoints);
+        emit RoyaltiesUpdated(tokenId, receivers, basisPoints);
+    }
+
+    /**
+     * Set royalties for all tokens of an extension
+     */
+    function _setRoyaltiesExtension(address extension, address payable[] calldata receivers, uint256[] calldata basisPoints) internal {
+        require(receivers.length == basisPoints.length, "ERC721Creator: Invalid input");
+        _shortenRoyalties(_extensionRoyaltyReceivers[extension], _extensionRoyaltyBasisPoints[extension], receivers.length);
+        _updateRoyalties(_extensionRoyaltyReceivers[extension], _extensionRoyaltyBasisPoints[extension], receivers, basisPoints);
+        if (extension == address(this)) {
+            emit DefaultRoyaltiesUpdated(receivers, basisPoints);
+        } else {
+            emit ExtensionRoyaltiesUpdated(extension, receivers, basisPoints);
+        }
+    }
+
+
 }

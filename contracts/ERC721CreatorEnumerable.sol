@@ -17,7 +17,7 @@ contract ERC721CreatorEnumerable is ERC721Creator, ERC721CreatorCoreEnumerable, 
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721Creator, ERC721Enumerable) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721Creator, ERC721CreatorCoreEnumerable, ERC721Enumerable) returns (bool) {
         return interfaceId == type(IERC721CreatorCoreEnumerable).interfaceId || ERC721Creator.supportsInterface(interfaceId) || ERC721Enumerable.supportsInterface(interfaceId);
     }
 

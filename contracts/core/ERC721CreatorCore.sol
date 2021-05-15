@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
+import "../extensions/IERC721CreatorExtensionApproveTransfer.sol";
 import "../extensions/IERC721CreatorExtensionBase.sol";
 import "../extensions/IERC721CreatorExtensionBurnable.sol";
 import "../extensions/IERC721CreatorExtensionTokenURI.sol";
@@ -27,6 +28,7 @@ abstract contract ERC721CreatorCore is ReentrancyGuard, IERC721CreatorCore, ERC1
     EnumerableSet.AddressSet private _extensions;
     EnumerableSet.AddressSet private _blacklistedExtensions;
     mapping (address => address) private _extensionPermissions;
+    mapping (address => bool) private _extensionApproveTransfers;
     
     // For tracking which extension a token was minted by
     mapping (uint256 => address) internal _tokensExtension;
@@ -175,6 +177,18 @@ abstract contract ERC721CreatorCore is ReentrancyGuard, IERC721CreatorCore, ERC1
         if (_extensionPermissions[extension] != permissions) {
             _extensionPermissions[extension] = permissions;
             emit MintPermissionsUpdated(extension, permissions, msg.sender);
+        }
+    }
+
+    /**
+     * @dev Set whether or not tokens of an extension require approval for transfer
+     */
+    function _setExtensionApproveTransfer(address extension, bool enabled) internal {
+        require(_extensions.contains(extension), "ERC721Creator: Invalid extension");
+        require(!enabled || ERC165Checker.supportsInterface(extension, type(IERC721CreatorExtensionApproveTransfer).interfaceId), "ERC721Creator: Requires extension to implement IERC721CreatorExtensionApproveTransfer");
+        if (_extensionApproveTransfers[extension] != enabled) {
+            _extensionApproveTransfers[extension] = enabled;
+            emit ExtensionApproveTransferUpdated(extension, enabled);
         }
     }
 
@@ -345,5 +359,13 @@ abstract contract ERC721CreatorCore is ReentrancyGuard, IERC721CreatorCore, ERC1
         }
     }
 
-
+    /**
+     * Approve a transfer
+     */
+    function _approveTransfer(address from, address to, uint256 tokenId) internal {
+       if (_extensionApproveTransfers[_tokensExtension[tokenId]]) {
+           require(IERC721CreatorExtensionApproveTransfer(_tokensExtension[tokenId]).approveTransfer(address(this), from, to, tokenId), "ERC721Creator: Extension approval failure");
+       }
+    }
+    
 }

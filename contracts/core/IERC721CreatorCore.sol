@@ -194,7 +194,10 @@ interface IERC721CreatorCore is IERC165 {
      */
     function getRoyalties(uint256 tokenId) external view returns (address payable[] memory, uint256[] memory);
     
-    function getFeeRecipients(uint256 id) external view returns (address payable[] memory);
-    function getFeeBps(uint256 id) external view returns (uint[] memory);
+    // Royalty support for various other standards
+    function getFeeRecipients(uint256 tokenId) external view returns (address payable[] memory);
+    function getFeeBps(uint256 tokenId) external view returns (uint[] memory);
+    function getFees(uint256 tokenId) external view returns (address payable[] memory, uint256[] memory);
+    function royaltyInfo(uint256 tokenId, uint256 value, bytes calldata data) external view returns (address, uint256, bytes memory);
 
 }

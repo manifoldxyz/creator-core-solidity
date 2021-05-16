@@ -302,6 +302,14 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             results = await creator.getRoyalties(tokenId1);
             assert.equal(results[0].length, 2);
             assert.equal(results[1].length, 2);
+            results = await creator.getFees(tokenId1);
+            assert.equal(results[0].length, 2);
+            assert.equal(results[1].length, 2);
+            results = await creator.getFeeRecipients(tokenId1);
+            assert.equal(results.length, 2);
+            results = await creator.getFeeBps(tokenId1);
+            assert.equal(results.length, 2);
+            await truffleAssert.reverts(creator.royaltyInfo(tokenId1, 10000, "0x0"), "ERC721Creator: Only works if there are at most 1 royalty receivers");
 
             const extension = await MockERC721CreatorExtension.new(creator.address);
             await creator.registerExtension(extension.address, 'http://extension/', {from:owner});
@@ -322,6 +330,8 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             results = await creator.getRoyalties(tokenId2);
             assert.equal(results[0].length, 1);
             assert.equal(results[1].length, 1);
+            results = await creator.royaltyInfo(tokenId2, 10000, "0x0");
+            assert.deepEqual(web3.utils.toBN(10000*123/10000), results[1]);
 
             await creator.mintBase(anyone, {from:owner});
             var tokenId3 = 3;

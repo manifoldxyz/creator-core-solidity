@@ -54,10 +54,53 @@ abstract contract ERC721CreatorCore is ReentrancyGuard, IERC721CreatorCore, ERC1
     mapping (uint256 => uint256[]) internal _tokenRoyaltyBPS;
 
     /**
+     * External interface identifiers for royalties
+     */
+
+    /**
+     *  @dev ERC721CreatorCore
+     *
+     *  bytes4(keccak256('getRoyalties(uint256)')) == 0xbb3bafd6
+     *
+     *  => 0xbb3bafd6 = 0xbb3bafd6
+     */
+    bytes4 private constant _INTERFACE_ID_ROYALTIES_ERC721CREATORCORE = 0xbb3bafd6;
+
+    /**
+     *  @dev Rarible: RoyaltiesV1
+     *
+     *  bytes4(keccak256('getFeeRecipients(uint256)')) == 0xb9c4d9fb
+     *  bytes4(keccak256('getFeeBps(uint256)')) == 0x0ebd4c7f
+     *
+     *  => 0xb9c4d9fb ^ 0x0ebd4c7f = 0xb7799584
+     */
+    bytes4 private constant _INTERFACE_ID_ROYALTIES_RARIBLE = 0xb7799584;
+
+    /**
+     *  @dev Foundation
+     *
+     *  bytes4(keccak256('getFees(uint256)')) == 0xd5a06d4c
+     *
+     *  => 0xd5a06d4c = 0xd5a06d4c
+     */
+    bytes4 private constant _INTERFACE_ID_ROYALTIES_FOUNDATION = 0xd5a06d4c;
+
+    /**
+     *  @dev EIP-2981
+     *
+     * bytes4(keccak256("royaltyInfo(uint256,uint256,bytes)")) == 0x6057361d
+     *
+     * => 0x6057361d = 0x6057361d
+     */
+    bytes4 private constant _INTERFACE_ID_ROYALTIES_EIP2981 = 0x6057361d;
+
+    /**
      * @dev See {IERC165-supportsInterface}.
      */
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
-        return interfaceId == type(IERC721CreatorCore).interfaceId || super.supportsInterface(interfaceId);
+        return interfaceId == type(IERC721CreatorCore).interfaceId || super.supportsInterface(interfaceId)
+            || interfaceId == _INTERFACE_ID_ROYALTIES_ERC721CREATORCORE || interfaceId == _INTERFACE_ID_ROYALTIES_EIP2981 
+            || interfaceId == _INTERFACE_ID_ROYALTIES_FOUNDATION || interfaceId == _INTERFACE_ID_ROYALTIES_EIP2981;
     }
 
     /**
@@ -272,14 +315,14 @@ abstract contract ERC721CreatorCore is ReentrancyGuard, IERC721CreatorCore, ERC1
         delete _tokensExtension[tokenId];
     }
 
-    function getFeeRecipients(uint256 id) external view virtual override returns (address payable[] memory) {
-        return _getRoyaltyReceivers(id);
+
+    /**
+     * Helper to get royalties for a token
+     */
+    function _getRoyalties(uint256 tokenId) view internal returns (address payable[] storage, uint256[] storage) {
+        return (_getRoyaltyReceivers(tokenId), _getRoyaltyBPS(tokenId));
     }
 
-    function getFeeBps(uint256 id) external view virtual override returns (uint[] memory) {
-        return _getRoyaltyBPS(id);
-    }
-    
     /**
      * Helper to get royalty receivers for a token
      */
@@ -303,6 +346,17 @@ abstract contract ERC721CreatorCore is ReentrancyGuard, IERC721CreatorCore, ERC1
         }
         return _extensionRoyaltyBPS[address(this)];        
     }
+
+    function _getRoyaltyInfo(uint256 tokenId, uint256 value) view internal returns (address receiver, uint256 amount, bytes memory data){
+        address payable[] storage receivers = _getRoyaltyReceivers(tokenId);
+        require(receivers.length <= 1, "ERC721Creator: Only works if there are at most 1 royalty receivers");
+        
+        if (receivers.length == 0) {
+            return (address(this), 0, data);
+        }
+        return (receivers[0], _getRoyaltyBPS(tokenId)[0]*value/10000, data);
+    }
+
 
     /**
      * Helper to shorten royalties arrays if it is too long
@@ -360,6 +414,7 @@ abstract contract ERC721CreatorCore is ReentrancyGuard, IERC721CreatorCore, ERC1
             emit ExtensionRoyaltiesUpdated(extension, receivers, basisPoints);
         }
     }
+
 
     /**
      * Approve a transfer

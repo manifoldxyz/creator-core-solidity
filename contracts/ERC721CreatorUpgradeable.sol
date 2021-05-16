@@ -297,8 +297,40 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
      */
     function getRoyalties(uint256 tokenId) external view virtual override returns (address payable[] memory, uint256[] memory) {
         require(_exists(tokenId), "Nonexistent token");
-        return (_getRoyaltyReceivers(tokenId), _getRoyaltyBPS(tokenId));
+        return _getRoyalties(tokenId);
     }
+
+    /**
+     * @dev {See IERC721CreatorCore-getFees}.
+     */
+    function getFees(uint256 tokenId) external view virtual override returns (address payable[] memory, uint256[] memory) {
+        require(_exists(tokenId), "Nonexistent token");
+        return _getRoyalties(tokenId);
+    }
+
+    /**
+     * @dev {See IERC721CreatorCore-getFeeRecipients}.
+     */
+    function getFeeRecipients(uint256 tokenId) external view virtual override returns (address payable[] memory) {
+        require(_exists(tokenId), "Nonexistent token");
+        return _getRoyaltyReceivers(tokenId);
+    }
+
+    /**
+     * @dev {See IERC721CreatorCore-getFeeBps}.
+     */
+    function getFeeBps(uint256 tokenId) external view virtual override returns (uint[] memory) {
+        require(_exists(tokenId), "Nonexistent token");
+        return _getRoyaltyBPS(tokenId);
+    }
+    
+    /**
+     * @dev {See IERC721CreatorCore-royaltyInfo}.
+     */
+    function royaltyInfo(uint256 tokenId, uint256 value, bytes calldata) external view virtual override returns (address, uint256, bytes memory) {
+        require(_exists(tokenId), "Nonexistent token");
+        return _getRoyaltyInfo(tokenId, value);
+    } 
 
     /**
      * @dev See {IERC721Metadata-tokenURI}.

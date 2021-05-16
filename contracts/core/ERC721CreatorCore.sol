@@ -184,14 +184,13 @@ abstract contract ERC721CreatorCore is ReentrancyGuard, IERC721CreatorCore, ERC1
     }
 
     /**
-     * @dev Set whether or not tokens of an extension require approval for transfer
+     * @dev See {IERC721CreatorCore-setApproveTransferExtension}.
      */
-    function _setExtensionApproveTransfer(address extension, bool enabled) internal {
-        require(_extensions.contains(extension), "ERC721Creator: Invalid extension");
-        require(!enabled || ERC165Checker.supportsInterface(extension, type(IERC721CreatorExtensionApproveTransfer).interfaceId), "ERC721Creator: Requires extension to implement IERC721CreatorExtensionApproveTransfer");
-        if (_extensionApproveTransfers[extension] != enabled) {
-            _extensionApproveTransfers[extension] = enabled;
-            emit ExtensionApproveTransferUpdated(extension, enabled);
+    function setApproveTransferExtension(bool enabled) external override extensionRequired {
+        require(!enabled || ERC165Checker.supportsInterface(msg.sender, type(IERC721CreatorExtensionApproveTransfer).interfaceId), "ERC721Creator: Requires extension to implement IERC721CreatorExtensionApproveTransfer");
+        if (_extensionApproveTransfers[msg.sender] != enabled) {
+            _extensionApproveTransfers[msg.sender] = enabled;
+            emit ExtensionApproveTransferUpdated(msg.sender, enabled);
         }
     }
 

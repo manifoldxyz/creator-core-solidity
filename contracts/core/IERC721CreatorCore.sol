@@ -110,10 +110,10 @@ interface IERC721CreatorCore is IERC165 {
     function setMintPermissions(address extension, address permissions) external;
 
     /**
-     * @dev Configure so transfers of tokens of the given extension get approval
+     * @dev Configure so transfers of tokens created by the caller (must be extension) gets approval
      * from the extension before transferring
      */
-    function setExtensionApproveTransfer(address extension, bool enabled) external;
+    function setApproveTransferExtension(bool enabled) external;
 
     /**
      * @dev mint a token with no extension. Can only be called by an admin.

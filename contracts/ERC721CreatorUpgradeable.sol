@@ -139,13 +139,6 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
     }
 
     /**
-     * @dev See {IERC721CreatorCore-setExtensionApproveTransfer}.
-     */
-    function setExtensionApproveTransfer(address extension, bool enabled) external override adminRequired {
-        _setExtensionApproveTransfer(extension, enabled);
-    }
-
-    /**
      * @dev See {IERC721CreatorCore-mintBase}.
      */
     function mintBase(address to) public override nonReentrant adminRequired virtual returns(uint256) {

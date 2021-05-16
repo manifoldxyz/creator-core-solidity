@@ -33,19 +33,16 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
         });
 
         it('creator extension override test', async function () {
-            var extension = await MockERC721CreatorExtensionOverride.new(creator.address);
-            var badExtension = await MockERC721CreatorExtension.new(creator.address);
-            await truffleAssert.reverts(creator.setExtensionApproveTransfer(extension.address, true, {from:owner}), "ERC721Creator: Invalid extension");
+            var extension = await MockERC721CreatorExtensionOverride.new(creator.address, {from:owner});
             await creator.registerExtension(extension.address, 'http://extension/', {from:owner});
-            await creator.registerExtension(badExtension.address, 'http://badExtension/', {from:owner});
-            await truffleAssert.reverts(creator.setExtensionApproveTransfer(badExtension.address, true, {from:owner}), "ERC721Creator: Requires extension to implement IERC721CreatorExtensionApproveTransfer");
 
             await extension.testMint(anyone);
             var tokenId = 1;
             await creator.transferFrom(anyone, another, tokenId, {from:anyone});
-            await creator.setExtensionApproveTransfer(extension.address, true, {from:owner});
+            await truffleAssert.reverts(extension.setApproveTransfer(creator.address, true, {from:anyone}), "AdminControl: Must be owner or admin");
+            await extension.setApproveTransfer(creator.address, true, {from:owner});
             await truffleAssert.reverts(creator.transferFrom(another, anyone, tokenId, {from:another}), "ERC721Creator: Extension approval failure");
-            await extension.setApproveTransfer(true);
+            await extension.setApproveEnabled(true);
             await creator.transferFrom(another, anyone, tokenId, {from:another});
 
             await extension.setTokenURI('override');
@@ -78,7 +75,7 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             await truffleAssert.reverts(creator.methods['setRoyalties(address[],uint256[])']([anyone], [100], {from:anyone}), "AdminControl: Must be owner or admin");
             await truffleAssert.reverts(creator.methods['setRoyalties(uint256,address[],uint256[])'](1, [anyone], [100], {from:anyone}), "AdminControl: Must be owner or admin");
             await truffleAssert.reverts(creator.methods['setRoyaltiesExtension(address,address[],uint256[])'](anyone, [anyone], [100], {from:anyone}), "AdminControl: Must be owner or admin");
-            await truffleAssert.reverts(creator.setExtensionApproveTransfer(anyone, true, {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(creator.setApproveTransferExtension(true, {from:anyone}), "ERC721Creator: Must be registered extension");
         });
         
         it('creator blacklist extension test', async function() {
@@ -383,19 +380,16 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
         });
 
         it('creator enumerable extension override test', async function () {
-            var extension = await MockERC721CreatorExtensionOverride.new(creator.address);
-            var badExtension = await MockERC721CreatorExtension.new(creator.address);
-            await truffleAssert.reverts(creator.setExtensionApproveTransfer(extension.address, true, {from:owner}), "ERC721Creator: Invalid extension");
+            var extension = await MockERC721CreatorExtensionOverride.new(creator.address, {from:owner});
             await creator.registerExtension(extension.address, 'http://extension/', {from:owner});
-            await creator.registerExtension(badExtension.address, 'http://badExtension/', {from:owner});
-            await truffleAssert.reverts(creator.setExtensionApproveTransfer(badExtension.address, true, {from:owner}), "ERC721Creator: Requires extension to implement IERC721CreatorExtensionApproveTransfer");
 
             await extension.testMint(anyone);
             var tokenId = 1;
             await creator.transferFrom(anyone, another, tokenId, {from:anyone});
-            await creator.setExtensionApproveTransfer(extension.address, true, {from:owner});
+            await truffleAssert.reverts(extension.setApproveTransfer(creator.address, true, {from:anyone}), "AdminControl: Must be owner or admin");
+            await extension.setApproveTransfer(creator.address, true, {from:owner});
             await truffleAssert.reverts(creator.transferFrom(another, anyone, tokenId, {from:another}), "ERC721Creator: Extension approval failure");
-            await extension.setApproveTransfer(true);
+            await extension.setApproveEnabled(true);
             await creator.transferFrom(another, anyone, tokenId, {from:another});
 
             await extension.setTokenURI('override');

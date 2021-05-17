@@ -19,8 +19,6 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
 
     using EnumerableSet for EnumerableSet.AddressSet;
 
-    mapping(uint256 => uint256) private _tokenCounts;
-
     /**
      * @dev See {IERC165-supportsInterface}.
      */
@@ -32,7 +30,7 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
      * @dev See {ICreatorCore-setApproveTransferExtension}.
      */
     function setApproveTransferExtension(bool enabled) external override extensionRequired {
-        require(!enabled || ERC165Checker.supportsInterface(msg.sender, type(IERC1155CreatorExtensionApproveTransfer).interfaceId), "ERC1155CreatorCore: Requires extension to implement IERC1155CreatorExtensionApproveTransfer");
+        require(!enabled || ERC165Checker.supportsInterface(msg.sender, type(IERC1155CreatorExtensionApproveTransfer).interfaceId), "CreatorCore: Requires extension to implement IERC1155CreatorExtensionApproveTransfer");
         if (_extensionApproveTransfers[msg.sender] != enabled) {
             _extensionApproveTransfers[msg.sender] = enabled;
             emit ExtensionApproveTransferUpdated(msg.sender, enabled);
@@ -44,7 +42,7 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
      */
     function _setMintPermissions(address extension, address permissions) internal {
         require(_extensions.contains(extension), "CreatorCore: Invalid extension");
-        require(permissions == address(0x0) || ERC165Checker.supportsInterface(permissions, type(IERC1155CreatorMintPermissions).interfaceId), "ERC1155CreatorCore: Invalid address");
+        require(permissions == address(0x0) || ERC165Checker.supportsInterface(permissions, type(IERC1155CreatorMintPermissions).interfaceId), "CreatorCore: Invalid address");
         if (_extensionPermissions[extension] != permissions) {
             _extensionPermissions[extension] = permissions;
             emit MintPermissionsUpdated(extension, permissions, msg.sender);
@@ -63,22 +61,17 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
     /**
      * Post mint actions
      */
-    function _postMint(uint256[] memory tokenIds, uint256[] memory amounts) internal virtual {
-         for (uint i = 0; i < tokenIds.length; i++) {
-             _tokenCounts[tokenIds[i]] += amounts[i];
-         }
-    }
+    function _postMint(uint256[] memory tokenIds, uint256[] memory amounts) internal virtual { }
 
 
     /**
      * Post burn actions
      */
     function _postBurn(address owner, uint256[] memory tokenIds, uint256[] memory amounts) internal virtual {
-        require(tokenIds.length > 0, "ERC1155CreatorCore: Invalid input");
+        require(tokenIds.length > 0, "CreatorCore: Invalid input");
         address extension = _tokensExtension[tokenIds[0]];
         for (uint i = 0; i < tokenIds.length; i++) {
-            require(_tokensExtension[tokenIds[i]] == extension, "ERC1155CreatorCore: Mismatched token originators");
-            _tokenCounts[tokenIds[i]] -= amounts[i];
+            require(_tokensExtension[tokenIds[i]] == extension, "CreatorCore: Mismatched token originators");
         }
         // Callback to originating extension if needed
         if (extension != address(this)) {
@@ -92,18 +85,25 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
      * Approve a transfer
      */
     function _approveTransfer(address from, address to, uint256[] memory tokenIds, uint256[] memory amounts) internal {
-        require(tokenIds.length > 0, "ERC1155CreatorCore: Invalid input");
+        require(tokenIds.length > 0, "CreatorCore: Invalid input");
         address extension = _tokensExtension[tokenIds[0]];
         for (uint i = 0; i < tokenIds.length; i++) {
-            require(_tokensExtension[tokenIds[i]] == extension, "ERC1155CreatorCore: Mismatched token originators");
+            require(_tokensExtension[tokenIds[i]] == extension, "CreatorCore: Mismatched token originators");
         }
         if (_extensionApproveTransfers[extension]) {
-            require(IERC1155CreatorExtensionApproveTransfer(extension).approveTransfer(from, to, tokenIds, amounts), "ERC1155Creator: Extension approval failure");
+            require(IERC1155CreatorExtensionApproveTransfer(extension).approveTransfer(from, to, tokenIds, amounts), "CreatorCore: Extension approval failure");
         }
     }
 
-    function _createSingletonArray(uint256 element) internal pure returns (uint256[] memory) {
-        uint256[] memory array = new uint256[](1);
+    function _createUint256Array(uint256 element) internal pure returns (uint256[] memory array) {
+        array = new uint256[](1);
+        array[0] = element;
+
+        return array;
+    }
+
+    function _createStringArray(string memory element) internal pure returns (string[] memory array) {
+        array = new string[](1);
         array[0] = element;
 
         return array;

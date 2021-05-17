@@ -13,24 +13,15 @@ interface IERC1155CreatorCore is ICreatorCore {
 
     /**
      * @dev mint a token with no extension. Can only be called by an admin.
-     * Returns tokenId minted
-     */
-    function mintBaseNew(address to, uint256 amount) external returns (uint256);
-
-    /**
-     * @dev mint a token with no extension. Can only be called by an admin.
+     * Use an empty uri string if you want to use the default uri.
      * Returns tokenId minted
      */
     function mintBaseNew(address to, uint256 amount, string calldata uri) external returns (uint256);
 
     /**
      * @dev batch mint a token with no extension. Can only be called by an admin.
-     * Returns tokenId minted
-     */
-    function mintBaseBatchNew(address to, uint256[] calldata amounts) external returns (uint256[] memory);
-
-    /**
-     * @dev batch mint a token with no extension. Can only be called by an admin.
+     * Use an empty uris array if you want to use the default uri for all tokens.
+     * Use an empty uri string if you want to use the default uri for one token.
      * Returns tokenId minted
      */
     function mintBaseBatchNew(address to, uint256[] calldata amounts, string[] calldata uris) external returns (uint256[] memory);
@@ -47,24 +38,15 @@ interface IERC1155CreatorCore is ICreatorCore {
 
     /**
      * @dev mint a token. Can only be called by a registered extension.
-     * Returns tokenId minted
-     */
-    function mintExtensionNew(address to, uint256 amount) external returns (uint256);
-
-    /**
-     * @dev mint a token. Can only be called by a registered extension.
+     * Use an empty uri string if you want to use the default uri.
      * Returns tokenId minted
      */
     function mintExtensionNew(address to, uint256 amount, string calldata uri) external returns (uint256);
 
     /**
      * @dev batch mint a token. Can only be called by a registered extension.
-     * Returns tokenIds minted
-     */
-    function mintExtensionBatchNew(address to, uint256[] calldata amounts) external returns (uint256[] memory);
-
-    /**
-     * @dev batch mint a token. Can only be called by a registered extension.
+     * Use an empty uris array if you want to use the default uri for all tokens.
+     * Use an empty uri string if you want to use the default uri for one token.
      * Returns tokenId minted
      */
     function mintExtensionBatchNew(address to, uint256[] calldata amounts, string[] calldata uris) external returns (uint256[] memory);

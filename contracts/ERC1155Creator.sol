@@ -136,71 +136,16 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
     /**
      * @dev See {IERC1155CreatorCore-mintBaseNew}.
      */
-    function mintBaseNew(address to, uint256 amount) public virtual override nonReentrant adminRequired returns(uint256) {
-        return _mintBaseNew(to, amount, "");
-    }
-
-    /**
-     * @dev See {IERC1155CreatorCore-mintBaseNew}.
-     */
     function mintBaseNew(address to, uint256 amount, string calldata uri_) public virtual override nonReentrant adminRequired returns(uint256) {
-        return _mintBaseNew(to, amount, uri_);
-    }
-
-    /**
-     * @dev See {IERC1155CreatorCore-mintBaseBatchNew}.
-     */
-    function mintBaseBatchNew(address to, uint256[] calldata amounts) public virtual override nonReentrant adminRequired returns(uint256[] memory) {
-        return _mintBaseBatchNew(to, amounts, new string[](0));
+        return _mintNew(address(this), to, _createUint256Array(amount), _createStringArray(uri_))[0];
     }
 
     /**
      * @dev See {IERC1155CreatorCore-mintBaseBatchNew}.
      */
     function mintBaseBatchNew(address to, uint256[] calldata amounts, string[] calldata uris) public virtual override nonReentrant adminRequired returns(uint256[] memory) {
-        require(amounts.length == uris.length, "ERC1155Creator: Invalid input");
-        return _mintBaseBatchNew(to, amounts, uris);
-    }
-
-    /**
-     * @dev Mint token with no extension
-     */
-    function _mintBaseNew(address to, uint256 amount, string memory uri_) internal virtual returns(uint256 tokenId) {
-        _tokenCount++;
-        tokenId = _tokenCount;
-
-        // Track the extension that minted the token
-        _tokensExtension[tokenId] = address(this);
-
-        _mint(to, tokenId, amount, new bytes(0));
-
-        if (bytes(uri_).length > 0) {
-            _tokenURIs[tokenId] = uri_;
-        }
-
-        // Call post mint
-        _postMint(_createSingletonArray(tokenId), _createSingletonArray(amount));
-        return tokenId;
-    }
-
-    /**
-     * @dev Mint token with no extension (batch)
-     */
-    function _mintBaseBatchNew(address to, uint256[] calldata amounts, string[] memory uris) internal returns(uint256[] memory tokenIds) {
-        tokenIds = new uint256[](amounts.length);
-        for (uint i = 0; i < amounts.length; i++) {
-            _tokenCount++;
-            tokenIds[i] = _tokenCount;
-        }
-        _mintBatch(to, tokenIds, amounts, new bytes(0));
-
-        if (uris.length > 0) {
-            for (uint i = 0; i < amounts.length; i++) {
-                _tokenURIs[tokenIds[i]] = uris[i];
-            }
-        }
-        _postMint(tokenIds, amounts);
-        return tokenIds;
+        require(uris.length == 0 || amounts.length == uris.length, "ERC1155Creator: Invalid input");
+        return _mintNew(address(this), to, amounts, uris);
     }
 
     /**
@@ -208,9 +153,7 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
      */
     function mintBaseExisting(address to, uint256 tokenId, uint256 amount) public virtual override nonReentrant adminRequired {
         require(_tokensExtension[tokenId] == address(this), "ERC1155Creator: Specified token was created by an extension");
-        _mint(to, tokenId, amount, new bytes(0));
-        // Call post mint
-        _postMint(_createSingletonArray(tokenId), _createSingletonArray(amount));
+        _mintExisting(address(this), to, _createUint256Array(tokenId), _createUint256Array(amount));
     }
 
     /**
@@ -221,86 +164,23 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
         for (uint i = 0; i < tokenIds.length; i++) {
             require(_tokensExtension[tokenIds[i]] == address(this), "ERC1155Creator: A specified token was created by an extension");
         }
-        _mintBatch(to, tokenIds, amounts, new bytes(0));
-        // Call post mint
-        _postMint(tokenIds, amounts);
-    }
-
-    /**
-     * @dev See {IERC1155CreatorCore-mintExtensionNew}.
-     */
-    function mintExtensionNew(address to, uint256 amount) public virtual override nonReentrant extensionRequired returns(uint256) {
-        return _mintExtensionNew(to, amount, "");
+        _mintExisting(address(this), to, tokenIds, amounts);
     }
 
     /**
      * @dev See {IERC1155CreatorCore-mintExtensionNew}.
      */
     function mintExtensionNew(address to, uint256 amount, string calldata uri_) public virtual override nonReentrant extensionRequired returns(uint256) {
-        return _mintExtensionNew(to, amount, uri_);
+        return _mintNew(msg.sender, to, _createUint256Array(amount), _createStringArray(uri_))[0];
     }
 
     /**
-     * @dev See {IERC1155CreatorCore-mintExtensionBatchNew}.
-     */
-    function mintExtensionBatchNew(address to, uint256[] calldata amounts) public virtual override nonReentrant extensionRequired returns(uint256[] memory) {
-        return _mintExtensionBatchNew(to, amounts, new string[](0));
-    }
-
     /**
      * @dev See {IERC1155CreatorCore-mintExtensionBatchNew}.
      */
     function mintExtensionBatchNew(address to, uint256[] calldata amounts, string[] calldata uris) public virtual override nonReentrant extensionRequired returns(uint256[] memory tokenIds) {
-        require(amounts.length == uris.length, "ERC1155Creator: Invalid input");
-        return _mintExtensionBatchNew(to, amounts, uris);
-    }
-    
-    /**
-     * @dev Mint token via extension
-     */
-    function _mintExtensionNew(address to, uint256 amount, string memory uri_) internal virtual returns(uint256 tokenId) {
-        _tokenCount++;
-        tokenId = _tokenCount;
-
-        // Track the extension that minted the token
-        _tokensExtension[tokenId] = msg.sender;
-
-        _checkMintPermissions(to, _createSingletonArray(tokenId), _createSingletonArray(amount));
-
-        _mint(to, tokenId, amount, new bytes(0));
-
-        if (bytes(uri_).length > 0) {
-            _tokenURIs[tokenId] = uri_;
-        }
-        
-        // Call post mint
-        _postMint(_createSingletonArray(tokenId), _createSingletonArray(amount));
-        return tokenId;
-    }
-
-    /**
-     * @dev Mint token with extension (batch)
-     */
-    function _mintExtensionBatchNew(address to, uint256[] calldata amounts, string[] memory uris) internal returns(uint256[] memory tokenIds) {
-        tokenIds = new uint256[](amounts.length);
-        for (uint i = 0; i < amounts.length; i++) {
-            _tokenCount++;
-            tokenIds[i] = _tokenCount;
-            // Track the extension that minted the token
-            _tokensExtension[_tokenCount] = msg.sender;
-        }
-
-        _checkMintPermissions(to, tokenIds, amounts);
-
-        _mintBatch(to, tokenIds, amounts, new bytes(0));
-
-        if (uris.length > 0) {
-            for (uint i = 0; i < amounts.length; i++) {
-                _tokenURIs[tokenIds[i]] = uris[i];
-            }
-        }
-        _postMint(tokenIds, amounts);
-        return tokenIds;
+        require(uris.length == 0 || amounts.length == uris.length, "ERC1155Creator: Invalid input");
+        return _mintNew(msg.sender, to, amounts, uris);
     }
 
     /**
@@ -308,10 +188,7 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
      */
     function mintExtensionExisting(address to, uint256 tokenId, uint256 amount) public virtual override nonReentrant adminRequired {
         require(_tokensExtension[tokenId] == address(this), "ERC1155Creator: Specified token was created by an extension");
-        _checkMintPermissions(to, _createSingletonArray(tokenId), _createSingletonArray(amount));
-        _mint(to, tokenId, amount, new bytes(0));
-        // Call post mint
-        _postMint(_createSingletonArray(tokenId), _createSingletonArray(amount));
+        _mintExisting(msg.sender, to, _createUint256Array(tokenId), _createUint256Array(amount));
     }
 
     /**
@@ -320,11 +197,55 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
     function mintExtensionBatchExisting(address to, uint256[] calldata tokenIds, uint256[] calldata amounts) public virtual override nonReentrant adminRequired {
         require(tokenIds.length == amounts.length, "ERC1155Creator: Invalid input");
         for (uint i = 0; i < tokenIds.length; i++) {
-            require(_tokensExtension[tokenIds[i]] == address(this), "ERC1155Creator: A specified token was created by an extension");
+            require(_tokensExtension[tokenIds[i]] == address(this), "ERC1155Creator: A specified token was created by a different extension");
         }
-        _checkMintPermissions(to, tokenIds, amounts);
-        _mintBatch(to, tokenIds, amounts, new bytes(0));
-        // Call post mint
+        _mintExisting(msg.sender, to, tokenIds, amounts);
+    }
+
+    /**
+     * @dev Mint new tokens
+     */
+    function _mintNew(address extension, address to, uint256[] memory amounts, string[] memory uris) internal returns(uint256[] memory tokenIds) {
+        tokenIds = new uint256[](amounts.length);
+        for (uint i = 0; i < amounts.length; i++) {
+            _tokenCount++;
+            tokenIds[i] = _tokenCount;
+            // Track the extension that minted the token
+            _tokensExtension[_tokenCount] = extension;
+        }
+
+        if (extension != address(this)) {
+            _checkMintPermissions(to, tokenIds, amounts);
+        }
+
+        if (tokenIds.length == 1) {
+            _mint(to, tokenIds[0], amounts[0], new bytes(0));        
+        } else {
+            _mintBatch(to, tokenIds, amounts, new bytes(0));
+        }
+
+        for (uint i = 0; i < amounts.length; i++) {
+            if (bytes(uris[i]).length > 0) {
+                _tokenURIs[tokenIds[i]] = uris[i];
+            }
+        }
+        _postMint(tokenIds, amounts);
+        return tokenIds;
+    }
+
+    /**
+     * @dev Mint existing tokens
+     */
+    function _mintExisting(address extension, address to, uint256[] memory tokenIds, uint256[] memory amounts) internal {
+        if (extension != address(this)) {
+            _checkMintPermissions(to, tokenIds, amounts);
+        }
+
+        if (tokenIds.length == 1) {
+            _mint(to, tokenIds[0], amounts[0], new bytes(0));        
+        } else {
+            _mintBatch(to, tokenIds, amounts, new bytes(0));
+        }
         _postMint(tokenIds, amounts);
     }
 
@@ -341,7 +262,7 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
     function burn(address account, uint256 tokenId, uint256 amount) public virtual override nonReentrant {
         require(account == msg.sender || isApprovedForAll(account, msg.sender), "ERC1155Creator: caller is not owner nor approved");
         _burn(account, tokenId, amount);
-        _postBurn(account, _createSingletonArray(tokenId), _createSingletonArray(amount));
+        _postBurn(account, _createUint256Array(tokenId), _createUint256Array(amount));
     }
 
     /**

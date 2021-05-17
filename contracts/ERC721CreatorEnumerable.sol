@@ -29,16 +29,16 @@ contract ERC721CreatorEnumerable is ERC721Creator, ERC721CreatorCoreEnumerable, 
         ERC721Enumerable._beforeTokenTransfer(from, to, tokenId);
     }
 
-    function _postMintBase(address to, uint256 tokenId) internal override(ERC721CreatorCore, ERC721CreatorCoreEnumerable) virtual {
+    function _postMintBase(address to, uint256 tokenId) internal virtual override(ERC721CreatorCore, ERC721CreatorCoreEnumerable) {
         ERC721CreatorCoreEnumerable._postMintBase(to, tokenId);
     }
 
-    function _postMintExtension(address to, uint256 tokenId) internal override(ERC721CreatorCore, ERC721CreatorCoreEnumerable) virtual {
+    function _postMintExtension(address to, uint256 tokenId) internal virtual override(ERC721CreatorCore, ERC721CreatorCoreEnumerable) {
         ERC721CreatorCoreEnumerable._postMintExtension(to, tokenId);
     }
 
-    function _preBurn(address owner, uint256 tokenId) internal override(ERC721CreatorCore, ERC721CreatorCoreEnumerable) virtual {
-        ERC721CreatorCoreEnumerable._preBurn(owner, tokenId);
+    function _postBurn(address owner, uint256 tokenId) internal virtual override(ERC721CreatorCore, ERC721CreatorCoreEnumerable) {
+        ERC721CreatorCoreEnumerable._postBurn(owner, tokenId);
     }
 
     function tokenURI(uint256 tokenId) public view virtual override(ERC721Creator, ERC721) returns (string memory) {

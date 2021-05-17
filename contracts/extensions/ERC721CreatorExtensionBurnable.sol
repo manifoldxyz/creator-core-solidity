@@ -8,21 +8,21 @@ import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 
 import "../core/IERC721CreatorCore.sol";
 import "./IERC721CreatorExtensionBurnable.sol";
-import "./ERC721CreatorExtensionBase.sol";
+import "./CreatorExtensionBase.sol";
 
 /**
  * @dev Suggested implementation for extensions that want to receive onBurn callbacks
  * Mint tracks the creators/tokens created, and onBurn only accepts callbacks from
  * the creator of a token created.
  */
-abstract contract ERC721CreatorExtensionBurnable is ERC721CreatorExtensionBase, IERC721CreatorExtensionBurnable {
+abstract contract ERC721CreatorExtensionBurnable is CreatorExtensionBase, IERC721CreatorExtensionBurnable {
 
     mapping (uint256 => address) private _tokenCreators;
 
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721CreatorExtensionBase, IERC165) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(CreatorExtensionBase, IERC165) returns (bool) {
         return interfaceId == type(IERC721CreatorExtensionBurnable).interfaceId
             || super.supportsInterface(interfaceId);
     }

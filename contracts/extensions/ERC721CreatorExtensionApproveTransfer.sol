@@ -6,18 +6,18 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "../core/IERC721CreatorCore.sol";
-import "./ERC721CreatorExtensionBase.sol";
+import "./CreatorExtensionBase.sol";
 import "./IERC721CreatorExtensionApproveTransfer.sol";
 
 /**
  * @dev Base implementation for extensions that require the creator to
  * check with it before a transfer occurs
  */
-abstract contract ERC721CreatorExtensionApproveTransfer is ERC721CreatorExtensionBase, IERC721CreatorExtensionApproveTransfer {
+abstract contract ERC721CreatorExtensionApproveTransfer is CreatorExtensionBase, IERC721CreatorExtensionApproveTransfer {
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721CreatorExtensionBase, IERC165) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(CreatorExtensionBase, IERC165) returns (bool) {
         return interfaceId == type(IERC721CreatorExtensionApproveTransfer).interfaceId
             || super.supportsInterface(interfaceId);
     }

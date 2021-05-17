@@ -4,14 +4,14 @@ pragma solidity ^0.8.0;
 
 /// @author: manifold.xyz
 
-import "./IERC721CreatorExtensionBase.sol";
+import "./ICreatorExtensionBase.sol";
 
 /**
  * @dev Your extension is required to implement this interface if it wishes
  * to receive the onBurn callback whenever a token the extension created is
  * burned
  */
-interface IERC721CreatorExtensionBurnable is IERC721CreatorExtensionBase {
+interface IERC721CreatorExtensionBurnable is ICreatorExtensionBase {
     event CreatorAdded(address indexed creator, address indexed sender);
 
     /**

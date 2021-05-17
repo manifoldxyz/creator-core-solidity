@@ -4,9 +4,9 @@ pragma solidity ^0.8.0;
 
 import "../core/IERC721CreatorCore.sol";
 import "../extensions/ERC721CreatorExtensionApproveTransfer.sol";
-import "../extensions/IERC721CreatorExtensionTokenURI.sol";
+import "../extensions/ICreatorExtensionTokenURI.sol";
 
-contract MockERC721CreatorExtensionOverride is ERC721CreatorExtensionApproveTransfer, IERC721CreatorExtensionTokenURI {
+contract MockERC721CreatorExtensionOverride is ERC721CreatorExtensionApproveTransfer, ICreatorExtensionTokenURI {
 
     bool _approveEnabled;
     string _tokenURI;
@@ -20,7 +20,7 @@ contract MockERC721CreatorExtensionOverride is ERC721CreatorExtensionApproveTran
      * @dev See {IERC165-supportsInterface}.
      */
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721CreatorExtensionApproveTransfer, IERC165) returns (bool) {
-        return interfaceId == type(IERC721CreatorExtensionTokenURI).interfaceId
+        return interfaceId == type(ICreatorExtensionTokenURI).interfaceId
             || super.supportsInterface(interfaceId);
     }
 
@@ -36,8 +36,7 @@ contract MockERC721CreatorExtensionOverride is ERC721CreatorExtensionApproveTran
         _tokenURI = uri;
     }
 
-    function approveTransfer(address creator, address, address, uint256) external view virtual override returns (bool) {
-        require(creator == _creator, "Invalid");
+    function approveTransfer(address, address, uint256) external view virtual override returns (bool) {
         return _approveEnabled;
     }
 

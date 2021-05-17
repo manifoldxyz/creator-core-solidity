@@ -123,7 +123,7 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
         _extensionBalancesByOwner[msg.sender][to] += 1;        
     }
     
-    function _preBurn(address owner, uint256 tokenId) internal override(ERC721CreatorCore) virtual {
+    function _postBurn(address owner, uint256 tokenId) internal override(ERC721CreatorCore) virtual {
         address tokenExtension_ = _tokensExtension[tokenId];
 
         /*************************************************
@@ -175,7 +175,7 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
          *  END
          ********************************************************/
          
-         ERC721CreatorCore._preBurn(owner, tokenId);
+         ERC721CreatorCore._postBurn(owner, tokenId);
     }
 
 }

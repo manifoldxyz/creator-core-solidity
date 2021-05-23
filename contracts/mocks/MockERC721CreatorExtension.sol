@@ -3,8 +3,9 @@
 pragma solidity ^0.8.0;
 
 import "../extensions/ERC721CreatorExtensionBurnable.sol";
+import "../extensions/ICreatorExtensionTokenURIPrefix.sol";
 
-contract MockERC721CreatorExtension is ERC721CreatorExtensionBurnable {
+contract MockERC721CreatorExtension is ERC721CreatorExtensionBurnable, ICreatorExtensionTokenURIPrefix {
     uint256 [] _mintedTokens;
     uint256 [] _burntTokens;
     address _creator;
@@ -35,8 +36,8 @@ contract MockERC721CreatorExtension is ERC721CreatorExtensionBurnable {
         }
     }
 
-    function setTokenURIPrefix(string calldata prefix) external {
-        IERC721CreatorCore(_creator).setTokenURIPrefixExtension(prefix);
+    function setTokenURIPrefix(address creator, string calldata prefix) external override {
+        IERC721CreatorCore(creator).setTokenURIPrefixExtension(prefix);
     }
 
     function mintedTokens() external view returns(uint256[] memory) {

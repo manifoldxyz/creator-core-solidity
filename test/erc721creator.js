@@ -182,7 +182,7 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             await truffleAssert.reverts(creator.methods['setTokenURI(uint256[],string[])']([newTokenId1], ['bad'], {from:owner}), "CreatorCore: Invalid token");
             await truffleAssert.reverts(creator.methods['setTokenURI(uint256[],string[])']([], ['bad'], {from:owner}), "ERC721Creator: Invalid input");
             await creator.setTokenURIPrefix('http://prefix/', {from:owner});
-            await extension1.setTokenURIPrefix('http://extension_prefix/');
+            await extension1.setTokenURIPrefix(creator.address, 'http://extension_prefix/');
 
             assert.equal(await creator.tokenURI(newTokenId1), 'http://extension_prefix/set1');
             assert.equal(await creator.tokenURI(newTokenId2), 'http://extension_prefix/set2');

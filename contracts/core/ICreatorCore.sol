@@ -66,7 +66,7 @@ interface ICreatorCore is IERC165 {
 
     /**
      * @dev set the common prefix of an extension.  Can only be called by extension.
-     * If configured, and a token has a uri set, tokenURI will return "commonURI+tokenURI"
+     * If configured, and a token has a uri set, tokenURI will return "prefixURI+tokenURI"
      * Useful if you want to use ipfs/arweave
      */
     function setTokenURIPrefixExtension(string calldata prefix) external;
@@ -89,7 +89,7 @@ interface ICreatorCore is IERC165 {
 
     /**
      * @dev set the common prefix for tokens with no extension.  Can only be called by owner/admin.
-     * If configured, and a token has a uri set, tokenURI will return "commonURI+tokenURI"
+     * If configured, and a token has a uri set, tokenURI will return "prefixURI+tokenURI"
      * Useful if you want to use ipfs/arweave
      */
     function setTokenURIPrefix(string calldata prefix) external;

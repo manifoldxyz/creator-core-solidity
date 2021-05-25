@@ -15,14 +15,13 @@ import "./IERC721CreatorExtensionApproveTransfer.sol";
  * @dev Suggested implementation for extensions that require the creator to
  * check with it before a transfer occurs
  */
-abstract contract ERC721CreatorExtensionApproveTransfer is ERC721CreatorExtension, AdminControl, IERC721CreatorExtensionApproveTransfer {
+abstract contract ERC721CreatorExtensionApproveTransfer is AdminControl, ERC721CreatorExtension, IERC721CreatorExtensionApproveTransfer {
 
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(AdminControl, IERC165) returns (bool) {
-        return interfaceId == LEGACY_EXTENSION_INTERFACE
-            || interfaceId == type(IERC721CreatorExtensionApproveTransfer).interfaceId
+    function supportsInterface(bytes4 interfaceId) public view virtual override(AdminControl, CreatorExtension, IERC165) returns (bool) {
+        return interfaceId == type(IERC721CreatorExtensionApproveTransfer).interfaceId
             || super.supportsInterface(interfaceId);
     }
 

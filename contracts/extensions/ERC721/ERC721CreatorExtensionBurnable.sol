@@ -16,15 +16,15 @@ import "./IERC721CreatorExtensionBurnable.sol";
  * Mint tracks the creators/tokens created, and onBurn only accepts callbacks from
  * the creator of a token created.
  */
-abstract contract ERC721CreatorExtensionBurnable is ERC721CreatorExtension, AdminControl, IERC721CreatorExtensionBurnable {
+abstract contract ERC721CreatorExtensionBurnable is AdminControl, ERC721CreatorExtension, IERC721CreatorExtensionBurnable {
 
     mapping (uint256 => address) private _tokenCreators;
 
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(AdminControl, IERC165) returns (bool) {
-        return interfaceId == LEGACY_EXTENSION_INTERFACE || interfaceId == LEGACY_EXTENSION_BURNABLE_INTERFACE
+    function supportsInterface(bytes4 interfaceId) public view virtual override(AdminControl, CreatorExtension, IERC165) returns (bool) {
+        return interfaceId == LEGACY_ERC721_EXTENSION_BURNABLE_INTERFACE
             || interfaceId == type(IERC721CreatorExtensionBurnable).interfaceId
             || super.supportsInterface(interfaceId);
     }

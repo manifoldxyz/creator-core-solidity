@@ -35,6 +35,9 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
         it('creator extension override test', async function () {
             var extension = await MockERC721CreatorExtensionOverride.new(creator.address, {from:owner});
             await creator.registerExtension(extension.address, 'http://extension/', {from:owner});
+            // Test legacy interface support
+            assert.equal(true, await extension.supportsInterface('0x7005caad'));
+            assert.equal(true, await extension.supportsInterface('0x99cdaa22'));
 
             await extension.testMint(anyone);
             var tokenId = 1;
@@ -105,6 +108,9 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             const extension1 = await MockERC721CreatorExtensionBurnable.new(creator.address);
             assert.equal((await creator.getExtensions()).length, 0);
             await truffleAssert.reverts(extension1.onBurn(anyone, 1), "ERC721CreatorExtensionBurnable: Can only be called by token creator");
+            // Test legacy interface support
+            assert.equal(true, await extension1.supportsInterface('0x7005caad'));
+            assert.equal(true, await extension1.supportsInterface('0xf3f4e68b'));
 
             await creator.registerExtension(extension1.address, 'http://extension1/', {from:owner});
             assert.equal((await creator.getExtensions()).length, 1);
@@ -393,6 +399,9 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
         it('creator enumerable extension override test', async function () {
             var extension = await MockERC721CreatorExtensionOverride.new(creator.address, {from:owner});
             await creator.registerExtension(extension.address, 'http://extension/', {from:owner});
+            // Test legacy interface support
+            assert.equal(true, await extension.supportsInterface('0x7005caad'));
+            assert.equal(true, await extension.supportsInterface('0x99cdaa22'));
 
             await extension.testMint(anyone);
             var tokenId = 1;

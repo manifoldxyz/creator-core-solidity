@@ -19,6 +19,6 @@ abstract contract ERC721CreatorExtension is CreatorExtension {
      */
 
     // Required to be recognized as a contract to receive onBurn for older creator contracts
-    bytes4 constant internal LEGACY_EXTENSION_BURNABLE_INTERFACE = 0xf3f4e68b;
+    bytes4 constant internal LEGACY_ERC721_EXTENSION_BURNABLE_INTERFACE = 0xf3f4e68b;
 
 }

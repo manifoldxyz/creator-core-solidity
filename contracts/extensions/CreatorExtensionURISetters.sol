@@ -14,13 +14,12 @@ import "./CreatorExtension.sol";
 /**
  * @dev Provides functions to set token uri's
  */
-abstract contract CreatorExtensionURISetters is CreatorExtension, AdminControl, ICreatorExtensionURISetters {
+abstract contract CreatorExtensionURISetters is AdminControl, CreatorExtension, ICreatorExtensionURISetters {
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(AdminControl, IERC165) returns (bool) {
-        return interfaceId == LEGACY_EXTENSION_INTERFACE
-            || interfaceId == type(ICreatorExtensionURISetters).interfaceId
+    function supportsInterface(bytes4 interfaceId) public view virtual override(AdminControl, CreatorExtension, IERC165) returns (bool) {
+        return interfaceId == type(ICreatorExtensionURISetters).interfaceId
             || super.supportsInterface(interfaceId);
     }
 

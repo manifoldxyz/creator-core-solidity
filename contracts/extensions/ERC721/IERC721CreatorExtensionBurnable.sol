@@ -4,24 +4,14 @@ pragma solidity ^0.8.0;
 
 /// @author: manifold.xyz
 
-import "./ICreatorExtensionBase.sol";
+import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
 /**
  * @dev Your extension is required to implement this interface if it wishes
  * to receive the onBurn callback whenever a token the extension created is
  * burned
  */
-interface IERC721CreatorExtensionBurnable is ICreatorExtensionBase {
-    /**
-     * @dev mint a token
-     */
-    function mint(address creator, address to) external returns (uint256);
-
-    /**
-     * @dev batch mint a token
-     */
-    function mintBatch(address creator, address to, uint16 count) external returns (uint256[] memory);
-
+interface IERC721CreatorExtensionBurnable is IERC165 {
     /**
      * @dev callback handler for burn events
      */

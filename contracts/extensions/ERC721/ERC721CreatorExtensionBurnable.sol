@@ -5,39 +5,41 @@ pragma solidity ^0.8.0;
 /// @author: manifold.xyz
 
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
+import "manifoldxyz-libraries-solidity/contracts/access/AdminControl.sol";
 
-import "../core/IERC721CreatorCore.sol";
+import "../../core/IERC721CreatorCore.sol";
+import "./ERC721CreatorExtension.sol";
 import "./IERC721CreatorExtensionBurnable.sol";
-import "./CreatorExtensionBase.sol";
 
 /**
  * @dev Suggested implementation for extensions that want to receive onBurn callbacks
  * Mint tracks the creators/tokens created, and onBurn only accepts callbacks from
  * the creator of a token created.
  */
-abstract contract ERC721CreatorExtensionBurnable is CreatorExtensionBase, IERC721CreatorExtensionBurnable {
+abstract contract ERC721CreatorExtensionBurnable is ERC721CreatorExtension, AdminControl, IERC721CreatorExtensionBurnable {
 
     mapping (uint256 => address) private _tokenCreators;
 
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(CreatorExtensionBase, IERC165) returns (bool) {
-        return interfaceId == type(IERC721CreatorExtensionBurnable).interfaceId
+    function supportsInterface(bytes4 interfaceId) public view virtual override(AdminControl, IERC165) returns (bool) {
+        return interfaceId == LEGACY_EXTENSION_INTERFACE || interfaceId == LEGACY_EXTENSION_BURNABLE_INTERFACE
+            || interfaceId == type(IERC721CreatorExtensionBurnable).interfaceId
             || super.supportsInterface(interfaceId);
     }
 
     /**
-     * @dev See {IERC721CreatorExtensionBurnable-mint}.
+     * @dev mint a token
      */
-    function mint(address creator, address to) external override adminRequired returns (uint256) {
+    function mint(address creator, address to) external adminRequired returns (uint256) {
         return _mint(creator, to);
     }
 
     /**
-     * @dev See {IERC721CreatorExtensionBurnable-mintBatch}.
+     * @dev batch mint a token
      */
-    function mintBatch(address creator, address to, uint16 count) external override adminRequired returns (uint256[] memory) {
+    function mintBatch(address creator, address to, uint16 count) external adminRequired returns (uint256[] memory) {
         return _mintBatch(creator, to, count);
     }
 

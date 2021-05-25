@@ -11,7 +11,6 @@ import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 
-import "../extensions/ICreatorExtensionBase.sol";
 import "../extensions/ICreatorExtensionTokenURI.sol";
 
 import "./ICreatorCore.sol";
@@ -133,7 +132,7 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
      * @dev Register an extension
      */
     function _registerExtension(address extension, string calldata baseURI, bool baseURIIdentical) internal {
-        require(ERC165Checker.supportsInterface(extension, type(ICreatorExtensionBase).interfaceId), "Creator: Extension must implement ICreatorExtensionBase");
+        require(extension.isContract(), "Creator: Extension must be a contract");
         if (!_extensions.contains(extension)) {
             _extensionBaseURI[extension] = baseURI;
             _extensionBaseURIIdentical[extension] = baseURIIdentical;

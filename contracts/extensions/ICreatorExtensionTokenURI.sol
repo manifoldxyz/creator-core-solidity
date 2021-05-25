@@ -7,7 +7,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
 /**
- * Implement this if you want your extension to have overloadable URI's
+ * @dev Implement this if you want your extension to have overloadable URI's
  */
 interface ICreatorExtensionTokenURI is IERC165 {
 

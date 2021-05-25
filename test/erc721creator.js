@@ -2,7 +2,7 @@ const truffleAssert = require('truffle-assertions');
 
 const ERC721Creator = artifacts.require("ERC721Creator");
 const ERC721CreatorEnumerable = artifacts.require("ERC721CreatorEnumerable");
-const MockERC721CreatorExtension = artifacts.require("MockERC721CreatorExtension");
+const MockERC721CreatorExtensionBurnable = artifacts.require("MockERC721CreatorExtensionBurnable");
 const MockERC721CreatorExtensionOverride = artifacts.require("MockERC721CreatorExtensionOverride");
 const MockERC721CreatorMintPermissions = artifacts.require("MockERC721CreatorMintPermissions");
 const MockContract = artifacts.require("MockContract");
@@ -82,11 +82,11 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             await truffleAssert.reverts(creator.blacklistExtension(creator.address, {from:owner}), "CreatorCore: Cannot blacklist yourself");
             await creator.blacklistExtension(anyone, {from:owner});
 
-            const extension1 = await MockERC721CreatorExtension.new(creator.address);
+            const extension1 = await MockERC721CreatorExtensionBurnable.new(creator.address);
             await creator.blacklistExtension(extension1.address, {from:owner});
             await truffleAssert.reverts(creator.registerExtension(extension1.address, 'http://extension1', {from:owner}), "CreatorCore: Extension blacklisted");
 
-            const extension2 = await MockERC721CreatorExtension.new(creator.address);
+            const extension2 = await MockERC721CreatorExtensionBurnable.new(creator.address);
             await creator.registerExtension(extension2.address, 'http://extension2/', {from:owner});
             await extension2.testMint(anyone);
             let newTokenId = (await extension2.mintedTokens()).slice(-1)[0];
@@ -102,14 +102,14 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
 
             await creator.setBaseTokenURI("http://base/", {from:owner});
 
-            const extension1 = await MockERC721CreatorExtension.new(creator.address);
+            const extension1 = await MockERC721CreatorExtensionBurnable.new(creator.address);
             assert.equal((await creator.getExtensions()).length, 0);
             await truffleAssert.reverts(extension1.onBurn(anyone, 1), "ERC721CreatorExtensionBurnable: Can only be called by token creator");
 
             await creator.registerExtension(extension1.address, 'http://extension1/', {from:owner});
             assert.equal((await creator.getExtensions()).length, 1);
             
-            const extension2 = await MockERC721CreatorExtension.new(creator.address);
+            const extension2 = await MockERC721CreatorExtensionBurnable.new(creator.address);
             assert.equal((await creator.getExtensions()).length, 1);
 
             // Admins can register extensions
@@ -218,7 +218,7 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
 
         it('creator batch mint test', async function () {
             await creator.setBaseTokenURI("http://base/", {from:owner});
-            const extension = await MockERC721CreatorExtension.new(creator.address);
+            const extension = await MockERC721CreatorExtensionBurnable.new(creator.address);
             await creator.registerExtension(extension.address, 'http://extension/', {from:owner});
 
             // Test minting
@@ -256,10 +256,10 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
         });
 
         it('creator permissions functionality test', async function () {
-            const extension1 = await MockERC721CreatorExtension.new(creator.address);
+            const extension1 = await MockERC721CreatorExtensionBurnable.new(creator.address);
             await creator.registerExtension(extension1.address, 'http://extension1/', {from:owner});
             
-            const extension2 = await MockERC721CreatorExtension.new(creator.address);
+            const extension2 = await MockERC721CreatorExtensionBurnable.new(creator.address);
             await creator.registerExtension(extension2.address, 'http://extension2/', {from:owner});
 
             await truffleAssert.reverts(MockERC721CreatorMintPermissions.new(anyone), "ERC721CreatorMintPermissions: Must implement IERC721CreatorCore");
@@ -312,7 +312,7 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             assert.equal(results.length, 2);
             await truffleAssert.reverts(creator.royaltyInfo(tokenId1, 10000, "0x0"), "CreatorCore: Only works if there are at most 1 royalty receivers");
 
-            const extension = await MockERC721CreatorExtension.new(creator.address);
+            const extension = await MockERC721CreatorExtensionBurnable.new(creator.address);
             await creator.registerExtension(extension.address, 'http://extension/', {from:owner});
             await extension.testMint(anyone);
             var tokenId2 = 2;
@@ -415,11 +415,11 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             await truffleAssert.reverts(creator.balanceOfExtension(anyone, another), "CreatorCore: Extension blacklisted");
             await truffleAssert.reverts(creator.tokenOfOwnerByIndexExtension(anyone, another, 1), "CreatorCore: Extension blacklisted");
 
-            const extension1 = await MockERC721CreatorExtension.new(creator.address);
+            const extension1 = await MockERC721CreatorExtensionBurnable.new(creator.address);
             await creator.blacklistExtension(extension1.address, {from:owner});
             await truffleAssert.reverts(creator.registerExtension(extension1.address, 'http://extension1', {from:owner}), "CreatorCore: Extension blacklisted");
 
-            const extension2 = await MockERC721CreatorExtension.new(creator.address);
+            const extension2 = await MockERC721CreatorExtensionBurnable.new(creator.address);
             await creator.registerExtension(extension2.address, 'http://extension2/', {from:owner});
             await extension2.testMint(anyone);
             let newTokenId = (await extension2.mintedTokens()).slice(-1)[0];
@@ -441,14 +441,14 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
 
             await creator.setBaseTokenURI("http://base/", {from:owner});
 
-            const extension1 = await MockERC721CreatorExtension.new(creator.address);
+            const extension1 = await MockERC721CreatorExtensionBurnable.new(creator.address);
             assert.equal((await creator.getExtensions()).length, 0);
             await truffleAssert.reverts(extension1.onBurn(anyone, 1), "ERC721CreatorExtensionBurnable: Can only be called by token creator");
 
             await creator.registerExtension(extension1.address, 'http://extension1/', {from:owner});
             assert.equal((await creator.getExtensions()).length, 1);
             
-            const extension2 = await MockERC721CreatorExtension.new(creator.address);
+            const extension2 = await MockERC721CreatorExtensionBurnable.new(creator.address);
             assert.equal((await creator.getExtensions()).length, 1);
 
             // Admins can register extensions
@@ -558,10 +558,10 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
         });
 
         it('creator enumerable permissions functionality test', async function () {
-            const extension1 = await MockERC721CreatorExtension.new(creator.address);
+            const extension1 = await MockERC721CreatorExtensionBurnable.new(creator.address);
             await creator.registerExtension(extension1.address, 'http://extension1/', {from:owner});
             
-            const extension2 = await MockERC721CreatorExtension.new(creator.address);
+            const extension2 = await MockERC721CreatorExtensionBurnable.new(creator.address);
             await creator.registerExtension(extension2.address, 'http://extension2/', {from:owner});
 
             await truffleAssert.reverts(MockERC721CreatorMintPermissions.new(anyone), "ERC721CreatorMintPermissions: Must implement IERC721Creator");
@@ -606,7 +606,7 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             assert.equal(results[0].length, 2);
             assert.equal(results[1].length, 2);
 
-            const extension = await MockERC721CreatorExtension.new(creator.address);
+            const extension = await MockERC721CreatorExtensionBurnable.new(creator.address);
             await creator.registerExtension(extension.address, 'http://extension/', {from:owner});
             await extension.testMint(anyone);
             var tokenId2 = 2;

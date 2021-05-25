@@ -3,7 +3,7 @@
 pragma solidity ^0.8.0;
 
 import "../core/IERC721CreatorCore.sol";
-import "../extensions/ERC721CreatorExtensionApproveTransfer.sol";
+import "../extensions/ERC721/ERC721CreatorExtensionApproveTransfer.sol";
 import "../extensions/ICreatorExtensionTokenURI.sol";
 
 contract MockERC721CreatorExtensionOverride is ERC721CreatorExtensionApproveTransfer, ICreatorExtensionTokenURI {

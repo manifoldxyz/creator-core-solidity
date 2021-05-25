@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "../permissions/ERC721CreatorMintPermissions.sol";
+import "../permissions/ERC721/ERC721CreatorMintPermissions.sol";
 
 contract MockERC721CreatorMintPermissions is ERC721CreatorMintPermissions {
     bool _approveEnabled;

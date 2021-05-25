@@ -3,9 +3,9 @@
 pragma solidity ^0.8.0;
 
 import "../extensions/ERC721/ERC721CreatorExtensionBurnable.sol";
-import "../extensions/CreatorExtensionURISetters.sol";
+import "../extensions/CreatorExtensionBasic.sol";
 
-contract MockERC721CreatorExtensionBurnable is CreatorExtensionURISetters, ERC721CreatorExtensionBurnable {
+contract MockERC721CreatorExtensionBurnable is CreatorExtensionBasic, ERC721CreatorExtensionBurnable {
     uint256 [] _mintedTokens;
     uint256 [] _burntTokens;
     address _creator;
@@ -13,8 +13,8 @@ contract MockERC721CreatorExtensionBurnable is CreatorExtensionURISetters, ERC72
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(CreatorExtensionURISetters, ERC721CreatorExtensionBurnable) returns (bool) {
-        return CreatorExtensionURISetters.supportsInterface(interfaceId) || ERC721CreatorExtensionBurnable.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId) public view virtual override(CreatorExtensionBasic, ERC721CreatorExtensionBurnable) returns (bool) {
+        return CreatorExtensionBasic.supportsInterface(interfaceId) || ERC721CreatorExtensionBurnable.supportsInterface(interfaceId);
     }
 
     constructor(address creator) {

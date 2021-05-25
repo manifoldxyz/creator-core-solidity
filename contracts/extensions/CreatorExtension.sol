@@ -11,7 +11,9 @@ abstract contract CreatorExtension {
 
     /**
      * @dev Legacy extension interface identifiers
-     * Needed to be backwards compatible with older creator contracts
+     *
+     * {IERC165-supportsInterface} needs to return 'true' for this interface
+     * in order backwards compatible with older creator contracts
      */
     bytes4 constant internal LEGACY_EXTENSION_INTERFACE = 0x7005caad;
 }

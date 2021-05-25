@@ -11,6 +11,14 @@ import "../CreatorExtension.sol";
  */
 abstract contract ERC721CreatorExtension is CreatorExtension {
 
+    /**
+     * @dev Legacy extension interface identifiers (see CreatorExtension for more)
+     *
+     * {IERC165-supportsInterface} needs to return 'true' for this interface
+     * in order backwards compatible with older creator contracts
+     */
+
+    // Required to be recognized as a contract to receive onBurn for older creator contracts
     bytes4 constant internal LEGACY_EXTENSION_BURNABLE_INTERFACE = 0xf3f4e68b;
 
 }

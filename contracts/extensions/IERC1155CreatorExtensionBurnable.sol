@@ -12,7 +12,6 @@ import "./ICreatorExtensionBase.sol";
  * burned
  */
 interface IERC1155CreatorExtensionBurnable is ICreatorExtensionBase {
-    event CreatorAdded(address indexed creator, address indexed sender);
 
     /**
      * @dev mint a token

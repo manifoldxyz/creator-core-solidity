@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 
 import "../extensions/ICreatorExtensionBase.sol";
 import "../extensions/ICreatorExtensionTokenURI.sol";
@@ -21,6 +22,7 @@ import "./ICreatorCore.sol";
 abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     using Strings for uint256;
     using EnumerableSet for EnumerableSet.AddressSet;
+    using AddressUpgradeable for address;
 
     uint256 _tokenCount = 0;
 

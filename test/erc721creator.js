@@ -32,6 +32,21 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             creator = await ERC721Creator.new(name, symbol, {from:owner});
         });
 
+        it('supportsInterface test', async function () {
+            // ICreatorCore
+            assert.equal(true, await creator.supportsInterface('0xc3f17966'));
+            // IERC721CreatorCore
+            assert.equal(true, await creator.supportsInterface('0x9088c207'));
+            // Creator Core Royalites
+            assert.equal(true, await creator.supportsInterface('0xbb3bafd6'));
+            // EIP-2981 Royalites
+            assert.equal(true, await creator.supportsInterface('0x6057361d'));
+            // RaribleV1 Royalites
+            assert.equal(true, await creator.supportsInterface('0xb7799584'));
+            // Foundation Royalites
+            assert.equal(true, await creator.supportsInterface('0xd5a06d4c'));
+        });
+
         it('creator extension override test', async function () {
             var extension = await MockERC721CreatorExtensionOverride.new(creator.address, {from:owner});
             await creator.registerExtension(extension.address, 'http://extension/', {from:owner});

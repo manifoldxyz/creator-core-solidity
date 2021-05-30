@@ -1,0 +1,393 @@
+const truffleAssert = require('truffle-assertions');
+
+const ERC1155Creator = artifacts.require("ERC1155Creator");
+const MockERC1155CreatorExtensionBurnable = artifacts.require("MockERC1155CreatorExtensionBurnable");
+const MockERC1155CreatorExtensionOverride = artifacts.require("MockERC1155CreatorExtensionOverride");
+const MockERC1155CreatorMintPermissions = artifacts.require("MockERC1155CreatorMintPermissions");
+const MockContract = artifacts.require("MockContract");
+
+contract('ERC1155Creator', function ([minter_account, ...accounts]) {
+    const minter = minter_account;
+    const [
+           owner,
+           newOwner,
+           another,
+           anyone,
+           ] = accounts;
+
+    it('creator gas', async function () {
+        const creatorGasEstimate = await ERC1155Creator.new.estimateGas("", {from:owner});
+        console.log("ERC1155Creator gas estimate: %s", creatorGasEstimate);
+    });
+
+    describe('ERC1155Creator', function() {
+        var creator;
+
+        beforeEach(async function () {
+            creator = await ERC1155Creator.new("", {from:owner});
+        });
+
+        it('supportsInterface test', async function () {
+            // ICreatorCore
+            assert.equal(true, await creator.supportsInterface('0xc3f17966'));
+            // IERC1155CreatorCore
+            assert.equal(true, await creator.supportsInterface('0x942f090c'));
+            // Creator Core Royalites
+            assert.equal(true, await creator.supportsInterface('0xbb3bafd6'));
+            // EIP-2981 Royalites
+            assert.equal(true, await creator.supportsInterface('0x6057361d'));
+            // RaribleV1 Royalites
+            assert.equal(true, await creator.supportsInterface('0xb7799584'));
+            // Foundation Royalites
+            assert.equal(true, await creator.supportsInterface('0xd5a06d4c'));
+        });
+
+        it('creator extension override test', async function () {
+            var extension = await MockERC1155CreatorExtensionOverride.new(creator.address, {from:owner});
+            await creator.registerExtension(extension.address, 'http://extension/', {from:owner});
+
+            await extension.testMintNew(anyone, 100, "");
+            var tokenId = 1;
+            await creator.safeTransferFrom(anyone, another, tokenId, 100, "0x0", {from:anyone});
+            await truffleAssert.reverts(extension.setApproveTransfer(creator.address, true, {from:anyone}), "AdminControl: Must be owner or admin");
+            await extension.setApproveTransfer(creator.address, true, {from:owner});
+            await truffleAssert.reverts(creator.safeTransferFrom(another, anyone, tokenId, 100, "0x0", {from:another}), "CreatorCore: Extension approval failure");
+            await extension.setApproveEnabled(true);
+            await creator.safeTransferFrom(another, anyone, tokenId, 100, "0x0", {from:another});
+
+            await extension.setTokenURI('override');
+            assert.equal(await creator.uri(tokenId), 'override');
+        });
+
+        it('creator permission test', async function () {
+            await truffleAssert.reverts(creator.registerExtension(anyone, 'http://extension', {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(creator.registerExtension(anyone, 'http://extension', true), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(creator.unregisterExtension(anyone, {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(creator.blacklistExtension(anyone, {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(creator.setBaseTokenURIExtension('http://extension', {from:anyone}), "CreatorCore: Must be registered extension");
+            await truffleAssert.reverts(creator.setBaseTokenURIExtension('http://extension', true), "CreatorCore: Must be registered extension");
+            await truffleAssert.reverts(creator.setTokenURIPrefixExtension('http://extension', {from:anyone}), "CreatorCore: Must be registered extension");
+            await truffleAssert.reverts(creator.methods['setTokenURIExtension(uint256,string)'](1, 'http://extension', {from:anyone}), "CreatorCore: Must be registered extension");
+            await truffleAssert.reverts(creator.methods['setTokenURIExtension(uint256[],string[])']([1], ['http://extension'], {from:anyone}), "CreatorCore: Must be registered extension");
+            await truffleAssert.reverts(creator.setBaseTokenURI('http://base', {from:anyone}),"AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(creator.setTokenURIPrefix('http://base', {from:anyone}),"AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(creator.methods['setTokenURI(uint256,string)'](1, 'http://base', {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(creator.methods['setTokenURI(uint256[],string[])']([1], ['http://base'], {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(creator.setMintPermissions(anyone, anyone, {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(creator.methods['mintBaseNew(address,uint256,string)'](anyone, 100, "", {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(creator.methods['mintBaseBatchNew(address,uint256[],string[])'](anyone, [1], [""], {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(creator.methods['mintExtensionNew(address,uint256,string)'](anyone, 100, "", {from:anyone}), "CreatorCore: Must be registered extension");
+            await truffleAssert.reverts(creator.methods['mintExtensionBatchNew(address,uint256[],string[])'](anyone, [1], [""], {from:anyone}), "CreatorCore: Must be registered extension");
+            await truffleAssert.reverts(creator.methods['mintBaseExisting(address,uint256,uint256)'](anyone, 1, 100, {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(creator.methods['mintBaseBatchExisting(address,uint256[],uint256[])'](anyone, [1], [100], {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(creator.methods['mintExtensionExisting(address,uint256,uint256)'](anyone, 1, 100, {from:anyone}), "CreatorCore: Must be registered extension");
+            await truffleAssert.reverts(creator.methods['mintExtensionBatchExisting(address,uint256[],uint256[])'](anyone, [1], [100], {from:anyone}), "CreatorCore: Must be registered extension");
+            await truffleAssert.reverts(creator.methods['setRoyalties(address[],uint256[])']([anyone], [100], {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(creator.methods['setRoyalties(uint256,address[],uint256[])'](1, [anyone], [100], {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(creator.methods['setRoyaltiesExtension(address,address[],uint256[])'](anyone, [anyone], [100], {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(creator.setApproveTransferExtension(true, {from:anyone}), "CreatorCore: Must be registered extension");
+        });
+        
+        it('creator blacklist extension test', async function() {
+            await truffleAssert.reverts(creator.blacklistExtension(creator.address, {from:owner}), "CreatorCore: Cannot blacklist yourself");
+            await creator.blacklistExtension(anyone, {from:owner});
+
+            const extension1 = await MockERC1155CreatorExtensionBurnable.new(creator.address);
+            await creator.blacklistExtension(extension1.address, {from:owner});
+            await truffleAssert.reverts(creator.registerExtension(extension1.address, 'http://extension1', {from:owner}), "CreatorCore: Extension blacklisted");
+
+            const extension2 = await MockERC1155CreatorExtensionBurnable.new(creator.address);
+            await creator.registerExtension(extension2.address, 'http://extension2/', {from:owner});
+            await extension2.testMintNew(anyone, 100, "");
+            let newTokenId = (await extension2.mintedTokens()).slice(-1)[0];
+            await creator.uri(newTokenId);
+            await creator.tokenExtension(newTokenId);
+            await creator.blacklistExtension(extension2.address, {from:owner});
+            await truffleAssert.reverts(creator.uri(newTokenId), "CreatorCore: Extension blacklisted");
+            await truffleAssert.reverts(creator.tokenExtension(newTokenId), "CreatorCore: Extension blacklisted");
+        });
+
+        it('creator functionality test', async function () {
+            assert.equal((await creator.getExtensions()).length, 0);
+
+            await creator.setBaseTokenURI("http://base/", {from:owner});
+
+            const extension1 = await MockERC1155CreatorExtensionBurnable.new(creator.address);
+            assert.equal((await creator.getExtensions()).length, 0);
+            await truffleAssert.reverts(extension1.onBurn(anyone, [1], [100]), "ERC1155CreatorExtensionBurnable: Can only be called by token creator");
+ 
+            await creator.registerExtension(extension1.address, 'http://extension1/', {from:owner});
+            assert.equal((await creator.getExtensions()).length, 1);
+            
+            const extension2 = await MockERC1155CreatorExtensionBurnable.new(creator.address);
+            assert.equal((await creator.getExtensions()).length, 1);
+
+            // Admins can register extensions
+            await creator.approveAdmin(another, {from:owner});
+            await creator.registerExtension(extension2.address, 'http://extension2/', {from:another});
+            assert.equal((await creator.getExtensions()).length, 2);
+
+            // Minting cost
+            const mintBase = await creator.mintBaseNew.estimateGas(anyone, 100, "", {from:owner});
+            console.log("No Extension mint gas estimate: %s", mintBase);
+            const mintGasEstimate = await extension1.testMintNew.estimateGas(anyone, 100, "");
+            console.log("Extension mint gas estimate: %s", mintGasEstimate);
+
+            // Test minting
+            await extension1.testMintNew(anyone, 100, "");
+            let newTokenId1 = 1;
+            assert.equal(await creator.tokenExtension(newTokenId1), extension1.address);
+
+            await extension1.testMintNew(another, 200, "");
+            let newTokenId2 = 2;
+
+            await extension2.testMintNew(anyone, 300, "");
+            let newTokenId3 = 3;
+
+            await extension1.testMintNew(anyone, 400, "");
+            let newTokenId4 = 4;
+
+            await extension1.testMintNew(anyone, 500, "extension5");
+            let newTokenId5 = 5;
+
+            await creator.methods['mintBaseNew(address,uint256,string)'](anyone, 600, "", {from:owner});
+            let newTokenId6 = 6;
+            await truffleAssert.reverts(creator.tokenExtension(newTokenId6), "CreatorCore: No extension for token");
+
+            await creator.methods['mintBaseNew(address,uint256,string)'](anyone, 700, "base7", {from:owner});
+            let newTokenId7 = 7;
+            await truffleAssert.reverts(creator.tokenExtension(newTokenId7), "CreatorCore: No extension for token");
+
+            await creator.methods['mintBaseNew(address,uint256,string)'](anyone, 800, "", {from:owner});
+            let newTokenId8 = 8;
+            await truffleAssert.reverts(creator.tokenExtension(newTokenId8), "CreatorCore: No extension for token");
+
+            await creator.methods['mintBaseNew(address,uint256,string)'](anyone, 900, "", {from:owner});
+            let newTokenId9 = 9;
+            await truffleAssert.reverts(creator.tokenExtension(newTokenId9), "CreatorCore: No extension for token");
+
+            // Check URI's
+            assert.equal(await creator.uri(newTokenId1), 'http://extension1/'+newTokenId1);
+            assert.equal(await creator.uri(newTokenId2), 'http://extension1/'+newTokenId2);
+            assert.equal(await creator.uri(newTokenId3), 'http://extension2/'+newTokenId3);
+            assert.equal(await creator.uri(newTokenId4), 'http://extension1/'+newTokenId4);
+            assert.equal(await creator.uri(newTokenId5), 'extension5');
+            assert.equal(await creator.uri(newTokenId6), 'http://base/'+newTokenId6);
+            assert.equal(await creator.uri(newTokenId7), 'base7');
+            assert.equal(await creator.uri(newTokenId8), 'http://base/'+newTokenId8);
+            assert.equal(await creator.uri(newTokenId9), 'http://base/'+newTokenId9);
+
+            // Set specific token uris and token prefixes
+            await truffleAssert.reverts(extension1.methods['setTokenURI(address,uint256,string)'](creator.address, newTokenId1, 'bad', {from:anyone}), "AdminControl: Must be owner or admin");
+            await truffleAssert.reverts(extension1.methods['setTokenURI(address,uint256[],string[])'](creator.address, [newTokenId1], ['bad'], {from:anyone}), "AdminControl: Must be owner or admin");
+            await extension1.methods['setTokenURI(address,uint256,string)'](creator.address, newTokenId1, 'set1');
+            await extension1.methods['setTokenURI(address,uint256[],string[])'](creator.address, [newTokenId2], ['set2']);
+            await extension2.methods['setTokenURI(address,uint256,string)'](creator.address, newTokenId3, 'ext2/3');
+            await truffleAssert.reverts(extension1.methods['setTokenURI(address,uint256,string)'](creator.address, newTokenId6, 'bad'), "CreatorCore: Invalid token");
+            await truffleAssert.reverts(extension1.methods['setTokenURI(address,uint256[],string[])'](creator.address, [newTokenId6], ['bad']), "CreatorCore: Invalid token");
+            await truffleAssert.reverts(extension1.methods['setTokenURI(address,uint256[],string[])'](creator.address, [], ['bad']), "ERC1155Creator: Invalid input");
+            await creator.methods['setTokenURI(uint256,string)'](newTokenId8, 'b8', {from:owner});
+            await creator.methods['setTokenURI(uint256[],string[])']([newTokenId9], ['b9'], {from:owner});
+            await truffleAssert.reverts(creator.methods['setTokenURI(uint256,string)'](newTokenId1, 'bad', {from:owner}), "CreatorCore: Invalid token");
+            await truffleAssert.reverts(creator.methods['setTokenURI(uint256[],string[])']([newTokenId1], ['bad'], {from:owner}), "CreatorCore: Invalid token");
+            await truffleAssert.reverts(creator.methods['setTokenURI(uint256[],string[])']([], ['bad'], {from:owner}), "ERC1155Creator: Invalid input");
+            await creator.setTokenURIPrefix('http://prefix/', {from:owner});
+            await extension1.setTokenURIPrefix(creator.address, 'http://extension_prefix/');
+
+            assert.equal(await creator.uri(newTokenId1), 'http://extension_prefix/set1');
+            assert.equal(await creator.uri(newTokenId2), 'http://extension_prefix/set2');
+            assert.equal(await creator.uri(newTokenId3), 'ext2/3');
+            assert.equal(await creator.uri(newTokenId4), 'http://extension1/'+newTokenId4);
+            assert.equal(await creator.uri(newTokenId5), 'http://extension_prefix/extension5');
+            assert.equal(await creator.uri(newTokenId6), 'http://base/'+newTokenId6);
+            assert.equal(await creator.uri(newTokenId7), 'http://prefix/base7');
+
+            // Removing extension should prevent further access
+            await creator.unregisterExtension(extension1.address, {from:owner});
+            assert.equal((await creator.getExtensions()).length, 1);
+            await truffleAssert.reverts(extension1.testMintNew(anyone,100,""), "CreatorCore: Must be registered extension");
+
+            // URI's should still be ok, tokens should still exist
+            assert.equal(await creator.uri(newTokenId1), 'http://extension_prefix/set1');
+            assert.equal(await creator.uri(newTokenId2), 'http://extension_prefix/set2');
+            assert.equal(await creator.uri(newTokenId4), 'http://extension1/'+newTokenId4);
+            assert.equal(await creator.uri(newTokenId5), 'http://extension_prefix/extension5');
+
+            // Burning
+            await truffleAssert.reverts(creator.burn(anyone, newTokenId1, 100, {from:another}), "ERC1155Creator: caller is not owner nor approved");
+            await truffleAssert.reverts(creator.burnBatch(anyone, [newTokenId1], [100], {from:another}), "ERC1155Creator: caller is not owner nor approved");
+            await truffleAssert.reverts(creator.burnBatch(anyone, [newTokenId1], [1,100], {from:anyone}), "ERC1155Creator: Invalid input");
+            await creator.burn(anyone, newTokenId1, 50, {from:anyone});
+            await creator.burnBatch(anyone, [newTokenId1], [25], {from:anyone});
+            await truffleAssert.reverts(creator.burn(anyone, newTokenId1, 100, {from:anyone}), "ERC1155: burn amount exceeds balance");
+            await truffleAssert.reverts(creator.burnBatch(anyone, [newTokenId1], [100], {from:anyone}), "ERC1155: burn amount exceeds balance");
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId1), web3.utils.toBN(25));
+
+            // Check burn callback
+            assert.deepEqual(await extension1.burntTokens(newTokenId1), web3.utils.toBN(75));
+
+        });
+
+        it('creator batch mint test', async function () {
+            await creator.setBaseTokenURI("http://base/", {from:owner});
+            const extension = await MockERC1155CreatorExtensionBurnable.new(creator.address);
+            await creator.registerExtension(extension.address, 'http://extension/', {from:owner});
+
+            // Test minting
+            await extension.methods['testMintBatchNew(address,uint256[],string[])'](anyone, [100,200,300,400], ["","","t3","t4"]);
+            let newTokenId1 = 1;
+            let newTokenId2 = 2;
+            let newTokenId3 = 3;
+            let newTokenId4 = 4;
+            assert.equal(await creator.tokenExtension(newTokenId1), extension.address);
+            assert.equal(await creator.tokenExtension(newTokenId2), extension.address);
+            assert.equal(await creator.tokenExtension(newTokenId3), extension.address);
+            assert.equal(await creator.tokenExtension(newTokenId4), extension.address);
+
+            await creator.methods['mintBaseBatchNew(address,uint256[],string[])'](anyone, [500,600,700,800], ["","","base7","base8"], {from:owner});
+            let newTokenId5 = 5;
+            let newTokenId6 = 6;
+            let newTokenId7 = 7;
+            let newTokenId8 = 8;
+            await truffleAssert.reverts(creator.tokenExtension(newTokenId5), "CreatorCore: No extension for token");
+            await truffleAssert.reverts(creator.tokenExtension(newTokenId6), "CreatorCore: No extension for token");
+            await truffleAssert.reverts(creator.tokenExtension(newTokenId7), "CreatorCore: No extension for token");
+            await truffleAssert.reverts(creator.tokenExtension(newTokenId8), "CreatorCore: No extension for token");
+
+            // Check URI's
+            assert.equal(await creator.uri(newTokenId1), 'http://extension/'+newTokenId1);
+            assert.equal(await creator.uri(newTokenId2), 'http://extension/'+newTokenId2);
+            assert.equal(await creator.uri(newTokenId3), 't3');
+            assert.equal(await creator.uri(newTokenId4), 't4');
+            assert.equal(await creator.uri(newTokenId5), 'http://base/'+newTokenId5);
+            assert.equal(await creator.uri(newTokenId6), 'http://base/'+newTokenId6);
+            assert.equal(await creator.uri(newTokenId7), 'base7');
+            assert.equal(await creator.uri(newTokenId8), 'base8');
+        });
+
+        it('creator permissions functionality test', async function () {
+            const extension1 = await MockERC1155CreatorExtensionBurnable.new(creator.address);
+            await creator.registerExtension(extension1.address, 'http://extension1/', {from:owner});
+            
+            const extension2 = await MockERC1155CreatorExtensionBurnable.new(creator.address);
+            await creator.registerExtension(extension2.address, 'http://extension2/', {from:owner});
+
+            await truffleAssert.reverts(MockERC1155CreatorMintPermissions.new(anyone), "ERC1155CreatorMintPermissions: Must implement IERC1155CreatorCore");
+            const permissions = await MockERC1155CreatorMintPermissions.new(creator.address);
+            await truffleAssert.reverts(permissions.approveMint(anyone, anyone, [1], [100]), "ERC1155CreatorMintPermissions: Can only be called by token creator");
+            
+            await truffleAssert.reverts(creator.setMintPermissions(extension1.address, anyone, {from:owner}), "CreatorCore: Invalid address");
+            await creator.setMintPermissions(extension1.address, permissions.address, {from:owner});
+            
+            await extension1.testMintNew(anyone,100,"");
+            await extension2.testMintNew(anyone,100,"");
+
+            permissions.setApproveEnabled(false);
+            await truffleAssert.reverts(extension1.testMintNew(anyone,100,""), "MockERC1155CreatorMintPermissions: Disabled");
+            await extension2.testMintNew(anyone,100,"");
+
+            await creator.setMintPermissions(extension1.address, '0x0000000000000000000000000000000000000000', {from:owner});
+            await extension1.testMintNew(anyone,100,"");
+            await extension2.testMintNew(anyone,100,"");
+        });
+
+        it('creator royalites update test', async function () {
+            await creator.mintBaseNew(anyone, 100, "", {from:owner});
+            var tokenId1 = 1;
+            var results;
+
+            // No royalties
+            results = await creator.getRoyalties(tokenId1);
+            assert.equal(results[0].length, 0);
+            assert.equal(results[1].length, 0);
+
+            await truffleAssert.reverts(creator.methods['setRoyalties(uint256,address[],uint256[])'](tokenId1,[anyone,another],[9999,1], {from:owner}), "CreatorCore: Invalid total royalties");
+            await truffleAssert.reverts(creator.methods['setRoyalties(uint256,address[],uint256[])'](tokenId1,[anyone],[1,2], {from:owner}), "CreatorCore: Invalid input");
+            await truffleAssert.reverts(creator.methods['setRoyalties(uint256,address[],uint256[])'](tokenId1,[anyone,another],[1], {from:owner}), "CreatorCore: Invalid input");
+            
+            // Set token royalties
+            await creator.methods['setRoyalties(uint256,address[],uint256[])'](tokenId1,[anyone,another],[123,456],{from:owner});
+            results = await creator.getRoyalties(tokenId1);
+            assert.equal(results[0].length, 2);
+            assert.equal(results[1].length, 2);
+            results = await creator.getFees(tokenId1);
+            assert.equal(results[0].length, 2);
+            assert.equal(results[1].length, 2);
+            results = await creator.getFeeRecipients(tokenId1);
+            assert.equal(results.length, 2);
+            results = await creator.getFeeBps(tokenId1);
+            assert.equal(results.length, 2);
+            await truffleAssert.reverts(creator.royaltyInfo(tokenId1, 10000, "0x0"), "CreatorCore: Only works if there are at most 1 royalty receivers");
+
+            const extension = await MockERC1155CreatorExtensionBurnable.new(creator.address);
+            await creator.registerExtension(extension.address, 'http://extension/', {from:owner});
+            await extension.testMintNew(anyone,200,"");
+            var tokenId2 = 2;
+
+            // No royalties
+            results = await creator.getRoyalties(tokenId2);
+            assert.equal(results[0].length, 0);
+            assert.equal(results[1].length, 0);
+
+            await truffleAssert.reverts(creator.methods['setRoyaltiesExtension(address,address[],uint256[])'](extension.address,[anyone,another],[9999,1], {from:owner}), "CreatorCore: Invalid total royalties");
+            await truffleAssert.reverts(creator.methods['setRoyaltiesExtension(address,address[],uint256[])'](extension.address,[anyone],[1,2], {from:owner}), "CreatorCore: Invalid input");
+            await truffleAssert.reverts(creator.methods['setRoyaltiesExtension(address,address[],uint256[])'](extension.address,[anyone,another],[1], {from:owner}), "CreatorCore: Invalid input");
+            
+            // Set royalties
+            await creator.methods['setRoyaltiesExtension(address,address[],uint256[])'](extension.address,[anyone],[123], {from:owner});
+            results = await creator.getRoyalties(tokenId2);
+            assert.equal(results[0].length, 1);
+            assert.equal(results[1].length, 1);
+            results = await creator.royaltyInfo(tokenId2, 10000, "0x0");
+            assert.deepEqual(web3.utils.toBN(10000*123/10000), results[1]);
+
+            await creator.mintBaseNew(anyone, 300, "", {from:owner});
+            var tokenId3 = 3;
+            await extension.testMintNew(anyone, 400, "");
+            var tokenId4 = 4;
+            results = await creator.getRoyalties(tokenId3);
+            assert.equal(results[0].length, 0);
+            assert.equal(results[1].length, 0);
+            results = await creator.getRoyalties(tokenId4);
+            assert.equal(results[0].length, 1);
+            assert.equal(results[1].length, 1);
+            
+            // Set default royalties
+            await truffleAssert.reverts(creator.methods['setRoyalties(address[],uint256[])']([anyone,another],[9999,1], {from:owner}), "CreatorCore: Invalid total royalties");
+            await truffleAssert.reverts(creator.methods['setRoyalties(address[],uint256[])']([anyone],[1,2], {from:owner}), "CreatorCore: Invalid input");
+            await truffleAssert.reverts(creator.methods['setRoyalties(address[],uint256[])']([anyone,another],[1], {from:owner}), "CreatorCore: Invalid input");
+            await creator.methods['setRoyalties(address[],uint256[])']([another],[456], {from:owner});
+            results = await creator.getRoyalties(tokenId1);
+            assert.equal(results[0].length, 2);
+            assert.equal(results[1].length, 2);
+            results = await creator.getRoyalties(tokenId2);
+            assert.equal(results[0].length, 1);
+            assert.equal(results[1].length, 1);
+            assert.equal(results[0],anyone);
+            results = await creator.getRoyalties(tokenId3);
+            assert.equal(results[0].length, 1);
+            assert.equal(results[1].length, 1);
+            assert.equal(results[0][0],another);
+            results = await creator.getRoyalties(tokenId4);
+            assert.equal(results[0].length, 1);
+            assert.equal(results[1].length, 1);
+            assert.equal(results[0][0],anyone);
+            
+            // Unset royalties
+            await creator.methods['setRoyalties(address[],uint256[])']([],[], {from:owner});
+            results = await creator.getRoyalties(tokenId3);
+            assert.equal(results[0].length, 0);
+            assert.equal(results[1].length, 0);
+            results = await creator.getRoyalties(tokenId4);
+            assert.equal(results[0].length, 1);
+            assert.equal(results[1].length, 1);
+            assert.equal(results[0][0],anyone);
+            await creator.methods['setRoyaltiesExtension(address,address[],uint256[])'](extension.address,[],[], {from:owner});
+            results = await creator.getRoyalties(tokenId4);
+            assert.equal(results[0].length, 0);
+            assert.equal(results[1].length, 0);
+        });
+
+    });
+
+});

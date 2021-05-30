@@ -265,6 +265,56 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
             assert.equal(await creator.uri(newTokenId8), 'base8');
         });
 
+
+        it('creator existing mint test', async function () {
+            const extension1 = await MockERC1155CreatorExtensionBurnable.new(creator.address);
+            await creator.registerExtension(extension1.address, 'http://extension/', {from:owner});
+            const extension2 = await MockERC1155CreatorExtensionBurnable.new(creator.address);
+            await creator.registerExtension(extension2.address, 'http://extension/', {from:owner});
+
+            // Test minting
+            await extension1.methods['testMintNew(address,uint256,string)'](anyone, 100, "");
+            await extension1.methods['testMintBatchNew(address,uint256[],string[])'](anyone, [200], [""]);
+            let newTokenId1 = 1;
+            let newTokenId2 = 2;
+            await extension2.methods['testMintNew(address,uint256,string)'](anyone, 300, "");
+            await extension2.methods['testMintBatchNew(address,uint256[],string[])'](anyone, [400], [""]);
+            let newTokenId3 = 3;
+            let newTokenId4 = 4;
+            await creator.methods['mintBaseNew(address,uint256,string)'](anyone, 500, "", {from:owner});
+            await creator.methods['mintBaseBatchNew(address,uint256[],string[])'](anyone, [600], [""], {from:owner});
+            let newTokenId5 = 5;
+            let newTokenId6 = 6;
+
+            await truffleAssert.reverts(creator.methods['mintBaseExisting(address,uint256,uint256)'](anyone,newTokenId1,1,{from:owner}), "ERC1155Creator: Specified token was created by an extension");
+            await truffleAssert.reverts(creator.methods['mintBaseExisting(address,uint256,uint256)'](anyone,newTokenId2,1,{from:owner}), "ERC1155Creator: Specified token was created by an extension");
+            await truffleAssert.reverts(creator.methods['mintBaseExisting(address,uint256,uint256)'](anyone,newTokenId3,1,{from:owner}), "ERC1155Creator: Specified token was created by an extension");
+            await truffleAssert.reverts(creator.methods['mintBaseExisting(address,uint256,uint256)'](anyone,newTokenId4,1,{from:owner}), "ERC1155Creator: Specified token was created by an extension");
+            await truffleAssert.reverts(creator.methods['mintBaseBatchExisting(address,uint256[],uint256[])'](anyone,[newTokenId5,newTokenId1],[1,1],{from:owner}), "ERC1155Creator: A specified token was created by an extension");
+            await truffleAssert.reverts(creator.methods['mintBaseBatchExisting(address,uint256[],uint256[])'](anyone,[newTokenId5,newTokenId2],[1,1],{from:owner}), "ERC1155Creator: A specified token was created by an extension");
+            await truffleAssert.reverts(creator.methods['mintBaseBatchExisting(address,uint256[],uint256[])'](anyone,[newTokenId5,newTokenId3],[1,1],{from:owner}), "ERC1155Creator: A specified token was created by an extension");
+            await truffleAssert.reverts(creator.methods['mintBaseBatchExisting(address,uint256[],uint256[])'](anyone,[newTokenId5,newTokenId4],[1,1],{from:owner}), "ERC1155Creator: A specified token was created by an extension");
+
+            await creator.methods['mintBaseExisting(address,uint256,uint256)'](anyone,newTokenId5,1,{from:owner});
+            await creator.methods['mintBaseBatchExisting(address,uint256[],uint256[])'](anyone,[newTokenId5,newTokenId6],[1,10],{from:owner});
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId5), web3.utils.toBN(502));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId6), web3.utils.toBN(610));
+
+            await truffleAssert.reverts(extension1.methods['testMintExisting(address,uint256,uint256)'](anyone,newTokenId3,1), "ERC1155Creator: Specified token was not created by this extension");
+            await truffleAssert.reverts(extension1.methods['testMintExisting(address,uint256,uint256)'](anyone,newTokenId4,1), "ERC1155Creator: Specified token was not created by this extension");
+            await truffleAssert.reverts(extension1.methods['testMintExisting(address,uint256,uint256)'](anyone,newTokenId5,1), "ERC1155Creator: Specified token was not created by this extension");
+            await truffleAssert.reverts(extension1.methods['testMintExisting(address,uint256,uint256)'](anyone,newTokenId6,1), "ERC1155Creator: Specified token was not created by this extension");
+            await truffleAssert.reverts(extension1.methods['testMintBatchExisting(address,uint256[],uint256[])'](anyone,[newTokenId1,newTokenId3],[1,10]), "ERC1155Creator: A specified token was not created by this extension");
+            await truffleAssert.reverts(extension1.methods['testMintBatchExisting(address,uint256[],uint256[])'](anyone,[newTokenId1,newTokenId4],[1,10]), "ERC1155Creator: A specified token was not created by this extension");
+            await truffleAssert.reverts(extension1.methods['testMintBatchExisting(address,uint256[],uint256[])'](anyone,[newTokenId1,newTokenId5],[1,10]), "ERC1155Creator: A specified token was not created by this extension");
+            await truffleAssert.reverts(extension1.methods['testMintBatchExisting(address,uint256[],uint256[])'](anyone,[newTokenId1,newTokenId6],[1,10]), "ERC1155Creator: A specified token was not created by this extension");
+            await extension1.methods['testMintExisting(address,uint256,uint256)'](anyone,newTokenId1,1);
+            await extension1.methods['testMintBatchExisting(address,uint256[],uint256[])'](anyone,[newTokenId1,newTokenId2],[1,10]);
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId1), web3.utils.toBN(102));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId2), web3.utils.toBN(210));
+
+        });
+
         it('creator permissions functionality test', async function () {
             const extension1 = await MockERC1155CreatorExtensionBurnable.new(creator.address);
             await creator.registerExtension(extension1.address, 'http://extension1/', {from:owner});

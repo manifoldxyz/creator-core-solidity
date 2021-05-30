@@ -32,6 +32,14 @@ contract MockERC1155CreatorExtensionBurnable is CreatorExtensionBasic, ERC1155Cr
         }
     }
 
+    function testMintExisting(address to, uint256 tokenId, uint256 amount) external {
+        IERC1155CreatorCore(_creator).mintExtensionExisting(to, tokenId, amount);
+    }
+
+    function testMintBatchExisting(address to, uint256[] calldata tokenIds, uint256[] calldata amounts) external {
+        IERC1155CreatorCore(_creator).mintExtensionBatchExisting(to, tokenIds, amounts);
+    }
+
     function mintedTokens() external view returns(uint256[] memory) {
         return _mintedTokens;
     }

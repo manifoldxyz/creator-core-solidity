@@ -187,7 +187,7 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
      * @dev See {IERC1155CreatorCore-mintExtensionExisting}.
      */
     function mintExtensionExisting(address to, uint256 tokenId, uint256 amount) public virtual override nonReentrant extensionRequired {
-        require(_tokensExtension[tokenId] == address(msg.sender), "ERC1155Creator: Specified token was created by an extension");
+        require(_tokensExtension[tokenId] == address(msg.sender), "ERC1155Creator: Specified token was not created by this extension");
         _mintExisting(msg.sender, to, _createUint256Array(tokenId), _createUint256Array(amount));
     }
 
@@ -197,7 +197,7 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
     function mintExtensionBatchExisting(address to, uint256[] calldata tokenIds, uint256[] calldata amounts) public virtual override nonReentrant extensionRequired {
         require(tokenIds.length == amounts.length, "ERC1155Creator: Invalid input");
         for (uint i = 0; i < tokenIds.length; i++) {
-            require(_tokensExtension[tokenIds[i]] == address(msg.sender), "ERC1155Creator: A specified token was created by a different extension");
+            require(_tokensExtension[tokenIds[i]] == address(msg.sender), "ERC1155Creator: A specified token was not created by this extension");
         }
         _mintExisting(msg.sender, to, tokenIds, amounts);
     }

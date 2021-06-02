@@ -90,7 +90,7 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
     /**
      * Approve a transfer
      */
-    function _approveTransfer(address from, address to, uint256 tokenId) internal {
+    function _approveTransfer(address from, address to, uint256 tokenId) internal view {
        if (_extensionApproveTransfers[_tokensExtension[tokenId]]) {
            require(IERC721CreatorExtensionApproveTransfer(_tokensExtension[tokenId]).approveTransfer(from, to, tokenId), "ERC721Creator: Extension approval failure");
        }

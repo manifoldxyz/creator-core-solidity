@@ -290,47 +290,18 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
         return (receivers[0], _getRoyaltyBPS(tokenId)[0]*value/10000, data);
     }
 
-
-    /**
-     * Helper to shorten royalties arrays if it is too long
-     */
-    function _shortenRoyalties(address payable[] storage receivers, uint256[] storage basisPoints, uint256 targetLength) internal {
-        require(receivers.length == basisPoints.length, "CreatorCore: Invalid input");
-        if (targetLength < receivers.length) {
-            for (uint i = receivers.length; i > targetLength; i--) {
-                receivers.pop();
-                basisPoints.pop();
-            }
-        }
-    }
-
-    /**
-     * Helper to update royalites
-     */
-    function _updateRoyalties(address payable[] storage receivers, uint256[] storage basisPoints, address payable[] calldata newReceivers, uint256[] calldata newBPS) internal {
-        require(receivers.length == basisPoints.length, "CreatorCore: Invalid input");
-        require(newReceivers.length == newBPS.length, "CreatorCore: Invalid input");
-        uint256 totalRoyalties;
-        for (uint i = 0; i < newReceivers.length; i++) {
-            if (i < receivers.length) {
-                receivers[i] = newReceivers[i];
-                basisPoints[i] = newBPS[i];
-            } else {
-                receivers.push(newReceivers[i]);
-                basisPoints.push(newBPS[i]);
-            }
-            totalRoyalties += newBPS[i];
-        }
-        require(totalRoyalties < 10000, "CreatorCore: Invalid total royalties");
-    }
-
     /**
      * Set royalties for a token
      */
     function _setRoyalties(uint256 tokenId, address payable[] calldata receivers, uint256[] calldata basisPoints) internal {
         require(receivers.length == basisPoints.length, "CreatorCore: Invalid input");
-        _shortenRoyalties(_tokenRoyaltyReceivers[tokenId], _tokenRoyaltyBPS[tokenId], receivers.length);
-        _updateRoyalties(_tokenRoyaltyReceivers[tokenId], _tokenRoyaltyBPS[tokenId], receivers, basisPoints);
+        uint256 totalBasisPoints;
+        for (uint i = 0; i < basisPoints.length; i++) {
+            totalBasisPoints += basisPoints[i];
+        }
+        require(totalBasisPoints < 10000, "CreatorCore: Invalid total royalties");
+        _tokenRoyaltyReceivers[tokenId] = receivers;
+        _tokenRoyaltyBPS[tokenId] = basisPoints;
         emit RoyaltiesUpdated(tokenId, receivers, basisPoints);
     }
 
@@ -339,8 +310,13 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
      */
     function _setRoyaltiesExtension(address extension, address payable[] calldata receivers, uint256[] calldata basisPoints) internal {
         require(receivers.length == basisPoints.length, "CreatorCore: Invalid input");
-        _shortenRoyalties(_extensionRoyaltyReceivers[extension], _extensionRoyaltyBPS[extension], receivers.length);
-        _updateRoyalties(_extensionRoyaltyReceivers[extension], _extensionRoyaltyBPS[extension], receivers, basisPoints);
+        uint256 totalBasisPoints;
+        for (uint i = 0; i < basisPoints.length; i++) {
+            totalBasisPoints += basisPoints[i];
+        }
+        require(totalBasisPoints < 10000, "CreatorCore: Invalid total royalties");
+        _extensionRoyaltyReceivers[extension] = receivers;
+        _extensionRoyaltyBPS[extension] = basisPoints;
         if (extension == address(this)) {
             emit DefaultRoyaltiesUpdated(receivers, basisPoints);
         } else {

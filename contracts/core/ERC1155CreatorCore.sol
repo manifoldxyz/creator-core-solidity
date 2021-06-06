@@ -89,11 +89,4 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
         }
     }
 
-    function _createUint256Array(uint256 element) internal pure returns (uint256[] memory array) {
-        array = new uint256[](1);
-        array[0] = element;
-
-        return array;
-    }
-
 }

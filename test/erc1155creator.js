@@ -32,7 +32,7 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
             // ICreatorCore
             assert.equal(true, await creator.supportsInterface('0xc3f17966'));
             // IERC1155CreatorCore
-            assert.equal(true, await creator.supportsInterface('0x6318824c'));
+            assert.equal(true, await creator.supportsInterface('0xc0a13479'));
             // Creator Core Royalites
             assert.equal(true, await creator.supportsInterface('0xbb3bafd6'));
             // EIP-2981 Royalites
@@ -211,13 +211,12 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
             assert.equal(await creator.uri(newTokenId5), 'http://extension_prefix/extension5');
 
             // Burning
-            await truffleAssert.reverts(creator.burn(anyone, newTokenId1, 100, {from:another}), "ERC1155Creator: caller is not owner nor approved");
-            await truffleAssert.reverts(creator.burnBatch(anyone, [newTokenId1], [100], {from:another}), "ERC1155Creator: caller is not owner nor approved");
-            await truffleAssert.reverts(creator.burnBatch(anyone, [newTokenId1], [1,100], {from:anyone}), "ERC1155Creator: Invalid input");
-            await creator.burn(anyone, newTokenId1, 50, {from:anyone});
-            await creator.burnBatch(anyone, [newTokenId1], [25], {from:anyone});
-            await truffleAssert.reverts(creator.burn(anyone, newTokenId1, 100, {from:anyone}), "ERC1155: burn amount exceeds balance");
-            await truffleAssert.reverts(creator.burnBatch(anyone, [newTokenId1], [100], {from:anyone}), "ERC1155: burn amount exceeds balance");
+            await truffleAssert.reverts(creator.burn(anyone, [newTokenId1], [100], {from:another}), "ERC1155Creator: caller is not owner nor approved");
+            await truffleAssert.reverts(creator.burn(anyone, [newTokenId1], [1,100], {from:anyone}), "ERC1155Creator: Invalid input");
+            await creator.burn(anyone, [newTokenId1], [50], {from:anyone});
+            await creator.burn(anyone, [newTokenId1], [25], {from:anyone});
+            await truffleAssert.reverts(creator.burn(anyone, [newTokenId1], [100], {from:anyone}), "ERC1155: burn amount exceeds balance");
+            await truffleAssert.reverts(creator.burn(anyone, [newTokenId1], [100], {from:anyone}), "ERC1155: burn amount exceeds balance");
             assert.deepEqual(await creator.balanceOf(anyone, newTokenId1), web3.utils.toBN(25));
 
             // Check burn callback

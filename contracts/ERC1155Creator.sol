@@ -261,19 +261,14 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
     /**
      * @dev See {IERC1155CreatorCore-burn}.
      */
-    function burn(address account, uint256 tokenId, uint256 amount) public virtual override nonReentrant {
-        require(account == msg.sender || isApprovedForAll(account, msg.sender), "ERC1155Creator: caller is not owner nor approved");
-        _burn(account, tokenId, amount);
-        _postBurn(account, _createUint256Array(tokenId), _createUint256Array(amount));
-    }
-
-    /**
-     * @dev See {IERC1155CreatorCore-burnBatch}.
-     */
-    function burnBatch(address account, uint256[] memory tokenIds, uint256[] memory amounts) public virtual override nonReentrant {
+    function burn(address account, uint256[] memory tokenIds, uint256[] memory amounts) public virtual override nonReentrant {
         require(account == msg.sender || isApprovedForAll(account, msg.sender), "ERC1155Creator: caller is not owner nor approved");
         require(tokenIds.length == amounts.length, "ERC1155Creator: Invalid input");
-        _burnBatch(account, tokenIds, amounts);
+        if (tokenIds.length == 1) {
+            _burn(account, tokenIds[0], amounts[0]);
+        } else {
+            _burnBatch(account, tokenIds, amounts);
+        }
         _postBurn(account, tokenIds, amounts);
     }
 

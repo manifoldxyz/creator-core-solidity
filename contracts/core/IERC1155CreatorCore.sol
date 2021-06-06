@@ -50,15 +50,9 @@ interface IERC1155CreatorCore is ICreatorCore {
     function mintExtensionExisting(address[] calldata to, uint256[] calldata tokenIds, uint256[] calldata amounts) external;
 
     /**
-     * @dev burn a token. Can only be called by token owner or approved address.
+     * @dev burn tokens. Can only be called by token owner or approved address.
      * On burn, calls back to the registered extension's onBurn method
      */
-    function burn(address account, uint256 tokenId, uint256 amount) external;
-
-    /**
-     * @dev batch burn tokens. Can only be called by token owner or approved address.
-     * On burn, calls back to the registered extension's onBurn method
-     */
-    function burnBatch(address account, uint256[] calldata tokenIds, uint256[] calldata amounts) external;
+    function burn(address account, uint256[] calldata tokenIds, uint256[] calldata amounts) external;
 
 }

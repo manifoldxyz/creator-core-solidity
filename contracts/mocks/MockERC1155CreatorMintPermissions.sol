@@ -15,7 +15,7 @@ contract MockERC1155CreatorMintPermissions is ERC1155CreatorMintPermissions {
         _approveEnabled = enabled;
     }
 
-    function approveMint(address extension, address to, uint256[] calldata tokenIds, uint256[] calldata amounts) public override {
+    function approveMint(address extension, address[] calldata to, uint256[] calldata tokenIds, uint256[] calldata amounts) public override {
         ERC1155CreatorMintPermissions.approveMint(extension, to, tokenIds, amounts);
         require(_approveEnabled, "MockERC1155CreatorMintPermissions: Disabled");
     }

@@ -33,7 +33,7 @@ abstract contract ERC1155CreatorMintPermissions is ERC165, AdminControl, IERC115
     /**
      * @dev See {IERC1155CreatorMintPermissions-approve}.
      */
-    function approveMint(address, address, uint256[] calldata, uint256[] calldata)  public virtual override {
+    function approveMint(address, address[] calldata, uint256[] calldata, uint256[] calldata)  public virtual override {
         require(msg.sender == _creator, "ERC1155CreatorMintPermissions: Can only be called by token creator");
     }
      

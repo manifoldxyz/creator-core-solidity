@@ -21,23 +21,15 @@ contract MockERC1155CreatorExtensionBurnable is CreatorExtensionBasic, ERC1155Cr
         _creator = creator;
     }
 
-    function testMintNew(address to, uint256 amount, string calldata uri) external {
-        _mintedTokens.push(_mintNew(_creator, to, amount, uri));
-    }
-
-    function testMintBatchNew(address to, uint256[] calldata amounts, string[] calldata uris) external {
-        uint256[] memory tokenIds = _mintBatchNew(_creator, to, amounts, uris);
+    function testMintNew(address[] calldata to, uint256[] calldata amounts, string[] calldata uris) external {
+        uint256[] memory tokenIds = _mintNew(_creator, to, amounts, uris);
         for (uint i = 0; i < tokenIds.length; i++) {
             _mintedTokens.push(tokenIds[i]);
         }
     }
 
-    function testMintExisting(address to, uint256 tokenId, uint256 amount) external {
-        IERC1155CreatorCore(_creator).mintExtensionExisting(to, tokenId, amount);
-    }
-
-    function testMintBatchExisting(address to, uint256[] calldata tokenIds, uint256[] calldata amounts) external {
-        IERC1155CreatorCore(_creator).mintExtensionBatchExisting(to, tokenIds, amounts);
+    function testMintExisting(address[] calldata to, uint256[] calldata tokenIds, uint256[] calldata amounts) external {
+        IERC1155CreatorCore(_creator).mintExtensionExisting(to, tokenIds, amounts);
     }
 
     function mintedTokens() external view returns(uint256[] memory) {

@@ -14,9 +14,7 @@ import "./core/ERC1155CreatorCore.sol";
  */
 contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
 
-    constructor (string memory uri_) ERC1155(uri_) {
-        _setBaseTokenURI(uri_);
-    }
+    constructor () ERC1155("") {}
 
     /**
      * @dev See {IERC165-supportsInterface}.
@@ -137,31 +135,14 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
     /**
      * @dev See {IERC1155CreatorCore-mintBaseNew}.
      */
-    function mintBaseNew(address to, uint256 amount, string calldata uri_) public virtual override nonReentrant adminRequired returns(uint256) {
-        return _mintNew(address(this), to, _createUint256Array(amount), _createStringArray(uri_))[0];
-    }
-
-    /**
-     * @dev See {IERC1155CreatorCore-mintBaseBatchNew}.
-     */
-    function mintBaseBatchNew(address to, uint256[] calldata amounts, string[] calldata uris) public virtual override nonReentrant adminRequired returns(uint256[] memory) {
-        require(uris.length == 0 || amounts.length == uris.length, "ERC1155Creator: Invalid input");
+    function mintBaseNew(address[] calldata to, uint256[] calldata amounts, string[] calldata uris) public virtual override nonReentrant adminRequired returns(uint256[] memory) {
         return _mintNew(address(this), to, amounts, uris);
     }
 
     /**
      * @dev See {IERC1155CreatorCore-mintBaseExisting}.
      */
-    function mintBaseExisting(address to, uint256 tokenId, uint256 amount) public virtual override nonReentrant adminRequired {
-        require(_tokensExtension[tokenId] == address(this), "ERC1155Creator: Specified token was created by an extension");
-        _mintExisting(address(this), to, _createUint256Array(tokenId), _createUint256Array(amount));
-    }
-
-    /**
-     * @dev See {IERC1155CreatorCore-mintBaseBatchExisting}.
-     */
-    function mintBaseBatchExisting(address to, uint256[] calldata tokenIds, uint256[] calldata amounts) public virtual override nonReentrant adminRequired {
-        require(tokenIds.length == amounts.length, "ERC1155Creator: Invalid input");
+    function mintBaseExisting(address[] calldata to, uint256[] calldata tokenIds, uint256[] calldata amounts) public virtual override nonReentrant adminRequired {
         for (uint i = 0; i < tokenIds.length; i++) {
             require(_tokensExtension[tokenIds[i]] == address(this), "ERC1155Creator: A specified token was created by an extension");
         }
@@ -171,32 +152,14 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
     /**
      * @dev See {IERC1155CreatorCore-mintExtensionNew}.
      */
-    function mintExtensionNew(address to, uint256 amount, string calldata uri_) public virtual override nonReentrant extensionRequired returns(uint256) {
-        return _mintNew(msg.sender, to, _createUint256Array(amount), _createStringArray(uri_))[0];
-    }
-
-    /**
-    /**
-     * @dev See {IERC1155CreatorCore-mintExtensionBatchNew}.
-     */
-    function mintExtensionBatchNew(address to, uint256[] calldata amounts, string[] calldata uris) public virtual override nonReentrant extensionRequired returns(uint256[] memory tokenIds) {
-        require(uris.length == 0 || amounts.length == uris.length, "ERC1155Creator: Invalid input");
+    function mintExtensionNew(address[] calldata to, uint256[] calldata amounts, string[] calldata uris) public virtual override nonReentrant extensionRequired returns(uint256[] memory tokenIds) {
         return _mintNew(msg.sender, to, amounts, uris);
     }
 
     /**
      * @dev See {IERC1155CreatorCore-mintExtensionExisting}.
      */
-    function mintExtensionExisting(address to, uint256 tokenId, uint256 amount) public virtual override nonReentrant extensionRequired {
-        require(_tokensExtension[tokenId] == address(msg.sender), "ERC1155Creator: Specified token was not created by this extension");
-        _mintExisting(msg.sender, to, _createUint256Array(tokenId), _createUint256Array(amount));
-    }
-
-    /**
-     * @dev See {IERC1155CreatorCore-mintExtensionBatchExisting}.
-     */
-    function mintExtensionBatchExisting(address to, uint256[] calldata tokenIds, uint256[] calldata amounts) public virtual override nonReentrant extensionRequired {
-        require(tokenIds.length == amounts.length, "ERC1155Creator: Invalid input");
+    function mintExtensionExisting(address[] calldata to, uint256[] calldata tokenIds, uint256[] calldata amounts) public virtual override nonReentrant extensionRequired {
         for (uint i = 0; i < tokenIds.length; i++) {
             require(_tokensExtension[tokenIds[i]] == address(msg.sender), "ERC1155Creator: A specified token was not created by this extension");
         }
@@ -206,9 +169,19 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
     /**
      * @dev Mint new tokens
      */
-    function _mintNew(address extension, address to, uint256[] memory amounts, string[] memory uris) internal returns(uint256[] memory tokenIds) {
-        tokenIds = new uint256[](amounts.length);
-        for (uint i = 0; i < amounts.length; i++) {
+    function _mintNew(address extension, address[] memory to, uint256[] memory amounts, string[] memory uris) internal returns(uint256[] memory tokenIds) {
+        if (to.length > 1) {
+            // Multiple receiver.  Give every receiver the same new token
+            tokenIds = new uint256[](1);
+            require(uris.length <= 1 && (amounts.length == 1 || to.length == amounts.length), "ERC1155Creator: Invalid input");
+        } else {
+            // Single receiver.  Generating multiple tokens
+            tokenIds = new uint256[](amounts.length);
+            require(uris.length == 0 || amounts.length == uris.length, "ERC1155Creator: Invalid input");
+        }
+
+        // Assign tokenIds
+        for (uint i = 0; i < tokenIds.length; i++) {
             _tokenCount++;
             tokenIds[i] = _tokenCount;
             // Track the extension that minted the token
@@ -219,35 +192,63 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
             _checkMintPermissions(to, tokenIds, amounts);
         }
 
-        if (tokenIds.length == 1) {
-            _mint(to, tokenIds[0], amounts[0], new bytes(0));        
+        if (to.length > 1) {
+            // Multiple receivers.  Receiving the same token
+            if (amounts.length == 1) {
+                // Everyone receiving the same amount
+                for (uint i = 0; i < to.length; i++) {
+                    _mint(to[i], tokenIds[0], amounts[0], new bytes(0));
+                }
+            } else {
+                // Everyone receiving different amounts
+                for (uint i = 0; i < to.length; i++) {
+                    _mint(to[i], tokenIds[0], amounts[i], new bytes(0));
+                }
+            }
         } else {
-            _mintBatch(to, tokenIds, amounts, new bytes(0));
+            _mintBatch(to[0], tokenIds, amounts, new bytes(0));
         }
 
-        for (uint i = 0; i < amounts.length; i++) {
-            if (bytes(uris[i]).length > 0) {
+        for (uint i = 0; i < tokenIds.length; i++) {
+            if (i < uris.length && bytes(uris[i]).length > 0) {
                 _tokenURIs[tokenIds[i]] = uris[i];
             }
         }
-        _postMint(tokenIds, amounts);
         return tokenIds;
     }
 
     /**
      * @dev Mint existing tokens
      */
-    function _mintExisting(address extension, address to, uint256[] memory tokenIds, uint256[] memory amounts) internal {
+    function _mintExisting(address extension, address[] memory to, uint256[] memory tokenIds, uint256[] memory amounts) internal {
         if (extension != address(this)) {
             _checkMintPermissions(to, tokenIds, amounts);
         }
 
-        if (tokenIds.length == 1) {
-            _mint(to, tokenIds[0], amounts[0], new bytes(0));        
+        if (to.length == 1 && tokenIds.length == 1 && amounts.length == 1) {
+             // Single mint
+            _mint(to[0], tokenIds[0], amounts[0], new bytes(0));            
+        } else if (to.length == 1 && tokenIds.length == amounts.length) {
+            // Batch mint to same receiver
+            _mintBatch(to[0], tokenIds, amounts, new bytes(0));
+        } else if (tokenIds.length == 1 && amounts.length == 1) {
+            // Mint of the same token/token amounts to various receivers
+            for (uint i = 0; i < to.length; i++) {
+                _mint(to[i], tokenIds[0], amounts[0], new bytes(0));
+            }
+        } else if (tokenIds.length == 1 && to.length == amounts.length) {
+            // Mint of the same token with different amounts to different receivers
+            for (uint i = 0; i < to.length; i++) {
+                _mint(to[i], tokenIds[0], amounts[i], new bytes(0));
+            }
+        } else if (to.length == tokenIds.length && to.length == amounts.length) {
+            // Mint of different tokens and different amounts to different receivers
+            for (uint i = 0; i < to.length; i++) {
+                _mint(to[i], tokenIds[i], amounts[i], new bytes(0));
+            }
         } else {
-            _mintBatch(to, tokenIds, amounts, new bytes(0));
+            revert("ERC1155Creator: Invalid input");
         }
-        _postMint(tokenIds, amounts);
     }
 
     /**

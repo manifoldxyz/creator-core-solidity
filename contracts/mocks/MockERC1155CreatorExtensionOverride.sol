@@ -24,8 +24,8 @@ contract MockERC1155CreatorExtensionOverride is ERC1155CreatorExtensionApproveTr
             || super.supportsInterface(interfaceId);
     }
 
-    function testMintNew(address to, uint256 amount, string calldata uri) external {
-        IERC1155CreatorCore(_creator).mintExtensionNew(to, amount, uri);
+    function testMintNew(address[] calldata to, uint256[] calldata amounts, string[] calldata uris) external {
+        IERC1155CreatorCore(_creator).mintExtensionNew(to, amounts, uris);
     }
 
     function setApproveEnabled(bool enabled) public {

@@ -52,17 +52,11 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
     /**
      * Check if an extension can mint
      */
-    function _checkMintPermissions(address to, uint256[] memory tokenIds, uint256[] memory amounts) internal {
+    function _checkMintPermissions(address[] memory to, uint256[] memory tokenIds, uint256[] memory amounts) internal {
         if (_extensionPermissions[msg.sender] != address(0x0)) {
             IERC1155CreatorMintPermissions(_extensionPermissions[msg.sender]).approveMint(msg.sender, to, tokenIds, amounts);
         }
     }
-
-    /**
-     * Post mint actions
-     */
-    function _postMint(uint256[] memory tokenIds, uint256[] memory amounts) internal virtual { }
-
 
     /**
      * Post burn actions
@@ -97,13 +91,6 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
 
     function _createUint256Array(uint256 element) internal pure returns (uint256[] memory array) {
         array = new uint256[](1);
-        array[0] = element;
-
-        return array;
-    }
-
-    function _createStringArray(string memory element) internal pure returns (string[] memory array) {
-        array = new string[](1);
         array[0] = element;
 
         return array;

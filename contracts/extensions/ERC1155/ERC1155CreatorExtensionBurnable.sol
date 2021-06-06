@@ -28,29 +28,15 @@ abstract contract ERC1155CreatorExtensionBurnable is AdminControl, IERC1155Creat
     }
 
     /**
-     * @dev mint a token
-     */
-    function mintNew(address creator, address to, uint256 amount, string calldata uri) external adminRequired returns (uint256) {
-        return _mintNew(creator, to, amount, uri);
-    }
-
-    /**
      * @dev batch mint a token
      */
-    function mintBatchNew(address creator, address to, uint256[] calldata amounts, string[] calldata uris) external adminRequired returns (uint256[] memory) {
-        return _mintBatchNew(creator, to, amounts, uris);
+    function mintNew(address creator, address[] calldata to, uint256[] calldata amounts, string[] calldata uris) external adminRequired returns (uint256[] memory) {
+        return _mintNew(creator, to, amounts, uris);
     }
 
-    function _mintNew(address creator, address to, uint256 amount, string calldata uri) internal returns (uint256) {
+    function _mintNew(address creator, address[] calldata to, uint256[] calldata amounts, string[] calldata uris) internal returns (uint256[] memory tokenIds) {
         require(ERC165Checker.supportsInterface(creator, type(IERC1155CreatorCore).interfaceId), "ERC1155CreatorExtensionBurnable: Requires ERC1155CreatorCore");
-        uint256 tokenId = IERC1155CreatorCore(creator).mintExtensionNew(to, amount, uri);
-        _tokenCreators[tokenId] = creator;
-        return tokenId;
-    }
-
-    function _mintBatchNew(address creator, address to, uint256[] calldata amounts, string[] calldata uris) internal returns (uint256[] memory tokenIds) {
-        require(ERC165Checker.supportsInterface(creator, type(IERC1155CreatorCore).interfaceId), "ERC1155CreatorExtensionBurnable: Requires ERC1155CreatorCore");
-        tokenIds = IERC1155CreatorCore(creator).mintExtensionBatchNew(to, amounts, uris);
+        tokenIds = IERC1155CreatorCore(creator).mintExtensionNew(to, amounts, uris);
         for (uint256 i = 0; i < tokenIds.length; i++) {
             _tokenCreators[tokenIds[i]] = creator;
         }

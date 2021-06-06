@@ -15,6 +15,7 @@ import "./core/ERC1155CreatorCore.sol";
 contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
 
     constructor (string memory uri_) ERC1155(uri_) {
+        _setBaseTokenURI(uri_);
     }
 
     /**

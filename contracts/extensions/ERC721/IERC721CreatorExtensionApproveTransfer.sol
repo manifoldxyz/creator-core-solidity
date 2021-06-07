@@ -19,5 +19,5 @@ interface IERC721CreatorExtensionApproveTransfer is IERC165 {
     /**
      * @dev Called by creator contract to approve a transfer
      */
-    function approveTransfer(address from, address to, uint256 tokenId) external view returns (bool);
+    function approveTransfer(address from, address to, uint256 tokenId) external returns (bool);
 }

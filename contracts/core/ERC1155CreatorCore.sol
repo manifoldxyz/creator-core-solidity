@@ -78,7 +78,7 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
     /**
      * Approve a transfer
      */
-    function _approveTransfer(address from, address to, uint256[] memory tokenIds, uint256[] memory amounts) internal view {
+    function _approveTransfer(address from, address to, uint256[] memory tokenIds, uint256[] memory amounts) internal {
         require(tokenIds.length > 0, "CreatorCore: Invalid input");
         address extension = _tokensExtension[tokenIds[0]];
         for (uint i = 0; i < tokenIds.length; i++) {

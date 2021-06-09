@@ -121,4 +121,8 @@ interface IERC1155CreatorCore is ICreatorCore {
      */
     function burn(address account, uint256[] calldata tokenIds, uint256[] calldata amounts) external;
 
+    /**
+     * @dev Total amount of tokens in with a given tokenId.
+     */
+    function totalSupply(uint256 tokenId) external view returns (uint256);
 }

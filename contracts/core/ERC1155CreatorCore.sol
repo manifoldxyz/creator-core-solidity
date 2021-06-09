@@ -30,7 +30,7 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
      * @dev See {ICreatorCore-setApproveTransferExtension}.
      */
     function setApproveTransferExtension(bool enabled) external override extensionRequired {
-        require(!enabled || ERC165Checker.supportsInterface(msg.sender, type(IERC1155CreatorExtensionApproveTransfer).interfaceId), "CreatorCore: Requires extension to implement IERC1155CreatorExtensionApproveTransfer");
+        require(!enabled || ERC165Checker.supportsInterface(msg.sender, type(IERC1155CreatorExtensionApproveTransfer).interfaceId), "Extension must implement IERC1155CreatorExtensionApproveTransfer");
         if (_extensionApproveTransfers[msg.sender] != enabled) {
             _extensionApproveTransfers[msg.sender] = enabled;
             emit ExtensionApproveTransferUpdated(msg.sender, enabled);
@@ -41,8 +41,8 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
      * @dev Set mint permissions for an extension
      */
     function _setMintPermissions(address extension, address permissions) internal {
-        require(_extensions.contains(extension), "CreatorCore: Invalid extension");
-        require(permissions == address(0x0) || ERC165Checker.supportsInterface(permissions, type(IERC1155CreatorMintPermissions).interfaceId), "CreatorCore: Invalid address");
+        require(_extensions.contains(extension), "Invalid extension");
+        require(permissions == address(0x0) || ERC165Checker.supportsInterface(permissions, type(IERC1155CreatorMintPermissions).interfaceId), "Invalid address");
         if (_extensionPermissions[extension] != permissions) {
             _extensionPermissions[extension] = permissions;
             emit MintPermissionsUpdated(extension, permissions, msg.sender);
@@ -62,10 +62,10 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
      * Post burn actions
      */
     function _postBurn(address owner, uint256[] memory tokenIds, uint256[] memory amounts) internal virtual {
-        require(tokenIds.length > 0, "CreatorCore: Invalid input");
+        require(tokenIds.length > 0, "Invalid input");
         address extension = _tokensExtension[tokenIds[0]];
         for (uint i = 0; i < tokenIds.length; i++) {
-            require(_tokensExtension[tokenIds[i]] == extension, "CreatorCore: Mismatched token originators");
+            require(_tokensExtension[tokenIds[i]] == extension, "Mismatched token originators");
         }
         // Callback to originating extension if needed
         if (extension != address(this)) {
@@ -79,14 +79,15 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
      * Approve a transfer
      */
     function _approveTransfer(address from, address to, uint256[] memory tokenIds, uint256[] memory amounts) internal {
-        require(tokenIds.length > 0, "CreatorCore: Invalid input");
+        require(tokenIds.length > 0, "Invalid input");
         address extension = _tokensExtension[tokenIds[0]];
         for (uint i = 0; i < tokenIds.length; i++) {
-            require(_tokensExtension[tokenIds[i]] == extension, "CreatorCore: Mismatched token originators");
+            require(_tokensExtension[tokenIds[i]] == extension, "Mismatched token originators");
         }
         if (_extensionApproveTransfers[extension]) {
-            require(IERC1155CreatorExtensionApproveTransfer(extension).approveTransfer(from, to, tokenIds, amounts), "CreatorCore: Extension approval failure");
+            require(IERC1155CreatorExtensionApproveTransfer(extension).approveTransfer(from, to, tokenIds, amounts), "Extension approval failure");
         }
     }
+
 
 }

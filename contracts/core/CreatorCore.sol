@@ -105,7 +105,7 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
      * @dev Only allows registered extensions to call the specified function
      */
     modifier extensionRequired() {
-        require(_extensions.contains(msg.sender), "CreatorCore: Must be registered extension");
+        require(_extensions.contains(msg.sender), "Must be registered extension");
         _;
     }
 
@@ -113,7 +113,7 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
      * @dev Only allows non-blacklisted extensions
      */
     modifier nonBlacklistRequired(address extension) {
-        require(!_blacklistedExtensions.contains(extension), "CreatorCore: Extension blacklisted");
+        require(!_blacklistedExtensions.contains(extension), "Extension blacklisted");
         _;
     }   
 
@@ -155,7 +155,7 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
      * @dev Blacklist an extension
      */
     function _blacklistExtension(address extension) internal {
-       require(extension != address(this), "CreatorCore: Cannot blacklist yourself");
+       require(extension != address(this), "Cannot blacklist yourself");
        if (_extensions.contains(extension)) {
            emit ExtensionUnregistered(extension, msg.sender);
            _extensions.remove(extension);
@@ -185,7 +185,7 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
      * @dev Set token uri for a token of an extension
      */
     function _setTokenURIExtension(uint256 tokenId, string calldata uri) internal {
-        require(_tokensExtension[tokenId] == msg.sender, "CreatorCore: Invalid token");
+        require(_tokensExtension[tokenId] == msg.sender, "Invalid token");
         _tokenURIs[tokenId] = uri;
     }
 
@@ -208,7 +208,7 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
      * @dev Set token uri for a token with no extension
      */
     function _setTokenURI(uint256 tokenId, string calldata uri) internal {
-        require(_tokensExtension[tokenId] == address(this), "CreatorCore: Invalid token");
+        require(_tokensExtension[tokenId] == address(this), "Invalid token");
         _tokenURIs[tokenId] = uri;
     }
 
@@ -217,7 +217,7 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
      */
     function _tokenURI(uint256 tokenId) internal view returns (string memory) {
         address extension = _tokensExtension[tokenId];
-        require(!_blacklistedExtensions.contains(extension), "CreatorCore: Extension blacklisted");
+        require(!_blacklistedExtensions.contains(extension), "Extension blacklisted");
 
         if (bytes(_tokenURIs[tokenId]).length != 0) {
             if (bytes(_extensionURIPrefix[extension]).length != 0) {
@@ -243,8 +243,8 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     function _tokenExtension(uint256 tokenId) internal view returns (address extension) {
         extension = _tokensExtension[tokenId];
 
-        require(extension != address(this), "CreatorCore: No extension for token");
-        require(!_blacklistedExtensions.contains(extension), "CreatorCore: Extension blacklisted");
+        require(extension != address(this), "No extension for token");
+        require(!_blacklistedExtensions.contains(extension), "Extension blacklisted");
 
         return extension;
     }
@@ -282,7 +282,7 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
 
     function _getRoyaltyInfo(uint256 tokenId, uint256 value) view internal returns (address receiver, uint256 amount, bytes memory data){
         address payable[] storage receivers = _getRoyaltyReceivers(tokenId);
-        require(receivers.length <= 1, "CreatorCore: Only works if there are at most 1 royalty receivers");
+        require(receivers.length <= 1, "More than 1 royalty receiver");
         
         if (receivers.length == 0) {
             return (address(this), 0, data);
@@ -294,12 +294,12 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
      * Set royalties for a token
      */
     function _setRoyalties(uint256 tokenId, address payable[] calldata receivers, uint256[] calldata basisPoints) internal {
-        require(receivers.length == basisPoints.length, "CreatorCore: Invalid input");
+        require(receivers.length == basisPoints.length, "Invalid input");
         uint256 totalBasisPoints;
         for (uint i = 0; i < basisPoints.length; i++) {
             totalBasisPoints += basisPoints[i];
         }
-        require(totalBasisPoints < 10000, "CreatorCore: Invalid total royalties");
+        require(totalBasisPoints < 10000, "Invalid total royalties");
         _tokenRoyaltyReceivers[tokenId] = receivers;
         _tokenRoyaltyBPS[tokenId] = basisPoints;
         emit RoyaltiesUpdated(tokenId, receivers, basisPoints);
@@ -309,12 +309,12 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
      * Set royalties for all tokens of an extension
      */
     function _setRoyaltiesExtension(address extension, address payable[] calldata receivers, uint256[] calldata basisPoints) internal {
-        require(receivers.length == basisPoints.length, "CreatorCore: Invalid input");
+        require(receivers.length == basisPoints.length, "Invalid input");
         uint256 totalBasisPoints;
         for (uint i = 0; i < basisPoints.length; i++) {
             totalBasisPoints += basisPoints[i];
         }
-        require(totalBasisPoints < 10000, "CreatorCore: Invalid total royalties");
+        require(totalBasisPoints < 10000, "Invalid total royalties");
         _extensionRoyaltyReceivers[extension] = receivers;
         _extensionRoyaltyBPS[extension] = basisPoints;
         if (extension == address(this)) {

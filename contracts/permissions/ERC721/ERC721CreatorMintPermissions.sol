@@ -18,7 +18,7 @@ abstract contract ERC721CreatorMintPermissions is ERC165, AdminControl, IERC721C
      address internal immutable _creator;
 
      constructor(address creator_) {
-         require(ERC165Checker.supportsInterface(creator_, type(IERC721CreatorCore).interfaceId), "ERC721CreatorMintPermissions: Must implement IERC721CreatorCore");
+         require(ERC165Checker.supportsInterface(creator_, type(IERC721CreatorCore).interfaceId), "Must implement IERC721CreatorCore");
          _creator = creator_;
      }
 
@@ -34,7 +34,7 @@ abstract contract ERC721CreatorMintPermissions is ERC165, AdminControl, IERC721C
      * @dev See {IERC721CreatorMintPermissions-approve}.
      */
     function approveMint(address, address, uint256) public virtual override {
-        require(msg.sender == _creator, "ERC721CreatorMintPermissions: Can only be called by token creator");
+        require(msg.sender == _creator, "Can only be called by token creator");
     }
      
 

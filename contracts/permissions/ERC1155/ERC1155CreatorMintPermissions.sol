@@ -18,7 +18,7 @@ abstract contract ERC1155CreatorMintPermissions is ERC165, AdminControl, IERC115
      address internal immutable _creator;
 
      constructor(address creator_) {
-         require(ERC165Checker.supportsInterface(creator_, type(IERC1155CreatorCore).interfaceId), "ERC1155CreatorMintPermissions: Must implement IERC1155CreatorCore");
+         require(ERC165Checker.supportsInterface(creator_, type(IERC1155CreatorCore).interfaceId), "Must implement IERC1155CreatorCore");
          _creator = creator_;
      }
 
@@ -34,7 +34,7 @@ abstract contract ERC1155CreatorMintPermissions is ERC165, AdminControl, IERC115
      * @dev See {IERC1155CreatorMintPermissions-approve}.
      */
     function approveMint(address, address[] calldata, uint256[] calldata, uint256[] calldata)  public virtual override {
-        require(msg.sender == _creator, "ERC1155CreatorMintPermissions: Can only be called by token creator");
+        require(msg.sender == _creator, "Can only be called by token creator");
     }
      
 

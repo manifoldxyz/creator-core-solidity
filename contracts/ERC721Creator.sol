@@ -89,7 +89,7 @@ contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
      * @dev See {ICreatorCore-setTokenURIExtension}.
      */
     function setTokenURIExtension(uint256[] memory tokenIds, string[] calldata uris) external override extensionRequired {
-        require(tokenIds.length == uris.length, "ERC721Creator: Invalid input");
+        require(tokenIds.length == uris.length, "Invalid input");
         for (uint i = 0; i < tokenIds.length; i++) {
             _setTokenURIExtension(tokenIds[i], uris[i]);            
         }
@@ -120,7 +120,7 @@ contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
      * @dev See {ICreatorCore-setTokenURI}.
      */
     function setTokenURI(uint256[] memory tokenIds, string[] calldata uris) external override adminRequired {
-        require(tokenIds.length == uris.length, "ERC721Creator: Invalid input");
+        require(tokenIds.length == uris.length, "Invalid input");
         for (uint i = 0; i < tokenIds.length; i++) {
             _setTokenURI(tokenIds[i], uris[i]);            
         }
@@ -261,7 +261,7 @@ contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
      * @dev See {IERC721CreatorCore-burn}.
      */
     function burn(uint256 tokenId) public virtual override nonReentrant {
-        require(_isApprovedOrOwner(msg.sender, tokenId), "ERC721Creator: caller is not owner nor approved");
+        require(_isApprovedOrOwner(msg.sender, tokenId), "Caller is not owner nor approved");
         address owner = ownerOf(tokenId);
         _burn(tokenId);
         _postBurn(owner, tokenId);

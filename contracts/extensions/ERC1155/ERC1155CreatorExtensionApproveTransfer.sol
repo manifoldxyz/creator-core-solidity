@@ -28,7 +28,7 @@ abstract contract ERC1155CreatorExtensionApproveTransfer is AdminControl, IERC11
      * @dev See {IERC1155CreatorExtensionApproveTransfer-setApproveTransfer}
      */
     function setApproveTransfer(address creator, bool enabled) external override adminRequired {
-        require(ERC165Checker.supportsInterface(creator, type(IERC1155CreatorCore).interfaceId), "ERC1155CreatorExtensionApproveTransfer: Requires ERC1155CreatorCore");
+        require(ERC165Checker.supportsInterface(creator, type(IERC1155CreatorCore).interfaceId), "creator must implement IERC1155CreatorCore");
         IERC1155CreatorCore(creator).setApproveTransferExtension(enabled);
     }
 

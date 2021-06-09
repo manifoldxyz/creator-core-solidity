@@ -14,6 +14,8 @@ import "./core/ERC1155CreatorCore.sol";
  */
 contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
 
+    mapping(uint256 => uint256) private _totalSupply;
+
     constructor () ERC1155("") {}
 
     /**
@@ -88,7 +90,7 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
      * @dev See {ICreatorCore-setTokenURIExtension}.
      */
     function setTokenURIExtension(uint256[] memory tokenIds, string[] calldata uris) external override extensionRequired {
-        require(tokenIds.length == uris.length, "ERC1155Creator: Invalid input");
+        require(tokenIds.length == uris.length, "Invalid input");
         for (uint i = 0; i < tokenIds.length; i++) {
             _setTokenURIExtension(tokenIds[i], uris[i]);            
         }
@@ -119,7 +121,7 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
      * @dev See {ICreatorCore-setTokenURI}.
      */
     function setTokenURI(uint256[] memory tokenIds, string[] calldata uris) external override adminRequired {
-        require(tokenIds.length == uris.length, "ERC1155Creator: Invalid input");
+        require(tokenIds.length == uris.length, "Invalid input");
         for (uint i = 0; i < tokenIds.length; i++) {
             _setTokenURI(tokenIds[i], uris[i]);            
         }
@@ -144,7 +146,7 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
      */
     function mintBaseExisting(address[] calldata to, uint256[] calldata tokenIds, uint256[] calldata amounts) public virtual override nonReentrant adminRequired {
         for (uint i = 0; i < tokenIds.length; i++) {
-            require(_tokensExtension[tokenIds[i]] == address(this), "ERC1155Creator: A specified token was created by an extension");
+            require(_tokensExtension[tokenIds[i]] == address(this), "A token was created by an extension");
         }
         _mintExisting(address(this), to, tokenIds, amounts);
     }
@@ -161,7 +163,7 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
      */
     function mintExtensionExisting(address[] calldata to, uint256[] calldata tokenIds, uint256[] calldata amounts) public virtual override nonReentrant extensionRequired {
         for (uint i = 0; i < tokenIds.length; i++) {
-            require(_tokensExtension[tokenIds[i]] == address(msg.sender), "ERC1155Creator: A specified token was not created by this extension");
+            require(_tokensExtension[tokenIds[i]] == address(msg.sender), "A token was not created by this extension");
         }
         _mintExisting(msg.sender, to, tokenIds, amounts);
     }
@@ -173,11 +175,11 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
         if (to.length > 1) {
             // Multiple receiver.  Give every receiver the same new token
             tokenIds = new uint256[](1);
-            require(uris.length <= 1 && (amounts.length == 1 || to.length == amounts.length), "ERC1155Creator: Invalid input");
+            require(uris.length <= 1 && (amounts.length == 1 || to.length == amounts.length), "Invalid input");
         } else {
             // Single receiver.  Generating multiple tokens
             tokenIds = new uint256[](amounts.length);
-            require(uris.length == 0 || amounts.length == uris.length, "ERC1155Creator: Invalid input");
+            require(uris.length == 0 || amounts.length == uris.length, "Invalid input");
         }
 
         // Assign tokenIds
@@ -247,7 +249,7 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
                 _mint(to[i], tokenIds[i], amounts[i], new bytes(0));
             }
         } else {
-            revert("ERC1155Creator: Invalid input");
+            revert("Invalid input");
         }
     }
 
@@ -262,8 +264,8 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
      * @dev See {IERC1155CreatorCore-burn}.
      */
     function burn(address account, uint256[] memory tokenIds, uint256[] memory amounts) public virtual override nonReentrant {
-        require(account == msg.sender || isApprovedForAll(account, msg.sender), "ERC1155Creator: caller is not owner nor approved");
-        require(tokenIds.length == amounts.length, "ERC1155Creator: Invalid input");
+        require(account == msg.sender || isApprovedForAll(account, msg.sender), "Caller is not owner nor approved");
+        require(tokenIds.length == amounts.length, "Invalid input");
         if (tokenIds.length == 1) {
             _burn(account, tokenIds[0], amounts[0]);
         } else {
@@ -335,4 +337,46 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
         return _tokenURI(tokenId);
     }
     
+    /**
+     * @dev Total amount of tokens in with a given id.
+     */
+    function totalSupply(uint256 tokenId) external view virtual override returns (uint256) {
+        return _totalSupply[tokenId];
+    }
+
+    /**
+     * @dev See {ERC1155-_mint}.
+     */
+    function _mint(address account, uint256 id, uint256 amount, bytes memory data) internal virtual override {
+        super._mint(account, id, amount, data);
+        _totalSupply[id] += amount;
+    }
+
+    /**
+     * @dev See {ERC1155-_mintBatch}.
+     */
+    function _mintBatch(address to, uint256[] memory ids, uint256[] memory amounts, bytes memory data) internal virtual override {
+        super._mintBatch(to, ids, amounts, data);
+        for (uint256 i = 0; i < ids.length; ++i) {
+            _totalSupply[ids[i]] += amounts[i];
+        }
+    }
+
+    /**
+     * @dev See {ERC1155-_burn}.
+     */
+    function _burn(address account, uint256 id, uint256 amount) internal virtual override {
+        super._burn(account, id, amount);
+        _totalSupply[id] -= amount;
+    }
+
+    /**
+     * @dev See {ERC1155-_burnBatch}.
+     */
+    function _burnBatch(address account, uint256[] memory ids, uint256[] memory amounts) internal virtual override {
+        super._burnBatch(account, ids, amounts);
+        for (uint256 i = 0; i < ids.length; ++i) {
+            _totalSupply[ids[i]] -= amounts[i];
+        }
+    }
 }

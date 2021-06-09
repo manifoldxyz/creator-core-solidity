@@ -29,7 +29,7 @@ abstract contract ERC721CreatorExtensionApproveTransfer is AdminControl, ERC721C
      * @dev See {IERC721CreatorExtensionApproveTransfer-setApproveTransfer}
      */
     function setApproveTransfer(address creator, bool enabled) external override adminRequired {
-        require(ERC165Checker.supportsInterface(creator, type(IERC721CreatorCore).interfaceId), "ERC721CreatorExtensionApproveTransfer: Requires ERC721CreatorCore");
+        require(ERC165Checker.supportsInterface(creator, type(IERC721CreatorCore).interfaceId), "creator must implement IERC721CreatorCore");
         IERC721CreatorCore(creator).setApproveTransferExtension(enabled);
     }
 

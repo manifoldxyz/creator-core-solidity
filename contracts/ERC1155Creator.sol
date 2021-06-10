@@ -194,7 +194,10 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
             _checkMintPermissions(to, tokenIds, amounts);
         }
 
-        if (to.length > 1) {
+        if (to.length == 1 && tokenIds.length == 1) {
+           // Single mint
+           _mint(to[0], tokenIds[0], amounts[0], new bytes(0));
+        } else if (to.length > 1) {
             // Multiple receivers.  Receiving the same token
             if (amounts.length == 1) {
                 // Everyone receiving the same amount

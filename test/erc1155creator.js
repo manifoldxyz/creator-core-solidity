@@ -44,6 +44,7 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
         });
 
         it('creator extension override test', async function () {
+            await truffleAssert.reverts(creator.registerExtension(creator.address, '', {from:owner}), "Creator: Invalid")
             var extension = await MockERC1155CreatorExtensionOverride.new(creator.address, {from:owner});
             await creator.registerExtension(extension.address, 'http://extension/', {from:owner});
 

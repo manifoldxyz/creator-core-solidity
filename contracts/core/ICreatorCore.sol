@@ -144,6 +144,6 @@ interface ICreatorCore is IERC165 {
     function getFeeRecipients(uint256 tokenId) external view returns (address payable[] memory);
     function getFeeBps(uint256 tokenId) external view returns (uint[] memory);
     function getFees(uint256 tokenId) external view returns (address payable[] memory, uint256[] memory);
-    function royaltyInfo(uint256 tokenId, uint256 value, bytes calldata data) external view returns (address, uint256, bytes memory);
+    function royaltyInfo(uint256 tokenId, uint256 value) external view returns (address, uint256);
 
 }

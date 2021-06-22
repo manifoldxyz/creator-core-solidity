@@ -34,13 +34,13 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
 
         it('supportsInterface test', async function () {
             // ICreatorCore
-            assert.equal(true, await creator.supportsInterface('0xc3f17966'));
+            assert.equal(true, await creator.supportsInterface('0x28f10a21'));
             // IERC721CreatorCore
             assert.equal(true, await creator.supportsInterface('0x9088c207'));
             // Creator Core Royalites
             assert.equal(true, await creator.supportsInterface('0xbb3bafd6'));
             // EIP-2981 Royalites
-            assert.equal(true, await creator.supportsInterface('0x6057361d'));
+            assert.equal(true, await creator.supportsInterface('0x2a55205a'));
             // RaribleV1 Royalites
             assert.equal(true, await creator.supportsInterface('0xb7799584'));
             // Foundation Royalites
@@ -332,7 +332,7 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             assert.equal(results.length, 2);
             results = await creator.getFeeBps(tokenId1);
             assert.equal(results.length, 2);
-            await truffleAssert.reverts(creator.royaltyInfo(tokenId1, 10000, "0x0"), "More than 1 royalty receiver");
+            await truffleAssert.reverts(creator.royaltyInfo(tokenId1, 10000), "More than 1 royalty receiver");
 
             const extension = await MockERC721CreatorExtensionBurnable.new(creator.address);
             await creator.registerExtension(extension.address, 'http://extension/', {from:owner});
@@ -353,7 +353,7 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             results = await creator.getRoyalties(tokenId2);
             assert.equal(results[0].length, 1);
             assert.equal(results[1].length, 1);
-            results = await creator.royaltyInfo(tokenId2, 10000, "0x0");
+            results = await creator.royaltyInfo(tokenId2, 10000);
             assert.deepEqual(web3.utils.toBN(10000*123/10000), results[1]);
 
             await creator.mintBase(anyone, {from:owner});

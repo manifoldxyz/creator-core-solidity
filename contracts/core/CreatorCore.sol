@@ -86,11 +86,11 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     /**
      *  @dev EIP-2981
      *
-     * bytes4(keccak256("royaltyInfo(uint256,uint256,bytes)")) == 0x6057361d
+     * bytes4(keccak256("royaltyInfo(uint256,uint256)")) == 0x2a55205a
      *
      * => 0x6057361d = 0x6057361d
      */
-    bytes4 private constant _INTERFACE_ID_ROYALTIES_EIP2981 = 0x6057361d;
+    bytes4 private constant _INTERFACE_ID_ROYALTIES_EIP2981 = 0x2a55205a;
 
     /**
      * @dev See {IERC165-supportsInterface}.
@@ -281,14 +281,14 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
         return _extensionRoyaltyBPS[address(this)];        
     }
 
-    function _getRoyaltyInfo(uint256 tokenId, uint256 value) view internal returns (address receiver, uint256 amount, bytes memory data){
+    function _getRoyaltyInfo(uint256 tokenId, uint256 value) view internal returns (address receiver, uint256 amount){
         address payable[] storage receivers = _getRoyaltyReceivers(tokenId);
         require(receivers.length <= 1, "More than 1 royalty receiver");
         
         if (receivers.length == 0) {
-            return (address(this), 0, data);
+            return (address(this), 0);
         }
-        return (receivers[0], _getRoyaltyBPS(tokenId)[0]*value/10000, data);
+        return (receivers[0], _getRoyaltyBPS(tokenId)[0]*value/10000);
     }
 
     /**

@@ -329,7 +329,7 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
     /**
      * @dev {See IERC721CreatorCore-royaltyInfo}.
      */
-    function royaltyInfo(uint256 tokenId, uint256 value, bytes calldata) external view virtual override returns (address, uint256, bytes memory) {
+    function royaltyInfo(uint256 tokenId, uint256 value) external view virtual override returns (address, uint256) {
         require(_exists(tokenId), "Nonexistent token");
         return _getRoyaltyInfo(tokenId, value);
     } 

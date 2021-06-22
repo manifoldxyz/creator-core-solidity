@@ -329,7 +329,7 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
     /**
      * @dev {See ICreatorCore-royaltyInfo}.
      */
-    function royaltyInfo(uint256 tokenId, uint256 value, bytes calldata) external view virtual override returns (address, uint256, bytes memory) {
+    function royaltyInfo(uint256 tokenId, uint256 value) external view virtual override returns (address, uint256) {
         return _getRoyaltyInfo(tokenId, value);
     } 
 

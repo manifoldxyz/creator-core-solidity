@@ -324,7 +324,7 @@ contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
     /**
      * @dev {See ICreatorCore-royaltyInfo}.
      */
-    function royaltyInfo(uint256 tokenId, uint256 value, bytes calldata) external view virtual override returns (address, uint256, bytes memory) {
+    function royaltyInfo(uint256 tokenId, uint256 value) external view virtual override returns (address, uint256) {
         require(_exists(tokenId), "Nonexistent token");
         return _getRoyaltyInfo(tokenId, value);
     } 

@@ -5,8 +5,8 @@ pragma solidity ^0.8.0;
 /// @author: manifold.xyz
 
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
+import "@manifoldxyz/libraries-solidity/contracts/access/AdminControlUpgradeable.sol";
 
-import "manifoldxyz-libraries-solidity/contracts/access/AdminControlUpgradeable.sol";
 import "./core/ERC721CreatorCore.sol";
 
 /**

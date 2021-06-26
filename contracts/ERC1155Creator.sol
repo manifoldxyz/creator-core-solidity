@@ -5,8 +5,8 @@ pragma solidity ^0.8.0;
 /// @author: manifold.xyz
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import "@manifoldxyz/libraries-solidity/contracts/access/AdminControl.sol";
 
-import "manifoldxyz-libraries-solidity/contracts/access/AdminControl.sol";
 import "./core/ERC1155CreatorCore.sol";
 
 /**

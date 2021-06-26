@@ -9,6 +9,5 @@
 .#*
 .DS_Store
 *.pyc
-package-lock.json
 build
 node_modules

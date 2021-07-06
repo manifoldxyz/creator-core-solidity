@@ -88,7 +88,7 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
      *
      * bytes4(keccak256("royaltyInfo(uint256,uint256)")) == 0x2a55205a
      *
-     * => 0x6057361d = 0x6057361d
+     * => 0x2a55205a = 0x2a55205a
      */
     bytes4 private constant _INTERFACE_ID_ROYALTIES_EIP2981 = 0x2a55205a;
 

@@ -7,8 +7,9 @@
     "test": "test"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.1.0",
-    "@manifoldxyz/libraries-solidity": "^1.0.1"
+    "@manifoldxyz/libraries-solidity": "^1.0.2",
+    "@openzeppelin/contracts": "^4.2.0",
+    "@openzeppelin/contracts-upgradeable": "^4.2.0"
   },
   "devDependencies": {
     "@openzeppelin/truffle-upgrades": "^1.6.1",

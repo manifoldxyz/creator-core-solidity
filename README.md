@@ -49,7 +49,25 @@ The available contracts are:
 
 [Manifold Studio](https://studio.manifoldxyz.dev/) currently makes use of ERC721Creator and ERC1155Creator
 
-## Learn More
+### Extension Applications
+
+The most powerful aspect of Manifold Creator Core contracts is the ability to extend the functionality of your smart contract by adding new Extension Applications (Apps). Apps have the ability to override the following functionality for any token created by that App:
+
+**ERC721**
+ * mint
+ * tokenURI
+ * transferFrom/safeTransferFrom pre-transfer check
+ * burn pre-burn check
+
+**ERC1155**
+ * mint
+ * uri
+ * safeTransferFrom pre-transfer check
+ * burn pre-burn check
+
+In order to create an app, you'll need to implmenet one or more interfaces within contracts/extensions, deploy the new app and register it to the main Creator Core contract using the registerExtension function (which is only accesible to the contract owner or admins).
+
+Example applications can be found [here](https://github.com/manifoldxyz/creator-core-extensions-solidity).
 
 ## Running the package unit tests
 

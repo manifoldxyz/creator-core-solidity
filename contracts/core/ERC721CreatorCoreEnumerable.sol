@@ -94,6 +94,45 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
         return _extensionTokensByOwner[address(this)][owner][index];
     }
 
+    function _addTokenToOwnerEnumeration(address to, uint256 tokenId, address tokenExtension_) private {
+        // Add to extension token tracking by owner
+        uint256 lengthByOwner = balanceOfExtension(tokenExtension_, to);
+        _extensionTokensByOwner[tokenExtension_][to][lengthByOwner] = tokenId;
+        _extensionTokensIndexByOwner[tokenId] = lengthByOwner;
+        _extensionBalancesByOwner[tokenExtension_][to] += 1;        
+    }
+
+    function _removeTokenFromOwnerEnumeration(address from, uint256 tokenId, address tokenExtension_) private {
+        // To prevent a gap in from's tokens array, we store the last token in the index of the token to delete, and
+        // then delete the last slot (swap and pop).
+        uint256 lastTokenIndexByOwner = balanceOfExtension(tokenExtension_, from) - 1;
+        uint256 tokenIndexByOwner = _extensionTokensIndexByOwner[tokenId];
+
+        // When the token to delete is the last token, the swap operation is unnecessary
+        if (tokenIndexByOwner != lastTokenIndexByOwner) {
+            uint256 lastTokenIdByOwner = _extensionTokensByOwner[tokenExtension_][from][lastTokenIndexByOwner];
+
+            _extensionTokensByOwner[tokenExtension_][from][tokenIndexByOwner] = lastTokenIdByOwner; // Move the last token to the slot of the to-delete token
+            _extensionTokensIndexByOwner[lastTokenIdByOwner] = tokenIndexByOwner; // Update the moved token's index
+        }
+        _extensionBalancesByOwner[tokenExtension_][from] -= 1;
+
+        // This also deletes the contents at the last position of the array
+        delete _extensionTokensIndexByOwner[tokenId];
+        delete _extensionTokensByOwner[tokenExtension_][from][lastTokenIndexByOwner];
+    }
+    
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual {
+        if (from != address(0) && to != address(0)) {
+            address tokenExtension_ = _tokenExtension(tokenId);
+            if (from != to) {
+                _removeTokenFromOwnerEnumeration(from, tokenId, tokenExtension_);
+            }
+            if (to != from) {
+                _addTokenToOwnerEnumeration(to, tokenId, tokenExtension_);
+            }
+        }
+    }
 
     function _postMintBase(address to, uint256 tokenId) internal virtual override {
         // Add to extension token tracking
@@ -102,11 +141,7 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
         _extensionTokensIndex[tokenId] = length;
         _extensionBalances[address(this)] += 1;
 
-        // Add to extension token tracking by owner
-        uint256 lengthByOwner = balanceOfBase(to);
-        _extensionTokensByOwner[address(this)][to][lengthByOwner] = tokenId;
-        _extensionTokensIndexByOwner[tokenId] = lengthByOwner;
-        _extensionBalancesByOwner[address(this)][to] += 1;
+        _addTokenToOwnerEnumeration(to, tokenId, address(this));
     }
 
     function _postMintExtension(address to, uint256 tokenId) internal virtual override {
@@ -116,11 +151,7 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
         _extensionTokensIndex[tokenId] = length;
         _extensionBalances[msg.sender] += 1;
 
-        // Add to extension token tracking by owner
-        uint256 lengthByOwner = balanceOfExtension(msg.sender, to);
-        _extensionTokensByOwner[msg.sender][to][lengthByOwner] = tokenId;
-        _extensionTokensIndexByOwner[tokenId] = lengthByOwner;
-        _extensionBalancesByOwner[msg.sender][to] += 1;        
+        _addTokenToOwnerEnumeration(to, tokenId, msg.sender);
     }
     
     function _postBurn(address owner, uint256 tokenId) internal override(ERC721CreatorCore) virtual {
@@ -154,22 +185,7 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
         /********************************************************
          *  START: Remove from extension token tracking by owner
          ********************************************************/
-
-        uint256 lastTokenIndexByOwner = balanceOfExtension(tokenExtension_, owner) - 1;
-        uint256 tokenIndexByOwner = _extensionTokensIndexByOwner[tokenId];
-
-        // When the token to delete is the last token, the swap operation is unnecessary
-        if (tokenIndexByOwner != lastTokenIndexByOwner) {
-            uint256 lastTokenIdByOwner = _extensionTokensByOwner[tokenExtension_][owner][lastTokenIndexByOwner];
-
-            _extensionTokensByOwner[tokenExtension_][owner][tokenIndexByOwner] = lastTokenIdByOwner; // Move the last token to the slot of the to-delete token
-            _extensionTokensIndexByOwner[lastTokenIdByOwner] = tokenIndexByOwner; // Update the moved token's index
-        }
-        _extensionBalancesByOwner[tokenExtension_][owner] -= 1;
-
-        // This also deletes the contents at the last position of the array
-        delete _extensionTokensIndexByOwner[tokenId];
-        delete _extensionTokensByOwner[tokenExtension_][owner][lastTokenIndexByOwner];
+         _removeTokenFromOwnerEnumeration(owner, tokenId, tokenExtension_);
 
         /********************************************************
          *  END

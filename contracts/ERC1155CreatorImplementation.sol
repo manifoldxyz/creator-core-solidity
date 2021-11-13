@@ -12,7 +12,7 @@ import "./core/ERC1155CreatorCore.sol";
 /**
  * @dev ERC1155Creator implementation
  */
-contract ERC1155CreatorBase is AdminControlUpgradeable, ERC1155Upgradeable, ERC1155CreatorCore {
+contract ERC1155CreatorImplementation is AdminControlUpgradeable, ERC1155Upgradeable, ERC1155CreatorCore {
 
     mapping(uint256 => uint256) private _totalSupply;
 

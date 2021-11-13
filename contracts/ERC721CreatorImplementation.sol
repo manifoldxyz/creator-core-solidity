@@ -12,7 +12,7 @@ import "./core/ERC721CreatorCore.sol";
 /**
  * @dev ERC721Creator implementation
  */
-contract ERC721CreatorBase is AdminControlUpgradeable, ERC721Upgradeable, ERC721CreatorCore {
+contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeable, ERC721CreatorCore {
 
     /**
      * Initializer

@@ -34,14 +34,14 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
     }
 
     /**
-     * @dev See {IERC721CreatorCore-registerExtension}.
+     * @dev See {ICreatorCore-registerExtension}.
      */
     function registerExtension(address extension, string calldata baseURI) external override adminRequired nonBlacklistRequired(extension) {
         _registerExtension(extension, baseURI, false);
     }
 
     /**
-     * @dev See {IERC721CreatorCore-registerExtension}.
+     * @dev See {ICreatorCore-registerExtension}.
      */
     function registerExtension(address extension, string calldata baseURI, bool baseURIIdentical) external override adminRequired nonBlacklistRequired(extension) {
         _registerExtension(extension, baseURI, baseURIIdentical);
@@ -49,90 +49,90 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
 
 
     /**
-     * @dev See {IERC721CreatorCore-unregisterExtension}.
+     * @dev See {ICreatorCore-unregisterExtension}.
      */
     function unregisterExtension(address extension) external override adminRequired {
         _unregisterExtension(extension);
     }
 
     /**
-     * @dev See {IERC721CreatorCore-blacklistExtension}.
+     * @dev See {ICreatorCore-blacklistExtension}.
      */
     function blacklistExtension(address extension) external override adminRequired {
         _blacklistExtension(extension);
     }
 
     /**
-     * @dev See {IERC721CreatorCore-setBaseTokenURIExtension}.
+     * @dev See {ICreatorCore-setBaseTokenURIExtension}.
      */
     function setBaseTokenURIExtension(string calldata uri) external override extensionRequired {
         _setBaseTokenURIExtension(uri, false);
     }
 
     /**
-     * @dev See {IERC721CreatorCore-setBaseTokenURIExtension}.
+     * @dev See {ICreatorCore-setBaseTokenURIExtension}.
      */
     function setBaseTokenURIExtension(string calldata uri, bool identical) external override extensionRequired {
         _setBaseTokenURIExtension(uri, identical);
     }
 
     /**
-     * @dev See {IERC721CreatorCore-setTokenURIPrefixExtension}.
+     * @dev See {ICreatorCore-setTokenURIPrefixExtension}.
      */
     function setTokenURIPrefixExtension(string calldata prefix) external override extensionRequired {
         _setTokenURIPrefixExtension(prefix);
     }
 
     /**
-     * @dev See {IERC721CreatorCore-setTokenURIExtension}.
+     * @dev See {ICreatorCore-setTokenURIExtension}.
      */
     function setTokenURIExtension(uint256 tokenId, string calldata uri) external override extensionRequired {
         _setTokenURIExtension(tokenId, uri);
     }
 
     /**
-     * @dev See {IERC721CreatorCore-setTokenURIExtension}.
+     * @dev See {ICreatorCore-setTokenURIExtension}.
      */
     function setTokenURIExtension(uint256[] memory tokenIds, string[] calldata uris) external override extensionRequired {
-        require(tokenIds.length == uris.length, "ERC721Creator: Invalid input");
+        require(tokenIds.length == uris.length, "Invalid input");
         for (uint i = 0; i < tokenIds.length; i++) {
             _setTokenURIExtension(tokenIds[i], uris[i]);            
         }
     }
 
     /**
-     * @dev See {IERC721CreatorCore-setBaseTokenURI}.
+     * @dev See {ICreatorCore-setBaseTokenURI}.
      */
     function setBaseTokenURI(string calldata uri) external override adminRequired {
         _setBaseTokenURI(uri);
     }
 
     /**
-     * @dev See {IERC721CreatorCore-setTokenURIPrefix}.
+     * @dev See {ICreatorCore-setTokenURIPrefix}.
      */
     function setTokenURIPrefix(string calldata prefix) external override adminRequired {
         _setTokenURIPrefix(prefix);
     }
 
     /**
-     * @dev See {IERC721CreatorCore-setTokenURI}.
+     * @dev See {ICreatorCore-setTokenURI}.
      */
     function setTokenURI(uint256 tokenId, string calldata uri) external override adminRequired {
         _setTokenURI(tokenId, uri);
     }
 
     /**
-     * @dev See {IERC721CreatorCore-setTokenURI}.
+     * @dev See {ICreatorCore-setTokenURI}.
      */
     function setTokenURI(uint256[] memory tokenIds, string[] calldata uris) external override adminRequired {
-        require(tokenIds.length == uris.length, "ERC721Creator: Invalid input");
+        require(tokenIds.length == uris.length, "Invalid input");
         for (uint i = 0; i < tokenIds.length; i++) {
             _setTokenURI(tokenIds[i], uris[i]);            
         }
     }
 
     /**
-     * @dev See {IERC721CreatorCore-setMintPermissions}.
+     * @dev See {ICreatorCore-setMintPermissions}.
      */
     function setMintPermissions(address extension, address permissions) external override adminRequired {
         _setMintPermissions(extension, permissions);
@@ -266,21 +266,21 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
      * @dev See {IERC721CreatorCore-burn}.
      */
     function burn(uint256 tokenId) public virtual override nonReentrant {
-        require(_isApprovedOrOwner(msg.sender, tokenId), "ERC721Creator: caller is not owner nor approved");
+        require(_isApprovedOrOwner(msg.sender, tokenId), "Caller is not owner nor approved");
         address owner = ownerOf(tokenId);
         _burn(tokenId);
         _postBurn(owner, tokenId);
     }
 
     /**
-     * @dev See {IERC721CreatorCore-setRoyalties}.
+     * @dev See {ICreatorCore-setRoyalties}.
      */
     function setRoyalties(address payable[] calldata receivers, uint256[] calldata basisPoints) external override adminRequired {
         _setRoyaltiesExtension(address(this), receivers, basisPoints);
     }
 
     /**
-     * @dev See {IERC721CreatorCore-setRoyalties}.
+     * @dev See {ICreatorCore-setRoyalties}.
      */
     function setRoyalties(uint256 tokenId, address payable[] calldata receivers, uint256[] calldata basisPoints) external override adminRequired {
         require(_exists(tokenId), "Nonexistent token");
@@ -288,14 +288,14 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
     }
 
     /**
-     * @dev See {IERC721CreatorCore-setRoyaltiesExtension}.
+     * @dev See {ICreatorCore-setRoyaltiesExtension}.
      */
     function setRoyaltiesExtension(address extension, address payable[] calldata receivers, uint256[] calldata basisPoints) external override adminRequired {
         _setRoyaltiesExtension(extension, receivers, basisPoints);
     }
 
     /**
-     * @dev {See IERC721CreatorCore-getRoyalties}.
+     * @dev {See ICreatorCore-getRoyalties}.
      */
     function getRoyalties(uint256 tokenId) external view virtual override returns (address payable[] memory, uint256[] memory) {
         require(_exists(tokenId), "Nonexistent token");
@@ -303,7 +303,7 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
     }
 
     /**
-     * @dev {See IERC721CreatorCore-getFees}.
+     * @dev {See ICreatorCore-getFees}.
      */
     function getFees(uint256 tokenId) external view virtual override returns (address payable[] memory, uint256[] memory) {
         require(_exists(tokenId), "Nonexistent token");
@@ -311,7 +311,7 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
     }
 
     /**
-     * @dev {See IERC721CreatorCore-getFeeRecipients}.
+     * @dev {See ICreatorCore-getFeeRecipients}.
      */
     function getFeeRecipients(uint256 tokenId) external view virtual override returns (address payable[] memory) {
         require(_exists(tokenId), "Nonexistent token");
@@ -319,7 +319,7 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
     }
 
     /**
-     * @dev {See IERC721CreatorCore-getFeeBps}.
+     * @dev {See ICreatorCore-getFeeBps}.
      */
     function getFeeBps(uint256 tokenId) external view virtual override returns (uint[] memory) {
         require(_exists(tokenId), "Nonexistent token");
@@ -327,7 +327,7 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
     }
     
     /**
-     * @dev {See IERC721CreatorCore-royaltyInfo}.
+     * @dev {See ICreatorCore-royaltyInfo}.
      */
     function royaltyInfo(uint256 tokenId, uint256 value) external view virtual override returns (address, uint256) {
         require(_exists(tokenId), "Nonexistent token");

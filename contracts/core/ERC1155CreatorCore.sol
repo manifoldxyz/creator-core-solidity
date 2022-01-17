@@ -68,7 +68,7 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
             require(_tokensExtension[tokenIds[i]] == extension, "Mismatched token originators");
         }
         // Callback to originating extension if needed
-        if (extension != address(this)) {
+        if (extension != address(0)) {
            if (ERC165Checker.supportsInterface(extension, type(IERC1155CreatorExtensionBurnable).interfaceId)) {
                IERC1155CreatorExtensionBurnable(extension).onBurn(owner, tokenIds, amounts);
            }

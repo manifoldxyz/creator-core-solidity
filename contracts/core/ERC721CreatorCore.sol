@@ -74,7 +74,7 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
      */
     function _postBurn(address owner, uint256 tokenId) internal virtual {
         // Callback to originating extension if needed
-        if (_tokensExtension[tokenId] != address(this)) {
+        if (_tokensExtension[tokenId] != address(0)) {
            if (ERC165Checker.supportsInterface(_tokensExtension[tokenId], type(IERC721CreatorExtensionBurnable).interfaceId)) {
                IERC721CreatorExtensionBurnable(_tokensExtension[tokenId]).onBurn(owner, tokenId);
            }

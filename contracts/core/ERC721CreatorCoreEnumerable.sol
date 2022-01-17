@@ -68,7 +68,7 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
      * @dev See {IERC721CreatorCoreEnumerable-totalSupplyBase}.
      */
     function totalSupplyBase() public view virtual override returns (uint256) {
-        return _extensionBalances[address(this)];
+        return _extensionBalances[address(0)];
     }
 
     /**
@@ -76,14 +76,14 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
      */
     function tokenByIndexBase(uint256 index) external view virtual override returns (uint256) {
         require(index < totalSupplyBase(), "ERC721Creator: Index out of bounds");
-        return _extensionTokens[address(this)][index];
+        return _extensionTokens[address(0)][index];
     }
 
     /**
      * @dev See {IERC721CreatorCoreEnumerable-balanceOfBase}.
      */
     function balanceOfBase(address owner) public view virtual override returns (uint256) {
-        return _extensionBalancesByOwner[address(this)][owner];
+        return _extensionBalancesByOwner[address(0)][owner];
     }
 
     /*
@@ -91,7 +91,7 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
      */
     function tokenOfOwnerByIndexBase(address owner, uint256 index) external view virtual override returns (uint256) {
         require(index < balanceOfBase(owner), "ERC721Creator: Index out of bounds");
-        return _extensionTokensByOwner[address(this)][owner][index];
+        return _extensionTokensByOwner[address(0)][owner][index];
     }
 
     function _addTokenToOwnerEnumeration(address to, uint256 tokenId, address tokenExtension_) private {
@@ -137,11 +137,11 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
     function _postMintBase(address to, uint256 tokenId) internal virtual override {
         // Add to extension token tracking
         uint256 length = totalSupplyBase();
-        _extensionTokens[address(this)][length] = tokenId;
+        _extensionTokens[address(0)][length] = tokenId;
         _extensionTokensIndex[tokenId] = length;
-        _extensionBalances[address(this)] += 1;
+        _extensionBalances[address(0)] += 1;
 
-        _addTokenToOwnerEnumeration(to, tokenId, address(this));
+        _addTokenToOwnerEnumeration(to, tokenId, address(0));
     }
 
     function _postMintExtension(address to, uint256 tokenId) internal virtual override {

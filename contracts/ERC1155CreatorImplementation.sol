@@ -144,7 +144,7 @@ contract ERC1155CreatorImplementation is AdminControlUpgradeable, ERC1155Upgrade
      * @dev See {IERC1155CreatorCore-mintBaseNew}.
      */
     function mintBaseNew(address[] calldata to, uint256[] calldata amounts, string[] calldata uris) public virtual override nonReentrant adminRequired returns(uint256[] memory) {
-        return _mintNew(address(this), to, amounts, uris);
+        return _mintNew(address(0), to, amounts, uris);
     }
 
     /**
@@ -152,9 +152,11 @@ contract ERC1155CreatorImplementation is AdminControlUpgradeable, ERC1155Upgrade
      */
     function mintBaseExisting(address[] calldata to, uint256[] calldata tokenIds, uint256[] calldata amounts) public virtual override nonReentrant adminRequired {
         for (uint i = 0; i < tokenIds.length; i++) {
-            require(_tokensExtension[tokenIds[i]] == address(this), "A token was created by an extension");
+            uint256 tokenId = tokenIds[i];
+            require(tokenId > 0 && tokenId <= _tokenCount, "Invalid token");
+            require(_tokensExtension[tokenId] == address(0), "A token was created by an extension");
         }
-        _mintExisting(address(this), to, tokenIds, amounts);
+        _mintExisting(address(0), to, tokenIds, amounts);
     }
 
     /**
@@ -196,7 +198,7 @@ contract ERC1155CreatorImplementation is AdminControlUpgradeable, ERC1155Upgrade
             _tokensExtension[_tokenCount] = extension;
         }
 
-        if (extension != address(this)) {
+        if (extension != address(0)) {
             _checkMintPermissions(to, tokenIds, amounts);
         }
 
@@ -232,7 +234,7 @@ contract ERC1155CreatorImplementation is AdminControlUpgradeable, ERC1155Upgrade
      * @dev Mint existing tokens
      */
     function _mintExisting(address extension, address[] memory to, uint256[] memory tokenIds, uint256[] memory amounts) internal {
-        if (extension != address(this)) {
+        if (extension != address(0)) {
             _checkMintPermissions(to, tokenIds, amounts);
         }
 
@@ -287,7 +289,7 @@ contract ERC1155CreatorImplementation is AdminControlUpgradeable, ERC1155Upgrade
      * @dev See {ICreatorCore-setRoyalties}.
      */
     function setRoyalties(address payable[] calldata receivers, uint256[] calldata basisPoints) external override adminRequired {
-        _setRoyaltiesExtension(address(this), receivers, basisPoints);
+        _setRoyaltiesExtension(address(0), receivers, basisPoints);
     }
 
     /**

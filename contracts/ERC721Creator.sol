@@ -176,9 +176,6 @@ contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
         _tokenCount++;
         tokenId = _tokenCount;
 
-        // Track the extension that minted the token
-        _tokensExtension[tokenId] = address(this);
-
         _safeMint(to, tokenId);
 
         if (bytes(uri).length > 0) {
@@ -271,7 +268,7 @@ contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
      * @dev See {ICreatorCore-setRoyalties}.
      */
     function setRoyalties(address payable[] calldata receivers, uint256[] calldata basisPoints) external override adminRequired {
-        _setRoyaltiesExtension(address(this), receivers, basisPoints);
+        _setRoyaltiesExtension(address(0), receivers, basisPoints);
     }
 
     /**

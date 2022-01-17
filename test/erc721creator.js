@@ -116,6 +116,17 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             await truffleAssert.reverts(creator.tokenExtension(newTokenId), "Extension blacklisted");
         });
 
+        it('creator gas test', async function () {
+            // Prime data with one mint first
+            var tx = await creator.methods['mintBase(address)'](anyone, {from:owner});
+        
+            tx = await creator.methods['mintBase(address,string)'](anyone, "https://arweave.net/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", {from:owner});
+            console.log(`mintBase with 'https://arweave.net/' cost: ${tx.receipt.gasUsed}`);
+
+            tx = await creator.methods['mintBase(address,string)'](anyone, "ar://XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", {from:owner});
+            console.log(`mintBase with 'ar://' cost: ${tx.receipt.gasUsed}`);
+        });
+      
         it('creator functionality test', async function () {
             assert.equal((await creator.getExtensions()).length, 0);
 

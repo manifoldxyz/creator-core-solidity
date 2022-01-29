@@ -13,9 +13,9 @@ These contracts are used in the [Manifold Studio](https://studio.manifoldxyz.dev
 
 This enables creators to use the same underlying Manifold Creator Core contract to continue creating new and innovative NFT's and experiences.
 
-See our [blog post on the Manifold Creator Core](https://manifoldxyz.substack.com/p/manifold-creator) for more information.
+See our [developer documentation](https://docs.manifold.xyz/v/manifold-for-developers/manifold-creator-architecture/overview) and [blog post](https://manifoldxyz.substack.com/p/manifold-creator) for more information.
 
-Visit our [blog](https://manifoldxyz.substack.com/) for example applications that have been added to Manifold Creator Core contracts.
+Go [here](https://docs.manifold.xyz/v/manifold-for-developers/manifold-creator-architecture/contracts/extensions/extensions-examples) for example applications that have been added to Manifold Creator Core contracts.
 
 ## Overview
 

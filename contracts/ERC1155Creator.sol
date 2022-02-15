@@ -336,7 +336,7 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
     } 
 
     /**
-     * @dev See {IERC721Metadata-tokenURI}.
+     * @dev See {IERC1155-uri}.
      */
     function uri(uint256 tokenId) public view virtual override returns (string memory) {
         return _tokenURI(tokenId);

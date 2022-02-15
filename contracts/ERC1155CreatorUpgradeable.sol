@@ -342,7 +342,7 @@ contract ERC1155CreatorUpgradeable is AdminControlUpgradeable, ERC1155Upgradeabl
     } 
 
     /**
-     * @dev See {IERC721Metadata-tokenURI}.
+     * @dev See {IERC1155-uri}.
      */
     function uri(uint256 tokenId) public view virtual override returns (string memory) {
         return _tokenURI(tokenId);

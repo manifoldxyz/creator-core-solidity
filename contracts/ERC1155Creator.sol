@@ -299,42 +299,42 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
     }
 
     /**
-     * @dev {See ICreatorCore-getRoyalties}.
+     * @dev See {ICreatorCore-getRoyalties}.
      */
     function getRoyalties(uint256 tokenId) external view virtual override returns (address payable[] memory, uint256[] memory) {
         return _getRoyalties(tokenId);
     }
 
     /**
-     * @dev {See ICreatorCore-getFees}.
+     * @dev See {ICreatorCore-getFees}.
      */
     function getFees(uint256 tokenId) external view virtual override returns (address payable[] memory, uint256[] memory) {
         return _getRoyalties(tokenId);
     }
 
     /**
-     * @dev {See ICreatorCore-getFeeRecipients}.
+     * @dev See {ICreatorCore-getFeeRecipients}.
      */
     function getFeeRecipients(uint256 tokenId) external view virtual override returns (address payable[] memory) {
         return _getRoyaltyReceivers(tokenId);
     }
 
     /**
-     * @dev {See ICreatorCore-getFeeBps}.
+     * @dev See {ICreatorCore-getFeeBps}.
      */
     function getFeeBps(uint256 tokenId) external view virtual override returns (uint[] memory) {
         return _getRoyaltyBPS(tokenId);
     }
     
     /**
-     * @dev {See ICreatorCore-royaltyInfo}.
+     * @dev See {ICreatorCore-royaltyInfo}.
      */
     function royaltyInfo(uint256 tokenId, uint256 value) external view virtual override returns (address, uint256) {
         return _getRoyaltyInfo(tokenId, value);
     } 
 
     /**
-     * @dev See {IERC721Metadata-tokenURI}.
+     * @dev See {IERC1155-uri}.
      */
     function uri(uint256 tokenId) public view virtual override returns (string memory) {
         return _tokenURI(tokenId);

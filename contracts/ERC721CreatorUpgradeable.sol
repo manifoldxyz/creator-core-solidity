@@ -292,7 +292,7 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
     }
 
     /**
-     * @dev {See ICreatorCore-getRoyalties}.
+     * @dev See {ICreatorCore-getRoyalties}.
      */
     function getRoyalties(uint256 tokenId) external view virtual override returns (address payable[] memory, uint256[] memory) {
         require(_exists(tokenId), "Nonexistent token");
@@ -300,7 +300,7 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
     }
 
     /**
-     * @dev {See ICreatorCore-getFees}.
+     * @dev See {ICreatorCore-getFees}.
      */
     function getFees(uint256 tokenId) external view virtual override returns (address payable[] memory, uint256[] memory) {
         require(_exists(tokenId), "Nonexistent token");
@@ -308,7 +308,7 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
     }
 
     /**
-     * @dev {See ICreatorCore-getFeeRecipients}.
+     * @dev See {ICreatorCore-getFeeRecipients}.
      */
     function getFeeRecipients(uint256 tokenId) external view virtual override returns (address payable[] memory) {
         require(_exists(tokenId), "Nonexistent token");
@@ -316,7 +316,7 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
     }
 
     /**
-     * @dev {See ICreatorCore-getFeeBps}.
+     * @dev See {ICreatorCore-getFeeBps}.
      */
     function getFeeBps(uint256 tokenId) external view virtual override returns (uint[] memory) {
         require(_exists(tokenId), "Nonexistent token");
@@ -324,7 +324,7 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
     }
     
     /**
-     * @dev {See ICreatorCore-royaltyInfo}.
+     * @dev See {ICreatorCore-royaltyInfo}.
      */
     function royaltyInfo(uint256 tokenId, uint256 value) external view virtual override returns (address, uint256) {
         require(_exists(tokenId), "Nonexistent token");

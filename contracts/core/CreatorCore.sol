@@ -218,7 +218,7 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
      */
     function _tokenURI(uint256 tokenId) internal view returns (string memory) {
         require(tokenId > 0 && tokenId <= _tokenCount, "Invalid token");
-        
+
         address extension = _tokensExtension[tokenId];
         require(!_blacklistedExtensions.contains(extension), "Extension blacklisted");
 
@@ -268,7 +268,7 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
         } else if (_extensionRoyaltyReceivers[_tokensExtension[tokenId]].length > 0) {
             return _extensionRoyaltyReceivers[_tokensExtension[tokenId]];
         }
-        return _extensionRoyaltyReceivers[address(0)];        
+        return _extensionRoyaltyReceivers[address(0)];
     }
 
     /**

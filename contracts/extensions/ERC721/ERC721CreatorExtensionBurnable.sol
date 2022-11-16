@@ -60,8 +60,9 @@ abstract contract ERC721CreatorExtensionBurnable is AdminControl, ERC721CreatorE
     function _mintBatch(address creator, address to, uint16 count) internal returns (uint256[] memory tokenIds) {
         require(ERC165Checker.supportsInterface(creator, type(IERC721CreatorCore).interfaceId), "creator must implement IERC721CreatorCore");
         tokenIds = IERC721CreatorCore(creator).mintExtensionBatch(to, count);
-        for (uint16 i = 0; i < tokenIds.length; i++) {
+        for (uint16 i = 0; i < tokenIds.length;) {
             _tokenCreators[tokenIds[i]] = creator;
+            unchecked { ++i; }
         }
         return tokenIds;
     }
@@ -69,8 +70,9 @@ abstract contract ERC721CreatorExtensionBurnable is AdminControl, ERC721CreatorE
     function _mintBatch(address creator, address to, string[] memory uris) internal returns (uint256[] memory tokenIds) {
         require(ERC165Checker.supportsInterface(creator, type(IERC721CreatorCore).interfaceId), "creator must implement IERC721CreatorCore");
         tokenIds = IERC721CreatorCore(creator).mintExtensionBatch(to, uris);
-        for (uint16 i = 0; i < tokenIds.length; i++) {
+        for (uint16 i = 0; i < tokenIds.length;) {
             _tokenCreators[tokenIds[i]] = creator;
+            unchecked { ++i; }
         }
         return tokenIds;
     }

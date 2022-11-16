@@ -66,8 +66,9 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
     function _postBurn(address owner, uint256[] memory tokenIds, uint256[] memory amounts) internal virtual {
         require(tokenIds.length > 0, "Invalid input");
         address extension = _tokensExtension[tokenIds[0]];
-        for (uint i = 0; i < tokenIds.length; i++) {
+        for (uint i = 0; i < tokenIds.length;) {
             require(_tokensExtension[tokenIds[i]] == extension, "Mismatched token originators");
+            unchecked { ++i; }
         }
         // Callback to originating extension if needed
         if (extension != address(0)) {
@@ -83,8 +84,9 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
     function _approveTransfer(address from, address to, uint256[] memory tokenIds, uint256[] memory amounts) internal {
         require(tokenIds.length > 0, "Invalid input");
         address extension = _tokensExtension[tokenIds[0]];
-        for (uint i = 0; i < tokenIds.length; i++) {
+        for (uint i = 0; i < tokenIds.length;) {
             require(_tokensExtension[tokenIds[i]] == extension, "Mismatched token originators");
+            unchecked { ++i; }
         }
         if (_extensionApproveTransfers[extension]) {
             require(IERC1155CreatorExtensionApproveTransfer(extension).approveTransfer(from, to, tokenIds, amounts), "Extension approval failure");

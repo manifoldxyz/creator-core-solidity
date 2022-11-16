@@ -37,8 +37,9 @@ abstract contract ERC1155CreatorExtensionBurnable is AdminControl, IERC1155Creat
     function _mintNew(address creator, address[] calldata to, uint256[] calldata amounts, string[] calldata uris) internal returns (uint256[] memory tokenIds) {
         require(ERC165Checker.supportsInterface(creator, type(IERC1155CreatorCore).interfaceId), "creator must implement IERC1155CreatorCore");
         tokenIds = IERC1155CreatorCore(creator).mintExtensionNew(to, amounts, uris);
-        for (uint256 i = 0; i < tokenIds.length; i++) {
+        for (uint256 i = 0; i < tokenIds.length;) {
             _tokenCreators[tokenIds[i]] = creator;
+            unchecked { ++i; }
         }
         return tokenIds;
     }
@@ -47,8 +48,9 @@ abstract contract ERC1155CreatorExtensionBurnable is AdminControl, IERC1155Creat
      * @dev See {IERC1155CreatorExtension-onBurn}.
      */
     function onBurn(address, uint256[] calldata tokenIds, uint256[] calldata) public virtual override {
-        for (uint256 i = 0; i < tokenIds.length; i++) {
+        for (uint256 i = 0; i < tokenIds.length;) {
             require(_tokenCreators[tokenIds[i]] == msg.sender, "Can only be called by token creator");
+            unchecked { ++i; }
         }
     }
 

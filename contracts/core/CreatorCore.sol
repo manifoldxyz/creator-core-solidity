@@ -132,8 +132,8 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
      * @dev Register an extension
      */
     function _registerExtension(address extension, string calldata baseURI, bool baseURIIdentical) internal {
-        require(extension != address(0) && extension != address(this), "Creator: Invalid");
-        require(extension.isContract(), "Creator: Extension must be a contract");
+        require(extension != address(0) && extension != address(this), "Invalid");
+        require(extension.isContract(), "Extension must be a contract");
         if (!_extensions.contains(extension)) {
             _extensionBaseURI[extension] = baseURI;
             _extensionBaseURIIdentical[extension] = baseURIIdentical;

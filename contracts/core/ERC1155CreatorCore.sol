@@ -18,6 +18,8 @@ import "./CreatorCore.sol";
 abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
 
     using EnumerableSet for EnumerableSet.AddressSet;
+    string public name;
+    string public symbol;
 
     /**
      * @dev See {IERC165-supportsInterface}.
@@ -30,7 +32,7 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
      * @dev See {ICreatorCore-setApproveTransferExtension}.
      */
     function setApproveTransferExtension(bool enabled) external override extensionRequired {
-        require(!enabled || ERC165Checker.supportsInterface(msg.sender, type(IERC1155CreatorExtensionApproveTransfer).interfaceId), "Extension must implement IERC1155CreatorExtensionApproveTransfer");
+        require(!enabled || ERC165Checker.supportsInterface(msg.sender, type(IERC1155CreatorExtensionApproveTransfer).interfaceId), "Must Implement IERC1155CreatorExtensionApproveTransfer");
         if (_extensionApproveTransfers[msg.sender] != enabled) {
             _extensionApproveTransfers[msg.sender] = enabled;
             emit ExtensionApproveTransferUpdated(msg.sender, enabled);

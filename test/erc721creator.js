@@ -48,7 +48,7 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
         });
 
         it('creator extension override test', async function () {
-            await truffleAssert.reverts(creator.registerExtension(creator.address, '', {from:owner}), "Creator: Invalid")
+            await truffleAssert.reverts(creator.registerExtension(creator.address, '', {from:owner}), "Invalid")
             var extension = await MockERC721CreatorExtensionOverride.new(creator.address, {from:owner});
             await creator.registerExtension(extension.address, 'http://extension/', {from:owner});
             // Test legacy interface support

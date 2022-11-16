@@ -8,6 +8,8 @@ const MockERC1155 = artifacts.require("MockERC1155");
 const MockContract = artifacts.require("MockContract");
 
 contract('ERC1155Creator', function ([minter_account, ...accounts]) {
+    const name = 'Token';
+    const symbol = 'NFT';
     const minter = minter_account;
     const [
            owner,
@@ -17,7 +19,7 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
            ] = accounts;
 
     it('creator gas', async function () {
-        const creatorGasEstimate = await ERC1155Creator.new.estimateGas({from:owner});
+        const creatorGasEstimate = await ERC1155Creator.new.estimateGas(name, symbol, {from:owner});
         console.log("ERC1155Creator gas estimate: %s", creatorGasEstimate);
     });
 
@@ -25,7 +27,7 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
         var creator;
 
         beforeEach(async function () {
-            creator = await ERC1155Creator.new({from:owner});
+            creator = await ERC1155Creator.new(name, symbol, {from:owner});
         });
 
         it('supportsInterface test', async function () {
@@ -44,7 +46,7 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
         });
 
         it('creator extension override test', async function () {
-            await truffleAssert.reverts(creator.registerExtension(creator.address, '', {from:owner}), "Creator: Invalid")
+            await truffleAssert.reverts(creator.registerExtension(creator.address, '', {from:owner}), "Invalid")
             var extension = await MockERC1155CreatorExtensionOverride.new(creator.address, {from:owner});
             await creator.registerExtension(extension.address, 'http://extension/', {from:owner});
 
@@ -321,14 +323,14 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
             let newTokenId5 = 5;
             let newTokenId6 = 6;
 
-            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId1],[1],{from:owner}), "A token was created by an extension");
-            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId2],[1],{from:owner}), "A token was created by an extension");
-            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId3],[1],{from:owner}), "A token was created by an extension");
-            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId4],[1],{from:owner}), "A token was created by an extension");
-            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId5,newTokenId1],[1,1],{from:owner}), "A token was created by an extension");
-            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId5,newTokenId2],[1,1],{from:owner}), "A token was created by an extension");
-            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId5,newTokenId3],[1,1],{from:owner}), "A token was created by an extension");
-            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId5,newTokenId4],[1,1],{from:owner}), "A token was created by an extension");
+            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId1],[1],{from:owner}), "Token created by extension");
+            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId2],[1],{from:owner}), "Token created by extension");
+            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId3],[1],{from:owner}), "Token created by extension");
+            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId4],[1],{from:owner}), "Token created by extension");
+            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId5,newTokenId1],[1,1],{from:owner}), "Token created by extension");
+            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId5,newTokenId2],[1,1],{from:owner}), "Token created by extension");
+            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId5,newTokenId3],[1,1],{from:owner}), "Token created by extension");
+            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId5,newTokenId4],[1,1],{from:owner}), "Token created by extension");
             await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId5,newTokenId6],[1,1,3],{from:owner}), "Invalid input");
 
             await creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId5],[1],{from:owner});
@@ -341,14 +343,14 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
             assert.deepEqual(await creator.balanceOf(anyone, newTokenId6), web3.utils.toBN(610));
             assert.deepEqual(await creator.balanceOf(another, newTokenId6), web3.utils.toBN(4));
 
-            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId3],[1]), "A token was not created by this extension");
-            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId4],[1]), "A token was not created by this extension");
-            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId5],[1]), "A token was not created by this extension");
-            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId6],[1]), "A token was not created by this extension");
-            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId1,newTokenId3],[1,10]), "A token was not created by this extension");
-            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId1,newTokenId4],[1,10]), "A token was not created by this extension");
-            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId1,newTokenId5],[1,10]), "A token was not created by this extension");
-            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId1,newTokenId6],[1,10]), "A token was not created by this extension");
+            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId3],[1]), "Token not created by this extension");
+            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId4],[1]), "Token not created by this extension");
+            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId5],[1]), "Token not created by this extension");
+            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId6],[1]), "Token not created by this extension");
+            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId1,newTokenId3],[1,10]), "Token not created by this extension");
+            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId1,newTokenId4],[1,10]), "Token not created by this extension");
+            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId1,newTokenId5],[1,10]), "Token not created by this extension");
+            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId1,newTokenId6],[1,10]), "Token not created by this extension");
             await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId1,newTokenId2],[1,10,20]), "Invalid input");
 
             await extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId1],[1]);

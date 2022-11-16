@@ -30,7 +30,7 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
      * @dev See {ICreatorCore-setApproveTransferExtension}.
      */
     function setApproveTransferExtension(bool enabled) external override extensionRequired {
-        require(!enabled || ERC165Checker.supportsInterface(msg.sender, type(IERC721CreatorExtensionApproveTransfer).interfaceId), "Extension must implement IERC721CreatorExtensionApproveTransfer");
+        require(!enabled || ERC165Checker.supportsInterface(msg.sender, type(IERC721CreatorExtensionApproveTransfer).interfaceId), "Must Implement IERC721CreatorExtensionApproveTransfer");
         if (_extensionApproveTransfers[msg.sender] != enabled) {
             _extensionApproveTransfers[msg.sender] = enabled;
             emit ExtensionApproveTransferUpdated(msg.sender, enabled);
@@ -92,7 +92,7 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
      */
     function _approveTransfer(address from, address to, uint256 tokenId) internal {
        if (_extensionApproveTransfers[_tokensExtension[tokenId]]) {
-           require(IERC721CreatorExtensionApproveTransfer(_tokensExtension[tokenId]).approveTransfer(from, to, tokenId), "ERC721Creator: Extension approval failure");
+           require(IERC721CreatorExtensionApproveTransfer(_tokensExtension[tokenId]).approveTransfer(from, to, tokenId), "ERC721Extension approval failure");
        }
     }
 

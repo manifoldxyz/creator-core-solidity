@@ -182,7 +182,7 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
      * @dev Mint token with no extension
      */
     function _mintBase(address to, string memory uri) internal virtual returns(uint256 tokenId) {
-        _tokenCount++;
+        ++_tokenCount;
         tokenId = _tokenCount;
 
         _safeMint(to, tokenId);
@@ -238,7 +238,7 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
      * @dev Mint token via extension
      */
     function _mintExtension(address to, string memory uri) internal virtual returns(uint256 tokenId) {
-        _tokenCount++;
+        ++_tokenCount;
         tokenId = _tokenCount;
 
         _checkMintPermissions(to, tokenId);

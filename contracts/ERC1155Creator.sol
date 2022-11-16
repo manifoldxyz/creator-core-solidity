@@ -193,7 +193,7 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
 
         // Assign tokenIds
         for (uint i = 0; i < tokenIds.length;) {
-            _tokenCount++;
+            ++_tokenCount;
             tokenIds[i] = _tokenCount;
             // Track the extension that minted the token
             _tokensExtension[_tokenCount] = extension;

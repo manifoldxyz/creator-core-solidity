@@ -1,6 +1,6 @@
 {
   "name": "@manifoldxyz/creator-core-solidity",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "",
   "main": "truffle-config.js",
   "directories": {
@@ -11,9 +11,9 @@
     "build/contracts/*.json"
   ],
   "dependencies": {
-    "@manifoldxyz/libraries-solidity": "^1.0.2",
-    "@openzeppelin/contracts": "^4.2.0",
-    "@openzeppelin/contracts-upgradeable": "^4.2.0"
+    "@manifoldxyz/libraries-solidity": "^1.0.3",
+    "@openzeppelin/contracts": "4.2.0",
+    "@openzeppelin/contracts-upgradeable": "4.2.0"
   },
   "devDependencies": {
     "@openzeppelin/truffle-upgrades": "^1.6.1",

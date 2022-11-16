@@ -41,7 +41,6 @@ abstract contract ERC1155CreatorExtensionBurnable is AdminControl, IERC1155Creat
             _tokenCreators[tokenIds[i]] = creator;
             unchecked { ++i; }
         }
-        return tokenIds;
     }
 
     /**

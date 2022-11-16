@@ -163,7 +163,6 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
             tokenIds[i] = _mintBase(to, "");
             unchecked { ++i; }
         }
-        return tokenIds;
     }
 
     /**
@@ -175,7 +174,6 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
             tokenIds[i] = _mintBase(to, uris[i]);
             unchecked { ++i; }
         }
-        return tokenIds;
     }
 
     /**
@@ -193,7 +191,6 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
 
         // Call post mint
         _postMintBase(to, tokenId);
-        return tokenId;
     }
 
 
@@ -220,7 +217,6 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
             tokenIds[i] = _mintExtension(to, "");
             unchecked { ++i; }
         }
-        return tokenIds;
     }
 
     /**
@@ -254,7 +250,6 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
         
         // Call post mint
         _postMintExtension(to, tokenId);
-        return tokenId;
     }
 
     /**

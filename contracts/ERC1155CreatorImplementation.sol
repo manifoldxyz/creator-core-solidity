@@ -237,7 +237,6 @@ contract ERC1155CreatorImplementation is AdminControlUpgradeable, ERC1155Upgrade
             }
             unchecked { ++i; }
         }
-        return tokenIds;
     }
 
     /**

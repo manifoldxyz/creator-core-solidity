@@ -232,7 +232,6 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
             }
             unchecked { ++i; }
         }
-        return tokenIds;
     }
 
     /**

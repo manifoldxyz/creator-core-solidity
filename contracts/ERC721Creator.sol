@@ -158,7 +158,6 @@ contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
             tokenIds[i] = _mintBase(to, "");
             unchecked { ++i; }
         }
-        return tokenIds;
     }
 
     /**
@@ -170,7 +169,6 @@ contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
             tokenIds[i] = _mintBase(to, uris[i]);
             unchecked { ++i; }
         }
-        return tokenIds;
     }
 
     /**
@@ -188,7 +186,6 @@ contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
 
         // Call post mint
         _postMintBase(to, tokenId);
-        return tokenId;
     }
 
 
@@ -215,7 +212,6 @@ contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
             tokenIds[i] = _mintExtension(to, "");
             unchecked { ++i; }
         }
-        return tokenIds;
     }
 
     /**
@@ -249,7 +245,6 @@ contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
         
         // Call post mint
         _postMintExtension(to, tokenId);
-        return tokenId;
     }
 
     /**

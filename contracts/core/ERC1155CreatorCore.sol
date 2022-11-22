@@ -17,6 +17,8 @@ import "./CreatorCore.sol";
  */
 abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
 
+    uint256 constant public VERSION = 2;
+
     using EnumerableSet for EnumerableSet.AddressSet;
     string public name;
     string public symbol;
@@ -29,13 +31,12 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
     }
 
     /**
-     * @dev See {ICreatorCore-setApproveTransferExtension}.
+     * @dev See {CreatorCore-_setApproveTransferExtension}
      */
-    function setApproveTransferExtension(bool enabled) external override extensionRequired {
-        require(!enabled || ERC165Checker.supportsInterface(msg.sender, type(IERC1155CreatorExtensionApproveTransfer).interfaceId), "Must Implement IERC1155CreatorExtensionApproveTransfer");
-        if (_extensionApproveTransfers[msg.sender] != enabled) {
-            _extensionApproveTransfers[msg.sender] = enabled;
-            emit ExtensionApproveTransferUpdated(msg.sender, enabled);
+    function _setApproveTransferExtension(address extension, bool enabled) internal override {
+        if (ERC165Checker.supportsInterface(extension, type(IERC1155CreatorExtensionApproveTransfer).interfaceId)) {
+            _extensionApproveTransfers[extension] = enabled;
+            emit ExtensionApproveTransferUpdated(extension, enabled);
         }
     }
 
@@ -89,7 +90,7 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
             unchecked { ++i; }
         }
         if (_extensionApproveTransfers[extension]) {
-            require(IERC1155CreatorExtensionApproveTransfer(extension).approveTransfer(from, to, tokenIds, amounts), "Extension approval failure");
+            require(IERC1155CreatorExtensionApproveTransfer(extension).approveTransfer(msg.sender, from, to, tokenIds, amounts), "Extension approval failure");
         }
     }
 

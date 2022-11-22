@@ -36,7 +36,7 @@ contract MockERC721CreatorExtensionOverride is ERC721CreatorExtensionApproveTran
         _tokenURI = uri;
     }
 
-    function approveTransfer(address, address, uint256) external view virtual override returns (bool) {
+    function approveTransfer(address, address, address, uint256) external view virtual override returns (bool) {
         return _approveEnabled;
     }
 
@@ -44,6 +44,5 @@ contract MockERC721CreatorExtensionOverride is ERC721CreatorExtensionApproveTran
         require(creator == _creator, "Invalid");
         return _tokenURI;
     }
-
 
 }

@@ -141,7 +141,20 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
             emit ExtensionRegistered(extension, msg.sender);
             _extensions.add(extension);
         }
+        _setApproveTransferExtension(extension, true);
     }
+
+    /**
+     * @dev See {ICreatorCore-setApproveTransferExtension}.
+     */
+    function setApproveTransferExtension(bool enabled) external override extensionRequired {
+        _setApproveTransferExtension(msg.sender, enabled);
+    }
+
+    /**
+     * @dev Set whether or not tokens minted by the extension defers transfer approvals to the extension
+     */
+    function _setApproveTransferExtension(address extension, bool enabled) internal virtual;
 
     /**
      * @dev Unregister an extension

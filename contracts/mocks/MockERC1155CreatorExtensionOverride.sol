@@ -36,7 +36,7 @@ contract MockERC1155CreatorExtensionOverride is ERC1155CreatorExtensionApproveTr
         _tokenURI = uri;
     }
 
-    function approveTransfer(address, address, uint256[] calldata, uint256[] calldata) external view virtual override returns (bool) {
+    function approveTransfer(address, address, address, uint256[] calldata, uint256[] calldata) external view virtual override returns (bool) {
        return _approveEnabled;
     }
 

@@ -50,6 +50,8 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
             var extension = await MockERC1155CreatorExtensionOverride.new(creator.address, {from:owner});
             await creator.registerExtension(extension.address, 'http://extension/', {from:owner});
 
+            await truffleAssert.reverts(extension.testMintNew([anyone], [100], [""]), "Extension approval failure");
+            await extension.setApproveTransfer(creator.address, false, {from:owner});
             await extension.testMintNew([anyone], [100], [""]);
             var tokenId = 1;
             await creator.safeTransferFrom(anyone, another, tokenId, 100, "0x0", {from:anyone});

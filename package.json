@@ -11,9 +11,9 @@
     "build/contracts/*.json"
   ],
   "dependencies": {
-    "@manifoldxyz/libraries-solidity": "^1.0.3",
-    "@openzeppelin/contracts": "4.2.0",
-    "@openzeppelin/contracts-upgradeable": "4.2.0"
+    "@manifoldxyz/libraries-solidity": "^1.0.4",
+    "@openzeppelin/contracts": "4.7.3",
+    "@openzeppelin/contracts-upgradeable": "4.7.3"
   },
   "devDependencies": {
     "@openzeppelin/truffle-upgrades": "^1.6.1",

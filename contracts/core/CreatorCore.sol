@@ -12,6 +12,7 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 
 import "../extensions/ICreatorExtensionTokenURI.sol";
+import "../extensions/ICreatorExtensionRoyalties.sol";
 
 import "./ICreatorCore.sol";
 
@@ -45,11 +46,14 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     mapping (uint256 => string) internal _tokenURIs;
 
     
+    struct RoyaltyConfig {
+        address payable receiver;
+        uint16 bps;
+    }
+
     // Royalty configurations
-    mapping (address => address payable[]) internal _extensionRoyaltyReceivers;
-    mapping (address => uint256[]) internal _extensionRoyaltyBPS;
-    mapping (uint256 => address payable[]) internal _tokenRoyaltyReceivers;
-    mapping (uint256 => uint256[]) internal _tokenRoyaltyBPS;
+    mapping (address => RoyaltyConfig[]) internal _extensionRoyalty;
+    mapping (uint256 => RoyaltyConfig[]) internal _tokenRoyalty;
 
     /**
      * External interface identifiers for royalties
@@ -269,42 +273,60 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     /**
      * Helper to get royalties for a token
      */
-    function _getRoyalties(uint256 tokenId) view internal returns (address payable[] storage, uint256[] storage) {
-        return (_getRoyaltyReceivers(tokenId), _getRoyaltyBPS(tokenId));
+    function _getRoyalties(uint256 tokenId) view internal returns (address payable[] memory receivers, uint256[] memory bps) {
+
+        // Get token level royalties
+        RoyaltyConfig[] memory royalties = _tokenRoyalty[tokenId];
+        if (royalties.length == 0) {
+            // Get extension specific royalties
+            address extension = _tokensExtension[tokenId];
+            if (extension != address(0)) {
+                if (ERC165Checker.supportsInterface(extension, type(ICreatorExtensionRoyalties).interfaceId)) {
+                    (receivers, bps) = ICreatorExtensionRoyalties(extension).getRoyalties(address(this), tokenId);
+                    // Extension override exists, just return that
+                    if (receivers.length > 0) return (receivers, bps);
+                }
+                royalties = _extensionRoyalty[extension];
+            }
+        }
+        if (royalties.length == 0) {
+            // Get the default royalty
+            royalties = _extensionRoyalty[address(0)];
+        }
+        
+        if (royalties.length > 0) {
+            receivers = new address payable[](royalties.length);
+            bps = new uint256[](royalties.length);
+            for (uint256 i = 0; i < royalties.length;) {
+                receivers[i] = royalties[i].receiver;
+                bps[i] = royalties[i].bps;
+                unchecked { i++; }
+            }
+        }
     }
 
     /**
      * Helper to get royalty receivers for a token
      */
-    function _getRoyaltyReceivers(uint256 tokenId) view internal returns (address payable[] storage) {
-        if (_tokenRoyaltyReceivers[tokenId].length > 0) {
-            return _tokenRoyaltyReceivers[tokenId];
-        } else if (_extensionRoyaltyReceivers[_tokensExtension[tokenId]].length > 0) {
-            return _extensionRoyaltyReceivers[_tokensExtension[tokenId]];
-        }
-        return _extensionRoyaltyReceivers[address(0)];
+    function _getRoyaltyReceivers(uint256 tokenId) view internal returns (address payable[] memory recievers) {
+        (recievers, ) = _getRoyalties(tokenId);
     }
 
     /**
      * Helper to get royalty basis points for a token
      */
-    function _getRoyaltyBPS(uint256 tokenId) view internal returns (uint256[] storage) {
-        if (_tokenRoyaltyBPS[tokenId].length > 0) {
-            return _tokenRoyaltyBPS[tokenId];
-        } else if (_extensionRoyaltyBPS[_tokensExtension[tokenId]].length > 0) {
-            return _extensionRoyaltyBPS[_tokensExtension[tokenId]];
-        }
-        return _extensionRoyaltyBPS[address(0)];        
+    function _getRoyaltyBPS(uint256 tokenId) view internal returns (uint256[] memory bps) {
+        (, bps) = _getRoyalties(tokenId);
     }
 
     function _getRoyaltyInfo(uint256 tokenId, uint256 value) view internal returns (address receiver, uint256 amount){
-        address payable[] storage receivers = _getRoyaltyReceivers(tokenId);
+        (address payable[] memory receivers, uint256[] memory bps) = _getRoyalties(tokenId);
         require(receivers.length <= 1, "More than 1 royalty receiver");
         
         if (receivers.length == 0) {
             return (address(this), 0);
         }
-        return (receivers[0], _getRoyaltyBPS(tokenId)[0]*value/10000);
+        return (receivers[0], bps[0]*value/10000);
     }
 
     /**
@@ -313,13 +335,23 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     function _setRoyalties(uint256 tokenId, address payable[] calldata receivers, uint256[] calldata basisPoints) internal {
         require(receivers.length == basisPoints.length, "Invalid input");
         uint256 totalBasisPoints;
-        for (uint i = 0; i < basisPoints.length;) {
+        for (uint256 i = 0; i < basisPoints.length;) {
             totalBasisPoints += basisPoints[i];
             unchecked { ++i; }
         }
         require(totalBasisPoints < 10000, "Invalid total royalties");
-        _tokenRoyaltyReceivers[tokenId] = receivers;
-        _tokenRoyaltyBPS[tokenId] = basisPoints;
+        delete _tokenRoyalty[tokenId];
+        for (uint256 i = 0; i < basisPoints.length;) {
+            _tokenRoyalty[tokenId].push(
+                RoyaltyConfig(
+                    {
+                        receiver: receivers[i],
+                        bps: uint16(basisPoints[i])
+                    }
+                )
+            );
+            unchecked { ++i; }
+        }
         emit RoyaltiesUpdated(tokenId, receivers, basisPoints);
     }
 
@@ -334,8 +366,18 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
             unchecked { ++i; }
         }
         require(totalBasisPoints < 10000, "Invalid total royalties");
-        _extensionRoyaltyReceivers[extension] = receivers;
-        _extensionRoyaltyBPS[extension] = basisPoints;
+        delete _extensionRoyalty[extension];
+        for (uint256 i = 0; i < basisPoints.length;) {
+            _extensionRoyalty[extension].push(
+                RoyaltyConfig(
+                    {
+                        receiver: receivers[i],
+                        bps: uint16(basisPoints[i])
+                    }
+                )
+            );
+            unchecked { ++i; }
+        }
         if (extension == address(0)) {
             emit DefaultRoyaltiesUpdated(receivers, basisPoints);
         } else {

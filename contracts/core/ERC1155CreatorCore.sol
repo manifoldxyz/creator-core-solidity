@@ -6,7 +6,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
-import "../extensions/ERC1155/IERC1155CreatorExtensionApproveTransfer.sol";
+import "../extensions/ERC1155/IERC1155CreatorExtensionApproveTransferV2.sol";
 import "../extensions/ERC1155/IERC1155CreatorExtensionBurnable.sol";
 import "../permissions/ERC1155/IERC1155CreatorMintPermissions.sol";
 import "./IERC1155CreatorCore.sol";
@@ -30,7 +30,7 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
      * @dev See {ICreatorCore-setApproveTransferExtension}.
      */
     function setApproveTransferExtension(bool enabled) external override extensionRequired {
-        require(!enabled || ERC165Checker.supportsInterface(msg.sender, type(IERC1155CreatorExtensionApproveTransfer).interfaceId), "Extension must implement IERC1155CreatorExtensionApproveTransfer");
+        require(!enabled || ERC165Checker.supportsInterface(msg.sender, type(IERC1155CreatorExtensionApproveTransferV2).interfaceId), "Extension must implement IERC1155CreatorExtensionApproveTransfer");
         if (_extensionApproveTransfers[msg.sender] != enabled) {
             _extensionApproveTransfers[msg.sender] = enabled;
             emit ExtensionApproveTransferUpdated(msg.sender, enabled);
@@ -85,7 +85,7 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
             require(_tokensExtension[tokenIds[i]] == extension, "Mismatched token originators");
         }
         if (_extensionApproveTransfers[extension]) {
-            require(IERC1155CreatorExtensionApproveTransfer(extension).approveTransfer(from, to, tokenIds, amounts), "Extension approval failure");
+            require(IERC1155CreatorExtensionApproveTransferV2(extension).approveTransfer(msg.sender, from, to, tokenIds, amounts), "Extension approval failure");
         }
     }
 

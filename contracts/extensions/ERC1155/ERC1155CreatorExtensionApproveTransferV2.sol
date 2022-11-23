@@ -8,19 +8,19 @@ import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "@manifoldxyz/libraries-solidity/contracts/access/AdminControl.sol";
 
 import "../../core/IERC1155CreatorCore.sol";
-import "./IERC1155CreatorExtensionApproveTransfer.sol";
+import "./IERC1155CreatorExtensionApproveTransferV2.sol";
 
 /**
  * @dev Suggested implementation for extensions that require the creator to
  * check with it before a transfer occurs
  */
-abstract contract ERC1155CreatorExtensionApproveTransfer is AdminControl, IERC1155CreatorExtensionApproveTransfer {
+abstract contract ERC1155CreatorExtensionApproveTransfer is AdminControl, IERC1155CreatorExtensionApproveTransferV2 {
 
     /**
      * @dev See {IERC165-supportsInterface}.
      */
     function supportsInterface(bytes4 interfaceId) public view virtual override(AdminControl, IERC165) returns (bool) {
-        return interfaceId == type(IERC1155CreatorExtensionApproveTransfer).interfaceId
+        return interfaceId == type(IERC1155CreatorExtensionApproveTransferV2).interfaceId
             || super.supportsInterface(interfaceId);
     }
 

@@ -9,19 +9,19 @@ import "@manifoldxyz/libraries-solidity/contracts/access/AdminControl.sol";
 
 import "../../core/IERC721CreatorCore.sol";
 import "./ERC721CreatorExtension.sol";
-import "./IERC721CreatorExtensionApproveTransfer.sol";
+import "./IERC721CreatorExtensionApproveTransferV2.sol";
 
 /**
  * @dev Suggested implementation for extensions that require the creator to
  * check with it before a transfer occurs
  */
-abstract contract ERC721CreatorExtensionApproveTransfer is AdminControl, ERC721CreatorExtension, IERC721CreatorExtensionApproveTransfer {
+abstract contract ERC721CreatorExtensionApproveTransferV2 is AdminControl, ERC721CreatorExtension, IERC721CreatorExtensionApproveTransferV2 {
 
     /**
      * @dev See {IERC165-supportsInterface}.
      */
     function supportsInterface(bytes4 interfaceId) public view virtual override(AdminControl, CreatorExtension, IERC165) returns (bool) {
-        return interfaceId == type(IERC721CreatorExtensionApproveTransfer).interfaceId
+        return interfaceId == type(IERC721CreatorExtensionApproveTransferV2).interfaceId
             || super.supportsInterface(interfaceId);
     }
 

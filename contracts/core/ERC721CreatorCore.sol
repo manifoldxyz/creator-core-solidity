@@ -43,7 +43,7 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
      */
     function _setMintPermissions(address extension, address permissions) internal {
         require(_extensions.contains(extension), "CreatorCore: Invalid extension");
-        require(permissions == address(0x0) || ERC165Checker.supportsInterface(permissions, type(IERC721CreatorMintPermissions).interfaceId), "Invalid address");
+        require(permissions == address(0) || ERC165Checker.supportsInterface(permissions, type(IERC721CreatorMintPermissions).interfaceId), "Invalid address");
         if (_extensionPermissions[extension] != permissions) {
             _extensionPermissions[extension] = permissions;
             emit MintPermissionsUpdated(extension, permissions, msg.sender);
@@ -54,7 +54,7 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
      * Check if an extension can mint
      */
     function _checkMintPermissions(address to, uint256 tokenId) internal {
-        if (_extensionPermissions[msg.sender] != address(0x0)) {
+        if (_extensionPermissions[msg.sender] != address(0)) {
             IERC721CreatorMintPermissions(_extensionPermissions[msg.sender]).approveMint(msg.sender, to, tokenId);
         }
     }

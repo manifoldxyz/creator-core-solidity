@@ -45,7 +45,7 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
      */
     function _setMintPermissions(address extension, address permissions) internal {
         require(_extensions.contains(extension), "Invalid extension");
-        require(permissions == address(0x0) || ERC165Checker.supportsInterface(permissions, type(IERC1155CreatorMintPermissions).interfaceId), "Invalid address");
+        require(permissions == address(0) || ERC165Checker.supportsInterface(permissions, type(IERC1155CreatorMintPermissions).interfaceId), "Invalid address");
         if (_extensionPermissions[extension] != permissions) {
             _extensionPermissions[extension] = permissions;
             emit MintPermissionsUpdated(extension, permissions, msg.sender);
@@ -56,7 +56,7 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
      * Check if an extension can mint
      */
     function _checkMintPermissions(address[] memory to, uint256[] memory tokenIds, uint256[] memory amounts) internal {
-        if (_extensionPermissions[msg.sender] != address(0x0)) {
+        if (_extensionPermissions[msg.sender] != address(0)) {
             IERC1155CreatorMintPermissions(_extensionPermissions[msg.sender]).approveMint(msg.sender, to, tokenIds, amounts);
         }
     }

@@ -45,13 +45,11 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     // Mapping for individual token URIs
     mapping (uint256 => string) internal _tokenURIs;
 
-    
+    // Royalty configurations
     struct RoyaltyConfig {
         address payable receiver;
         uint16 bps;
     }
-
-    // Royalty configurations
     mapping (address => RoyaltyConfig[]) internal _extensionRoyalty;
     mapping (uint256 => RoyaltyConfig[]) internal _tokenRoyalty;
 

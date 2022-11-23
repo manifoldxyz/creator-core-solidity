@@ -7,6 +7,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 import "../extensions/ERC721/IERC721CreatorExtensionApproveTransfer.sol";
+import "../extensions/ERC721/IERC721CreatorExtensionApproveTransferV2.sol";
 import "../extensions/ERC721/IERC721CreatorExtensionBurnable.sol";
 import "../permissions/ERC721/IERC721CreatorMintPermissions.sol";
 import "./IERC721CreatorCore.sol";
@@ -30,7 +31,12 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
      * @dev See {ICreatorCore-setApproveTransferExtension}.
      */
     function setApproveTransferExtension(bool enabled) external override extensionRequired {
-        require(!enabled || ERC165Checker.supportsInterface(msg.sender, type(IERC721CreatorExtensionApproveTransfer).interfaceId), "Extension must implement IERC721CreatorExtensionApproveTransfer");
+        require(!enabled ||
+            ERC165Checker.supportsInterface(msg.sender, type(IERC721CreatorExtensionApproveTransferV2).interfaceId) ||
+            ERC165Checker.supportsInterface(msg.sender, type(IERC721CreatorExtensionApproveTransfer).interfaceId),
+            "Extension must implement IERC721CreatorExtensionApproveTransfer"
+        );
+
         if (_extensionApproveTransfers[msg.sender] != enabled) {
             _extensionApproveTransfers[msg.sender] = enabled;
             emit ExtensionApproveTransferUpdated(msg.sender, enabled);
@@ -92,7 +98,11 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
      */
     function _approveTransfer(address from, address to, uint256 tokenId) internal {
        if (_extensionApproveTransfers[_tokensExtension[tokenId]]) {
-           require(IERC721CreatorExtensionApproveTransfer(_tokensExtension[tokenId]).approveTransfer(from, to, tokenId), "ERC721Creator: Extension approval failure");
+            if (ERC165Checker.supportsInterface(msg.sender, type(IERC721CreatorExtensionApproveTransferV2).interfaceId)) {
+                require(IERC721CreatorExtensionApproveTransferV2(_tokensExtension[tokenId]).approveTransfer(msg.sender, from, to, tokenId), "ERC721Creator: Extension approval failure");
+            } else {
+                require(IERC721CreatorExtensionApproveTransfer(_tokensExtension[tokenId]).approveTransfer(from, to, tokenId), "ERC721Creator: Extension approval failure");
+            }
        }
     }
 

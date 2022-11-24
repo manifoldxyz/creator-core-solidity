@@ -6,6 +6,7 @@ const MockERC1155CreatorExtensionOverride = artifacts.require("MockERC1155Creato
 const MockERC1155CreatorMintPermissions = artifacts.require("MockERC1155CreatorMintPermissions");
 const MockERC1155 = artifacts.require("MockERC1155");
 const MockContract = artifacts.require("MockContract");
+const toBN = web3.utils.toBN;
 
 contract('ERC1155Creator', function ([minter_account, ...accounts]) {
     const name = 'Token';
@@ -63,6 +64,40 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
 
             await extension.setTokenURI('override');
             assert.equal(await creator.uri(tokenId), 'override');
+        });
+
+        it('creator should respect royalty priority', async function () {
+            let extension = await MockERC1155CreatorExtensionOverride.new(creator.address, { from: owner });
+            await creator.registerExtension(extension.address, 'http://extension/', { from: owner });
+            await extension.setApproveTransfer(creator.address, false, { from: owner });
+
+            // royalty priority (highest to lowest)
+            // 1. token
+            // 2. extension override 
+            // 3. extension default 
+            // 4. creator default
+            // 5. nothing
+            await extension.testMintNew([anyone], [1], ['']);
+            await creator.mintBaseNew([anyone], [1], [''], { from: owner });
+
+            assert.deepEqual([[], []], Object.values(await creator.getRoyalties(1)));
+            assert.deepEqual([[], []], Object.values(await creator.getRoyalties(2)));
+
+            await creator.methods['setRoyalties(address[],uint256[])']([anyone], [1], { from: owner });
+            assert.deepEqual([[anyone], [toBN(1)]], Object.values(await creator.getRoyalties(1)));
+            assert.deepEqual([[anyone], [toBN(1)]], Object.values(await creator.getRoyalties(2)));
+
+            await creator.setRoyaltiesExtension(extension.address, [another], [10], { from: owner });
+            assert.deepEqual([[another], [toBN(10)]], Object.values(await creator.getRoyalties(1)));
+            assert.deepEqual([[anyone], [toBN(1)]], Object.values(await creator.getRoyalties(2)));
+
+            await extension.setRoyaltyOverrides(1, [owner], [100], { from: owner });
+            assert.deepEqual([[owner], [toBN(100)]], Object.values(await creator.getRoyalties(1)));
+            assert.deepEqual([[anyone], [toBN(1)]], Object.values(await creator.getRoyalties(2)));
+
+            await creator.methods['setRoyalties(uint256,address[],uint256[])'](1, [newOwner], [200], { from: owner });
+            assert.deepEqual([[newOwner], [toBN(200)]], Object.values(await creator.getRoyalties(1)));
+            assert.deepEqual([[anyone], [toBN(1)]], Object.values(await creator.getRoyalties(2)));
         });
 
         it('creator permission test', async function () {

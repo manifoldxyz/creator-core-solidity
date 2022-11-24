@@ -93,6 +93,4 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
             require(IERC1155CreatorExtensionApproveTransfer(extension).approveTransfer(msg.sender, from, to, tokenIds, amounts), "Extension approval failure");
         }
     }
-
-
 }

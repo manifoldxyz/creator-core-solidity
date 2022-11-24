@@ -334,5 +334,4 @@ contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
         require(_exists(tokenId), "Nonexistent token");
         return _tokenURI(tokenId);
     }
-    
 }

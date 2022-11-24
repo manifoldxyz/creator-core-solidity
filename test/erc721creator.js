@@ -74,7 +74,7 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             assert.equal(await creator.tokenURI(tokenId), 'override');
         });
 
-        it('creator should respect royalty priority', async function () {
+        it('creator should respect royalty override order', async function () {
             let extension = await MockERC721CreatorExtensionOverride.new(creator.address, { from: owner });
             await creator.registerExtension(extension.address, 'http://extension/', { from: owner });
             await extension.setApproveTransfer(creator.address, false, { from: owner });
@@ -84,7 +84,6 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             // 2. extension override 
             // 3. extension default 
             // 4. creator default
-            // 5. nothing
             await extension.testMint(anyone);
             await creator.mintBase(anyone, { from: owner });
 
@@ -283,7 +282,7 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
 
             // Check burn callback
             assert.equal(await extension1.burntTokens(), 1);
-            assert.deepEqual((await extension1.burntTokens()).slice(-1)[0], web3.utils.toBN(newTokenId1));
+            assert.deepEqual((await extension1.burntTokens()).slice(-1)[0], toBN(newTokenId1));
 
             await creator.burn(newTokenId5, {from:anyone});
             await truffleAssert.reverts(creator.tokenURI(newTokenId1), "Nonexistent token");
@@ -405,7 +404,7 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             assert.equal(results[0].length, 1);
             assert.equal(results[1].length, 1);
             results = await creator.royaltyInfo(tokenId2, 10000);
-            assert.deepEqual(web3.utils.toBN(10000*123/10000), results[1]);
+            assert.deepEqual(toBN(10000*123/10000), results[1]);
 
             await creator.mintBase(anyone, {from:owner});
             var tokenId3 = 3;

@@ -26,7 +26,7 @@ abstract contract CreatorExtensionRoyalties is AdminControl, CreatorExtension, I
     }
 
     /**
-     * @dev See {IERC721CreatorExtensionRoyalties-getRoyalties}
+     * @dev See {ICreatorExtensionRoyalties-getRoyalties}
      */
     function getRoyalties(address creator, uint256 tokenId) external virtual view returns (address payable[] memory, uint256[] memory);
 }

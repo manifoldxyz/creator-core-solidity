@@ -66,7 +66,7 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
             assert.equal(await creator.uri(tokenId), 'override');
         });
 
-        it('creator should respect royalty priority', async function () {
+        it('creator should respect royalty override order', async function () {
             let extension = await MockERC1155CreatorExtensionOverride.new(creator.address, { from: owner });
             await creator.registerExtension(extension.address, 'http://extension/', { from: owner });
             await extension.setApproveTransfer(creator.address, false, { from: owner });
@@ -76,7 +76,6 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
             // 2. extension override 
             // 3. extension default 
             // 4. creator default
-            // 5. nothing
             await extension.testMintNew([anyone], [1], ['']);
             await creator.mintBaseNew([anyone], [1], [''], { from: owner });
 
@@ -257,10 +256,10 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
             await creator.burn(anyone, [newTokenId1], [25], {from:anyone});
             await truffleAssert.reverts(creator.burn(anyone, [newTokenId1], [100], {from:anyone}), "ERC1155: burn amount exceeds balance");
             await truffleAssert.reverts(creator.burn(anyone, [newTokenId1], [100], {from:anyone}), "ERC1155: burn amount exceeds balance");
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId1), web3.utils.toBN(25));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId1), toBN(25));
 
             // Check burn callback
-            assert.deepEqual(await extension1.burntTokens(newTokenId1), web3.utils.toBN(75));
+            assert.deepEqual(await extension1.burntTokens(newTokenId1), toBN(75));
 
         });
 
@@ -307,22 +306,22 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
             await truffleAssert.reverts(creator.tokenExtension(newTokenId12), "No extension for token");
 
             // Check balances
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId1), web3.utils.toBN(100));
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId2), web3.utils.toBN(200));
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId3), web3.utils.toBN(300));
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId4), web3.utils.toBN(400));
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId5), web3.utils.toBN(500));
-            assert.deepEqual(await creator.balanceOf(another, newTokenId5), web3.utils.toBN(500));
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId6), web3.utils.toBN(600));
-            assert.deepEqual(await creator.balanceOf(another, newTokenId6), web3.utils.toBN(601));
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId7), web3.utils.toBN(700));
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId8), web3.utils.toBN(800));
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId9), web3.utils.toBN(900));
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId10), web3.utils.toBN(1000));
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId11), web3.utils.toBN(1100));
-            assert.deepEqual(await creator.balanceOf(another, newTokenId11), web3.utils.toBN(1100));
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId12), web3.utils.toBN(1200));
-            assert.deepEqual(await creator.balanceOf(another, newTokenId12), web3.utils.toBN(1201));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId1), toBN(100));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId2), toBN(200));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId3), toBN(300));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId4), toBN(400));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId5), toBN(500));
+            assert.deepEqual(await creator.balanceOf(another, newTokenId5), toBN(500));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId6), toBN(600));
+            assert.deepEqual(await creator.balanceOf(another, newTokenId6), toBN(601));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId7), toBN(700));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId8), toBN(800));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId9), toBN(900));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId10), toBN(1000));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId11), toBN(1100));
+            assert.deepEqual(await creator.balanceOf(another, newTokenId11), toBN(1100));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId12), toBN(1200));
+            assert.deepEqual(await creator.balanceOf(another, newTokenId12), toBN(1201));
 
             // Check URI's
             assert.equal(await creator.uri(newTokenId1), 'http://extension/'+newTokenId1);
@@ -375,10 +374,10 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
             await creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone,another],[newTokenId5],[3],{from:owner});
             await creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone,another],[newTokenId5],[1,2],{from:owner});
             await creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone,another],[newTokenId5,newTokenId6],[3,4],{from:owner});
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId5), web3.utils.toBN(509));
-            assert.deepEqual(await creator.balanceOf(another, newTokenId5), web3.utils.toBN(5));
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId6), web3.utils.toBN(610));
-            assert.deepEqual(await creator.balanceOf(another, newTokenId6), web3.utils.toBN(4));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId5), toBN(509));
+            assert.deepEqual(await creator.balanceOf(another, newTokenId5), toBN(5));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId6), toBN(610));
+            assert.deepEqual(await creator.balanceOf(another, newTokenId6), toBN(4));
 
             await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId3],[1]), "Token not created by this extension");
             await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId4],[1]), "Token not created by this extension");
@@ -395,10 +394,10 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
             await extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone,another],[newTokenId1],[3],{from:owner});
             await extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone,another],[newTokenId1],[1,2],{from:owner});
             await extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone,another],[newTokenId1,newTokenId2],[3,4],{from:owner});
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId1), web3.utils.toBN(109));
-            assert.deepEqual(await creator.balanceOf(another, newTokenId1), web3.utils.toBN(5));
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId2), web3.utils.toBN(210));
-            assert.deepEqual(await creator.balanceOf(another, newTokenId2), web3.utils.toBN(4));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId1), toBN(109));
+            assert.deepEqual(await creator.balanceOf(another, newTokenId1), toBN(5));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId2), toBN(210));
+            assert.deepEqual(await creator.balanceOf(another, newTokenId2), toBN(4));
 
         });
 
@@ -476,7 +475,7 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
             assert.equal(results[0].length, 1);
             assert.equal(results[1].length, 1);
             results = await creator.royaltyInfo(tokenId2, 10000);
-            assert.deepEqual(web3.utils.toBN(10000*123/10000), results[1]);
+            assert.deepEqual(toBN(10000*123/10000), results[1]);
 
             await creator.mintBaseNew([anyone], [300], [""], {from:owner});
             var tokenId3 = 3;

@@ -90,7 +90,7 @@ contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
      */
     function setTokenURIExtension(uint256[] memory tokenIds, string[] calldata uris) external override extensionRequired {
         require(tokenIds.length == uris.length, "Invalid input");
-        for (uint i = 0; i < tokenIds.length;) {
+        for (uint i; i < tokenIds.length;) {
             _setTokenURIExtension(tokenIds[i], uris[i]);
             unchecked { ++i; }
         }
@@ -122,7 +122,7 @@ contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
      */
     function setTokenURI(uint256[] memory tokenIds, string[] calldata uris) external override adminRequired {
         require(tokenIds.length == uris.length, "Invalid input");
-        for (uint i = 0; i < tokenIds.length;) {
+        for (uint i; i < tokenIds.length;) {
             _setTokenURI(tokenIds[i], uris[i]);
             unchecked { ++i; }
         }
@@ -165,7 +165,7 @@ contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
      */
     function mintBaseBatch(address to, string[] calldata uris) public virtual override nonReentrant adminRequired returns(uint256[] memory tokenIds) {
         tokenIds = new uint256[](uris.length);
-        for (uint i = 0; i < uris.length;) {
+        for (uint i; i < uris.length;) {
             tokenIds[i] = _mintBase(to, uris[i]);
             unchecked { ++i; }
         }
@@ -219,7 +219,7 @@ contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
      */
     function mintExtensionBatch(address to, string[] calldata uris) public virtual override nonReentrant extensionRequired returns(uint256[] memory tokenIds) {
         tokenIds = new uint256[](uris.length);
-        for (uint i = 0; i < uris.length;) {
+        for (uint i; i < uris.length;) {
             tokenIds[i] = _mintExtension(to, uris[i]);
             unchecked { ++i; }
         }

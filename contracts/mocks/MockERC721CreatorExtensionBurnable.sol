@@ -31,7 +31,7 @@ contract MockERC721CreatorExtensionBurnable is CreatorExtensionBasic, ERC721Crea
 
     function testMintBatch(address to, uint16 count) external {
         uint256[] memory tokenIds = _mintBatch(_creator, to, count);
-        for (uint i = 0; i < tokenIds.length;) {
+        for (uint i; i < tokenIds.length;) {
             _mintedTokens.push(tokenIds[i]);
             unchecked { ++i; }
         }
@@ -39,7 +39,7 @@ contract MockERC721CreatorExtensionBurnable is CreatorExtensionBasic, ERC721Crea
 
     function testMintBatch(address to, string[] calldata uris) external {
         uint256[] memory tokenIds = _mintBatch(_creator, to, uris);
-        for (uint i = 0; i < tokenIds.length;) {
+        for (uint i; i < tokenIds.length;) {
             _mintedTokens.push(tokenIds[i]);
             unchecked { ++i; }
         }

@@ -124,7 +124,7 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
      */
     function getExtensions() external view override returns (address[] memory extensions) {
         extensions = new address[](_extensions.length());
-        for (uint i = 0; i < _extensions.length();) {
+        for (uint i; i < _extensions.length();) {
             extensions[i] = _extensions.at(i);
             unchecked { ++i; }
         }
@@ -295,7 +295,7 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
         if (royalties.length > 0) {
             receivers = new address payable[](royalties.length);
             bps = new uint256[](royalties.length);
-            for (uint256 i = 0; i < royalties.length;) {
+            for (uint i; i < royalties.length;) {
                 receivers[i] = royalties[i].receiver;
                 bps[i] = royalties[i].bps;
                 unchecked { i++; }
@@ -357,7 +357,7 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     function _checkRoyalties(address payable[] calldata receivers, uint256[] calldata basisPoints) private pure {
         require(receivers.length == basisPoints.length, "Invalid input");
         uint256 totalBasisPoints;
-        for (uint i = 0; i < basisPoints.length;) {
+        for (uint i; i < basisPoints.length;) {
             totalBasisPoints += basisPoints[i];
             unchecked { ++i; }
         }
@@ -368,7 +368,7 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
      * Helper function to set royalties
      */
     function _setRoyalties(address payable[] calldata receivers, uint256[] calldata basisPoints, RoyaltyConfig[] storage royalties) private {
-        for (uint256 i = 0; i < basisPoints.length;) {
+        for (uint i; i < basisPoints.length;) {
             royalties.push(
                 RoyaltyConfig(
                     {

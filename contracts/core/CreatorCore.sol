@@ -298,7 +298,7 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
             for (uint i; i < royalties.length;) {
                 receivers[i] = royalties[i].receiver;
                 bps[i] = royalties[i].bps;
-                unchecked { i++; }
+                unchecked { ++i; }
             }
         }
     }

@@ -23,8 +23,9 @@ contract MockERC1155CreatorExtensionBurnable is CreatorExtensionBasic, ERC1155Cr
 
     function testMintNew(address[] calldata to, uint256[] calldata amounts, string[] calldata uris) external {
         uint256[] memory tokenIds = _mintNew(_creator, to, amounts, uris);
-        for (uint i = 0; i < tokenIds.length; i++) {
+        for (uint i; i < tokenIds.length;) {
             _mintedTokens.push(tokenIds[i]);
+            unchecked { ++i; }
         }
     }
 
@@ -42,8 +43,9 @@ contract MockERC1155CreatorExtensionBurnable is CreatorExtensionBasic, ERC1155Cr
 
     function onBurn(address to, uint256[] calldata tokenIds, uint256[] calldata amounts) public override {
         ERC1155CreatorExtensionBurnable.onBurn(to, tokenIds, amounts);
-        for (uint i = 0; i < tokenIds.length; i++) {
+        for (uint i; i < tokenIds.length;) {
             _burntTokens[tokenIds[i]] += amounts[i];
+            unchecked { ++i; }
         }
     }
 }

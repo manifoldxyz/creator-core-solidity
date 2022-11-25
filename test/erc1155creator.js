@@ -6,8 +6,11 @@ const MockERC1155CreatorExtensionOverride = artifacts.require("MockERC1155Creato
 const MockERC1155CreatorMintPermissions = artifacts.require("MockERC1155CreatorMintPermissions");
 const MockERC1155 = artifacts.require("MockERC1155");
 const MockContract = artifacts.require("MockContract");
+const toBN = web3.utils.toBN;
 
 contract('ERC1155Creator', function ([minter_account, ...accounts]) {
+    const name = 'Token';
+    const symbol = 'NFT';
     const minter = minter_account;
     const [
            owner,
@@ -17,7 +20,7 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
            ] = accounts;
 
     it('creator gas', async function () {
-        const creatorGasEstimate = await ERC1155Creator.new.estimateGas({from:owner});
+        const creatorGasEstimate = await ERC1155Creator.new.estimateGas(name, symbol, {from:owner});
         console.log("ERC1155Creator gas estimate: %s", creatorGasEstimate);
     });
 
@@ -25,7 +28,7 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
         var creator;
 
         beforeEach(async function () {
-            creator = await ERC1155Creator.new({from:owner});
+            creator = await ERC1155Creator.new(name, symbol, {from:owner});
         });
 
         it('supportsInterface test', async function () {
@@ -44,10 +47,12 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
         });
 
         it('creator extension override test', async function () {
-            await truffleAssert.reverts(creator.registerExtension(creator.address, '', {from:owner}), "Creator: Invalid")
+            await truffleAssert.reverts(creator.registerExtension(creator.address, '', {from:owner}), "Invalid")
             var extension = await MockERC1155CreatorExtensionOverride.new(creator.address, {from:owner});
             await creator.registerExtension(extension.address, 'http://extension/', {from:owner});
 
+            await truffleAssert.reverts(extension.testMintNew([anyone], [100], [""]), "Extension approval failure");
+            await extension.setApproveTransfer(creator.address, false, {from:owner});
             await extension.testMintNew([anyone], [100], [""]);
             var tokenId = 1;
             await creator.safeTransferFrom(anyone, another, tokenId, 100, "0x0", {from:anyone});
@@ -59,6 +64,39 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
 
             await extension.setTokenURI('override');
             assert.equal(await creator.uri(tokenId), 'override');
+        });
+
+        it('creator should respect royalty override order', async function () {
+            let extension = await MockERC1155CreatorExtensionOverride.new(creator.address, { from: owner });
+            await creator.registerExtension(extension.address, 'http://extension/', { from: owner });
+            await extension.setApproveTransfer(creator.address, false, { from: owner });
+
+            // royalty priority (highest to lowest)
+            // 1. token
+            // 2. extension override 
+            // 3. extension default 
+            // 4. creator default
+            await extension.testMintNew([anyone], [1], ['']);
+            await creator.mintBaseNew([anyone], [1], [''], { from: owner });
+
+            assert.deepEqual([[], []], Object.values(await creator.getRoyalties(1)));
+            assert.deepEqual([[], []], Object.values(await creator.getRoyalties(2)));
+
+            await creator.methods['setRoyalties(address[],uint256[])']([anyone], [1], { from: owner });
+            assert.deepEqual([[anyone], [toBN(1)]], Object.values(await creator.getRoyalties(1)));
+            assert.deepEqual([[anyone], [toBN(1)]], Object.values(await creator.getRoyalties(2)));
+
+            await creator.setRoyaltiesExtension(extension.address, [another], [10], { from: owner });
+            assert.deepEqual([[another], [toBN(10)]], Object.values(await creator.getRoyalties(1)));
+            assert.deepEqual([[anyone], [toBN(1)]], Object.values(await creator.getRoyalties(2)));
+
+            await extension.setRoyaltyOverrides(1, [owner], [100], { from: owner });
+            assert.deepEqual([[owner], [toBN(100)]], Object.values(await creator.getRoyalties(1)));
+            assert.deepEqual([[anyone], [toBN(1)]], Object.values(await creator.getRoyalties(2)));
+
+            await creator.methods['setRoyalties(uint256,address[],uint256[])'](1, [newOwner], [200], { from: owner });
+            assert.deepEqual([[newOwner], [toBN(200)]], Object.values(await creator.getRoyalties(1)));
+            assert.deepEqual([[anyone], [toBN(1)]], Object.values(await creator.getRoyalties(2)));
         });
 
         it('creator permission test', async function () {
@@ -218,10 +256,10 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
             await creator.burn(anyone, [newTokenId1], [25], {from:anyone});
             await truffleAssert.reverts(creator.burn(anyone, [newTokenId1], [100], {from:anyone}), "ERC1155: burn amount exceeds balance");
             await truffleAssert.reverts(creator.burn(anyone, [newTokenId1], [100], {from:anyone}), "ERC1155: burn amount exceeds balance");
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId1), web3.utils.toBN(25));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId1), toBN(25));
 
             // Check burn callback
-            assert.deepEqual(await extension1.burntTokens(newTokenId1), web3.utils.toBN(75));
+            assert.deepEqual(await extension1.burntTokens(newTokenId1), toBN(75));
 
         });
 
@@ -268,22 +306,22 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
             await truffleAssert.reverts(creator.tokenExtension(newTokenId12), "No extension for token");
 
             // Check balances
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId1), web3.utils.toBN(100));
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId2), web3.utils.toBN(200));
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId3), web3.utils.toBN(300));
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId4), web3.utils.toBN(400));
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId5), web3.utils.toBN(500));
-            assert.deepEqual(await creator.balanceOf(another, newTokenId5), web3.utils.toBN(500));
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId6), web3.utils.toBN(600));
-            assert.deepEqual(await creator.balanceOf(another, newTokenId6), web3.utils.toBN(601));
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId7), web3.utils.toBN(700));
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId8), web3.utils.toBN(800));
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId9), web3.utils.toBN(900));
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId10), web3.utils.toBN(1000));
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId11), web3.utils.toBN(1100));
-            assert.deepEqual(await creator.balanceOf(another, newTokenId11), web3.utils.toBN(1100));
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId12), web3.utils.toBN(1200));
-            assert.deepEqual(await creator.balanceOf(another, newTokenId12), web3.utils.toBN(1201));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId1), toBN(100));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId2), toBN(200));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId3), toBN(300));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId4), toBN(400));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId5), toBN(500));
+            assert.deepEqual(await creator.balanceOf(another, newTokenId5), toBN(500));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId6), toBN(600));
+            assert.deepEqual(await creator.balanceOf(another, newTokenId6), toBN(601));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId7), toBN(700));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId8), toBN(800));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId9), toBN(900));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId10), toBN(1000));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId11), toBN(1100));
+            assert.deepEqual(await creator.balanceOf(another, newTokenId11), toBN(1100));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId12), toBN(1200));
+            assert.deepEqual(await creator.balanceOf(another, newTokenId12), toBN(1201));
 
             // Check URI's
             assert.equal(await creator.uri(newTokenId1), 'http://extension/'+newTokenId1);
@@ -321,14 +359,14 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
             let newTokenId5 = 5;
             let newTokenId6 = 6;
 
-            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId1],[1],{from:owner}), "A token was created by an extension");
-            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId2],[1],{from:owner}), "A token was created by an extension");
-            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId3],[1],{from:owner}), "A token was created by an extension");
-            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId4],[1],{from:owner}), "A token was created by an extension");
-            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId5,newTokenId1],[1,1],{from:owner}), "A token was created by an extension");
-            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId5,newTokenId2],[1,1],{from:owner}), "A token was created by an extension");
-            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId5,newTokenId3],[1,1],{from:owner}), "A token was created by an extension");
-            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId5,newTokenId4],[1,1],{from:owner}), "A token was created by an extension");
+            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId1],[1],{from:owner}), "Token created by extension");
+            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId2],[1],{from:owner}), "Token created by extension");
+            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId3],[1],{from:owner}), "Token created by extension");
+            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId4],[1],{from:owner}), "Token created by extension");
+            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId5,newTokenId1],[1,1],{from:owner}), "Token created by extension");
+            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId5,newTokenId2],[1,1],{from:owner}), "Token created by extension");
+            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId5,newTokenId3],[1,1],{from:owner}), "Token created by extension");
+            await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId5,newTokenId4],[1,1],{from:owner}), "Token created by extension");
             await truffleAssert.reverts(creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId5,newTokenId6],[1,1,3],{from:owner}), "Invalid input");
 
             await creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone],[newTokenId5],[1],{from:owner});
@@ -336,19 +374,19 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
             await creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone,another],[newTokenId5],[3],{from:owner});
             await creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone,another],[newTokenId5],[1,2],{from:owner});
             await creator.methods['mintBaseExisting(address[],uint256[],uint256[])']([anyone,another],[newTokenId5,newTokenId6],[3,4],{from:owner});
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId5), web3.utils.toBN(509));
-            assert.deepEqual(await creator.balanceOf(another, newTokenId5), web3.utils.toBN(5));
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId6), web3.utils.toBN(610));
-            assert.deepEqual(await creator.balanceOf(another, newTokenId6), web3.utils.toBN(4));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId5), toBN(509));
+            assert.deepEqual(await creator.balanceOf(another, newTokenId5), toBN(5));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId6), toBN(610));
+            assert.deepEqual(await creator.balanceOf(another, newTokenId6), toBN(4));
 
-            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId3],[1]), "A token was not created by this extension");
-            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId4],[1]), "A token was not created by this extension");
-            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId5],[1]), "A token was not created by this extension");
-            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId6],[1]), "A token was not created by this extension");
-            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId1,newTokenId3],[1,10]), "A token was not created by this extension");
-            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId1,newTokenId4],[1,10]), "A token was not created by this extension");
-            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId1,newTokenId5],[1,10]), "A token was not created by this extension");
-            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId1,newTokenId6],[1,10]), "A token was not created by this extension");
+            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId3],[1]), "Token not created by this extension");
+            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId4],[1]), "Token not created by this extension");
+            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId5],[1]), "Token not created by this extension");
+            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId6],[1]), "Token not created by this extension");
+            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId1,newTokenId3],[1,10]), "Token not created by this extension");
+            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId1,newTokenId4],[1,10]), "Token not created by this extension");
+            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId1,newTokenId5],[1,10]), "Token not created by this extension");
+            await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId1,newTokenId6],[1,10]), "Token not created by this extension");
             await truffleAssert.reverts(extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId1,newTokenId2],[1,10,20]), "Invalid input");
 
             await extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone],[newTokenId1],[1]);
@@ -356,10 +394,10 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
             await extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone,another],[newTokenId1],[3],{from:owner});
             await extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone,another],[newTokenId1],[1,2],{from:owner});
             await extension1.methods['testMintExisting(address[],uint256[],uint256[])']([anyone,another],[newTokenId1,newTokenId2],[3,4],{from:owner});
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId1), web3.utils.toBN(109));
-            assert.deepEqual(await creator.balanceOf(another, newTokenId1), web3.utils.toBN(5));
-            assert.deepEqual(await creator.balanceOf(anyone, newTokenId2), web3.utils.toBN(210));
-            assert.deepEqual(await creator.balanceOf(another, newTokenId2), web3.utils.toBN(4));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId1), toBN(109));
+            assert.deepEqual(await creator.balanceOf(another, newTokenId1), toBN(5));
+            assert.deepEqual(await creator.balanceOf(anyone, newTokenId2), toBN(210));
+            assert.deepEqual(await creator.balanceOf(another, newTokenId2), toBN(4));
 
         });
 
@@ -437,7 +475,7 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
             assert.equal(results[0].length, 1);
             assert.equal(results[1].length, 1);
             results = await creator.royaltyInfo(tokenId2, 10000);
-            assert.deepEqual(web3.utils.toBN(10000*123/10000), results[1]);
+            assert.deepEqual(toBN(10000*123/10000), results[1]);
 
             await creator.mintBaseNew([anyone], [300], [""], {from:owner});
             var tokenId3 = 3;

@@ -37,8 +37,10 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             await creator.registerExtension(extension.address, 'http://extension/', {from:owner});
             // Test legacy interface support
             assert.equal(true, await extension.supportsInterface('0x7005caad'));
-            assert.equal(true, await extension.supportsInterface('0x99cdaa22'));
+            assert.equal(true, await extension.supportsInterface('0x45ffcdad'));
 
+            await truffleAssert.reverts(extension.testMint(anyone), "Extension approval failure");
+            await extension.setApproveTransfer(creator.address, false, {from:owner});
             await extension.testMint(anyone);
             var tokenId = 1;
             await creator.transferFrom(anyone, another, tokenId, {from:anyone});

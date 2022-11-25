@@ -43,36 +43,34 @@ abstract contract ERC721CreatorExtensionBurnable is AdminControl, ERC721CreatorE
         return _mintBatch(creator, to, count);
     }
 
-    function _mint(address creator, address to) internal returns (uint256) {
+    function _mint(address creator, address to) internal returns (uint256 tokenId) {
         require(ERC165Checker.supportsInterface(creator, type(IERC721CreatorCore).interfaceId), "creator must implement IERC721CreatorCore");
-        uint256 tokenId = IERC721CreatorCore(creator).mintExtension(to);
+        tokenId = IERC721CreatorCore(creator).mintExtension(to);
         _tokenCreators[tokenId] = creator;
-        return tokenId;
     }
 
-    function _mint(address creator, address to, string memory uri) internal returns (uint256) {
+    function _mint(address creator, address to, string memory uri) internal returns (uint256 tokenId) {
         require(ERC165Checker.supportsInterface(creator, type(IERC721CreatorCore).interfaceId), "creator must implement IERC721CreatorCore");
-        uint256 tokenId = IERC721CreatorCore(creator).mintExtension(to, uri);
+        tokenId = IERC721CreatorCore(creator).mintExtension(to, uri);
         _tokenCreators[tokenId] = creator;
-        return tokenId;
     }
 
     function _mintBatch(address creator, address to, uint16 count) internal returns (uint256[] memory tokenIds) {
         require(ERC165Checker.supportsInterface(creator, type(IERC721CreatorCore).interfaceId), "creator must implement IERC721CreatorCore");
         tokenIds = IERC721CreatorCore(creator).mintExtensionBatch(to, count);
-        for (uint16 i = 0; i < tokenIds.length; i++) {
+        for (uint i; i < tokenIds.length;) {
             _tokenCreators[tokenIds[i]] = creator;
+            unchecked { ++i; }
         }
-        return tokenIds;
     }
 
     function _mintBatch(address creator, address to, string[] memory uris) internal returns (uint256[] memory tokenIds) {
         require(ERC165Checker.supportsInterface(creator, type(IERC721CreatorCore).interfaceId), "creator must implement IERC721CreatorCore");
         tokenIds = IERC721CreatorCore(creator).mintExtensionBatch(to, uris);
-        for (uint16 i = 0; i < tokenIds.length; i++) {
+        for (uint i; i < tokenIds.length;) {
             _tokenCreators[tokenIds[i]] = creator;
+            unchecked { ++i; }
         }
-        return tokenIds;
     }
 
     /**

@@ -19,9 +19,11 @@ contract ERC1155CreatorUpgradeable is AdminControlUpgradeable, ERC1155Upgradeabl
     /**
      * Initializer
      */
-    function initialize() public initializer {
+    function initialize(string memory _name, string memory _symbol) public initializer {
         __ERC1155_init("");
         __Ownable_init();
+        name = _name;
+        symbol = _symbol;
     }
 
     /**
@@ -97,8 +99,9 @@ contract ERC1155CreatorUpgradeable is AdminControlUpgradeable, ERC1155Upgradeabl
      */
     function setTokenURIExtension(uint256[] memory tokenIds, string[] calldata uris) external override extensionRequired {
         require(tokenIds.length == uris.length, "Invalid input");
-        for (uint i = 0; i < tokenIds.length; i++) {
-            _setTokenURIExtension(tokenIds[i], uris[i]);            
+        for (uint i; i < tokenIds.length;) {
+            _setTokenURIExtension(tokenIds[i], uris[i]);
+            unchecked { ++i; }
         }
     }
 
@@ -128,8 +131,9 @@ contract ERC1155CreatorUpgradeable is AdminControlUpgradeable, ERC1155Upgradeabl
      */
     function setTokenURI(uint256[] memory tokenIds, string[] calldata uris) external override adminRequired {
         require(tokenIds.length == uris.length, "Invalid input");
-        for (uint i = 0; i < tokenIds.length; i++) {
-            _setTokenURI(tokenIds[i], uris[i]);            
+        for (uint i; i < tokenIds.length;) {
+            _setTokenURI(tokenIds[i], uris[i]);
+            unchecked { ++i; }
         }
     }
 
@@ -151,10 +155,11 @@ contract ERC1155CreatorUpgradeable is AdminControlUpgradeable, ERC1155Upgradeabl
      * @dev See {IERC1155CreatorCore-mintBaseExisting}.
      */
     function mintBaseExisting(address[] calldata to, uint256[] calldata tokenIds, uint256[] calldata amounts) public virtual override nonReentrant adminRequired {
-        for (uint i = 0; i < tokenIds.length; i++) {
+        for (uint i; i < tokenIds.length;) {
             uint256 tokenId = tokenIds[i];
             require(tokenId > 0 && tokenId <= _tokenCount, "Invalid token");
-            require(_tokensExtension[tokenId] == address(0), "A token was created by an extension");
+            require(_tokensExtension[tokenId] == address(0), "Token created by extension");
+            unchecked { ++i; }
         }
         _mintExisting(address(0), to, tokenIds, amounts);
     }
@@ -170,8 +175,9 @@ contract ERC1155CreatorUpgradeable is AdminControlUpgradeable, ERC1155Upgradeabl
      * @dev See {IERC1155CreatorCore-mintExtensionExisting}.
      */
     function mintExtensionExisting(address[] calldata to, uint256[] calldata tokenIds, uint256[] calldata amounts) public virtual override nonReentrant extensionRequired {
-        for (uint i = 0; i < tokenIds.length; i++) {
-            require(_tokensExtension[tokenIds[i]] == address(msg.sender), "A token was not created by this extension");
+        for (uint i; i < tokenIds.length;) {
+            require(_tokensExtension[tokenIds[i]] == address(msg.sender), "Token not created by this extension");
+            unchecked { ++i; }
         }
         _mintExisting(msg.sender, to, tokenIds, amounts);
     }
@@ -191,11 +197,12 @@ contract ERC1155CreatorUpgradeable is AdminControlUpgradeable, ERC1155Upgradeabl
         }
 
         // Assign tokenIds
-        for (uint i = 0; i < tokenIds.length; i++) {
-            _tokenCount++;
+        for (uint i; i < tokenIds.length;) {
+            ++_tokenCount;
             tokenIds[i] = _tokenCount;
             // Track the extension that minted the token
             _tokensExtension[_tokenCount] = extension;
+            unchecked { ++i; }
         }
 
         if (extension != address(0)) {
@@ -209,25 +216,27 @@ contract ERC1155CreatorUpgradeable is AdminControlUpgradeable, ERC1155Upgradeabl
             // Multiple receivers.  Receiving the same token
             if (amounts.length == 1) {
                 // Everyone receiving the same amount
-                for (uint i = 0; i < to.length; i++) {
+                for (uint i; i < to.length;) {
                     _mint(to[i], tokenIds[0], amounts[0], new bytes(0));
+                    unchecked { ++i; }
                 }
             } else {
                 // Everyone receiving different amounts
-                for (uint i = 0; i < to.length; i++) {
+                for (uint i; i < to.length;) {
                     _mint(to[i], tokenIds[0], amounts[i], new bytes(0));
+                    unchecked { ++i; }
                 }
             }
         } else {
             _mintBatch(to[0], tokenIds, amounts, new bytes(0));
         }
 
-        for (uint i = 0; i < tokenIds.length; i++) {
+        for (uint i; i < tokenIds.length;) {
             if (i < uris.length && bytes(uris[i]).length > 0) {
                 _tokenURIs[tokenIds[i]] = uris[i];
             }
+            unchecked { ++i; }
         }
-        return tokenIds;
     }
 
     /**
@@ -246,18 +255,21 @@ contract ERC1155CreatorUpgradeable is AdminControlUpgradeable, ERC1155Upgradeabl
             _mintBatch(to[0], tokenIds, amounts, new bytes(0));
         } else if (tokenIds.length == 1 && amounts.length == 1) {
             // Mint of the same token/token amounts to various receivers
-            for (uint i = 0; i < to.length; i++) {
+            for (uint i; i < to.length;) {
                 _mint(to[i], tokenIds[0], amounts[0], new bytes(0));
+                unchecked { ++i; }
             }
         } else if (tokenIds.length == 1 && to.length == amounts.length) {
             // Mint of the same token with different amounts to different receivers
-            for (uint i = 0; i < to.length; i++) {
+            for (uint i; i < to.length;) {
                 _mint(to[i], tokenIds[0], amounts[i], new bytes(0));
+                unchecked { ++i; }
             }
         } else if (to.length == tokenIds.length && to.length == amounts.length) {
             // Mint of different tokens and different amounts to different receivers
-            for (uint i = 0; i < to.length; i++) {
+            for (uint i; i < to.length;) {
                 _mint(to[i], tokenIds[i], amounts[i], new bytes(0));
+                unchecked { ++i; }
             }
         } else {
             revert("Invalid input");
@@ -368,8 +380,9 @@ contract ERC1155CreatorUpgradeable is AdminControlUpgradeable, ERC1155Upgradeabl
      */
     function _mintBatch(address to, uint256[] memory ids, uint256[] memory amounts, bytes memory data) internal virtual override {
         super._mintBatch(to, ids, amounts, data);
-        for (uint256 i = 0; i < ids.length; ++i) {
+        for (uint i; i < ids.length;) {
             _totalSupply[ids[i]] += amounts[i];
+            unchecked { ++i; }
         }
     }
 
@@ -386,8 +399,9 @@ contract ERC1155CreatorUpgradeable is AdminControlUpgradeable, ERC1155Upgradeabl
      */
     function _burnBatch(address account, uint256[] memory ids, uint256[] memory amounts) internal virtual override {
         super._burnBatch(account, ids, amounts);
-        for (uint256 i = 0; i < ids.length; ++i) {
+        for (uint i; i < ids.length;) {
             _totalSupply[ids[i]] -= amounts[i];
+            unchecked { ++i; }
         }
     }
 }

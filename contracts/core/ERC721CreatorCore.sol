@@ -17,6 +17,8 @@ import "./CreatorCore.sol";
  */
 abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
 
+    uint256 constant public VERSION = 2;
+
     using EnumerableSet for EnumerableSet.AddressSet;
 
     /**
@@ -27,13 +29,12 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
     }
 
     /**
-     * @dev See {ICreatorCore-setApproveTransferExtension}.
+     * @dev See {CreatorCore-_setApproveTransferExtension}
      */
-    function setApproveTransferExtension(bool enabled) external override extensionRequired {
-        require(!enabled || ERC165Checker.supportsInterface(msg.sender, type(IERC721CreatorExtensionApproveTransfer).interfaceId), "Extension must implement IERC721CreatorExtensionApproveTransfer");
-        if (_extensionApproveTransfers[msg.sender] != enabled) {
-            _extensionApproveTransfers[msg.sender] = enabled;
-            emit ExtensionApproveTransferUpdated(msg.sender, enabled);
+    function _setApproveTransferExtension(address extension, bool enabled) internal override {
+        if (ERC165Checker.supportsInterface(extension, type(IERC721CreatorExtensionApproveTransfer).interfaceId)) {
+            _extensionApproveTransfers[extension] = enabled;
+            emit ExtensionApproveTransferUpdated(extension, enabled);
         }
     }
 
@@ -42,7 +43,7 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
      */
     function _setMintPermissions(address extension, address permissions) internal {
         require(_extensions.contains(extension), "CreatorCore: Invalid extension");
-        require(permissions == address(0x0) || ERC165Checker.supportsInterface(permissions, type(IERC721CreatorMintPermissions).interfaceId), "Invalid address");
+        require(permissions == address(0) || ERC165Checker.supportsInterface(permissions, type(IERC721CreatorMintPermissions).interfaceId), "Invalid address");
         if (_extensionPermissions[extension] != permissions) {
             _extensionPermissions[extension] = permissions;
             emit MintPermissionsUpdated(extension, permissions, msg.sender);
@@ -53,7 +54,7 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
      * Check if an extension can mint
      */
     function _checkMintPermissions(address to, uint256 tokenId) internal {
-        if (_extensionPermissions[msg.sender] != address(0x0)) {
+        if (_extensionPermissions[msg.sender] != address(0)) {
             IERC721CreatorMintPermissions(_extensionPermissions[msg.sender]).approveMint(msg.sender, to, tokenId);
         }
     }
@@ -92,7 +93,7 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
      */
     function _approveTransfer(address from, address to, uint256 tokenId) internal {
        if (_extensionApproveTransfers[_tokensExtension[tokenId]]) {
-           require(IERC721CreatorExtensionApproveTransfer(_tokensExtension[tokenId]).approveTransfer(from, to, tokenId), "ERC721Creator: Extension approval failure");
+           require(IERC721CreatorExtensionApproveTransfer(_tokensExtension[tokenId]).approveTransfer(msg.sender, from, to, tokenId), "ERC721Extension approval failure");
        }
     }
 

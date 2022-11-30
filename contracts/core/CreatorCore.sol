@@ -139,11 +139,11 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
      */
     function _registerExtension(address extension, string calldata baseURI, bool baseURIIdentical) internal {
         require(extension != address(this) && extension.isContract(), "Invalid");
+        emit ExtensionRegistered(extension, msg.sender);
         _extensionBaseURI[extension] = baseURI;
         _extensionBaseURIIdentical[extension] = baseURIIdentical;
         _extensions.add(extension);
         _setApproveTransferExtension(extension, true);
-        emit ExtensionRegistered(extension, msg.sender);
     }
 
     /**
@@ -163,8 +163,8 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
      * @dev Unregister an extension
      */
     function _unregisterExtension(address extension) internal {
-        _extensions.remove(extension);
         emit ExtensionUnregistered(extension, msg.sender);
+        _extensions.remove(extension);
     }
 
     /**

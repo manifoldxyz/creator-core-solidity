@@ -151,4 +151,9 @@ interface ICreatorCore is IERC165 {
      * @dev Set the default approve transfer contract location.
      */
     function setApproveTransfer(address extension) external; 
+
+    /**
+     * @dev Get the default approve transfer contract location.
+     */
+    function getApproveTransfer() external view returns (address);
 }

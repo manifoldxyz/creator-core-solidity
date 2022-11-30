@@ -24,10 +24,10 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     using EnumerableSet for EnumerableSet.AddressSet;
     using AddressUpgradeable for address;
 
-    uint256 _tokenCount = 0;
+    uint256 internal _tokenCount = 0;
 
     // Base approve transfers address location
-    address _approveTransferBase;
+    address internal _approveTransferBase;
 
     // Track registered extensions data
     EnumerableSet.AddressSet internal _extensions;
@@ -139,12 +139,10 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
      */
     function _registerExtension(address extension, string calldata baseURI, bool baseURIIdentical) internal {
         require(extension != address(this) && extension.isContract(), "Invalid");
-        if (!_extensions.contains(extension)) {
-            _extensionBaseURI[extension] = baseURI;
-            _extensionBaseURIIdentical[extension] = baseURIIdentical;
-            emit ExtensionRegistered(extension, msg.sender);
-            _extensions.add(extension);
-        }
+        _extensionBaseURI[extension] = baseURI;
+        _extensionBaseURIIdentical[extension] = baseURIIdentical;
+        emit ExtensionRegistered(extension, msg.sender);
+        _extensions.add(extension);
         _setApproveTransferExtension(extension, true);
     }
 
@@ -165,10 +163,8 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
      * @dev Unregister an extension
      */
     function _unregisterExtension(address extension) internal {
-       if (_extensions.contains(extension)) {
-           emit ExtensionUnregistered(extension, msg.sender);
-           _extensions.remove(extension);
-       }
+        emit ExtensionUnregistered(extension, msg.sender);
+        _extensions.remove(extension);
     }
 
     /**
@@ -382,5 +378,12 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
             );
             unchecked { ++i; }
         }
+    }
+
+    /**
+     * @dev See {ICreatorCore-getApproveTransfer}.
+     */
+    function getApproveTransfer() external view override returns (address) {
+        return _approveTransferBase;
     }
 }

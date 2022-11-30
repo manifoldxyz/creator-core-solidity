@@ -50,6 +50,60 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             assert.equal(true, await creator.supportsInterface('0xd5a06d4c'));
         });
 
+        it('creator should support transfer approvals', async () => {
+            const baseApprover = await MockERC721CreatorExtensionOverride.new(creator.address, {from:owner});
+            const extApprover = await MockERC721CreatorExtensionOverride.new(creator.address, {from:owner});
+            const extAnon = await MockERC721CreatorExtensionBurnable.new(creator.address, {from:owner});
+
+            await baseApprover.setApproveEnabled(true);
+            await extApprover.setApproveEnabled(true);
+            await creator.registerExtension(extApprover.address, "", {from:owner});
+            await creator.registerExtension(extAnon.address, "", {from:owner});
+
+            // mint 3 tokens, one base, one on approval extension, one on anon extension
+            await creator.mintBase(owner, {from:owner});         
+            await extApprover.testMint(owner, {from:owner});
+            await extAnon.testMint(owner, {from:owner});
+
+            // no approvers set; all should work
+            await creator.transferFrom(owner, another, 1, {from:owner});
+            await creator.transferFrom(owner, another, 2, {from:owner});
+            await creator.transferFrom(owner, another, 3, {from:owner});
+
+            // set base approver but don't block transfers
+            await truffleAssert.reverts(creator.setApproveTransfer(baseApprover.address, {from:another}), 'AdminControl: Must be owner or admin');
+            await creator.setApproveTransfer(baseApprover.address, {from:owner});
+            await creator.safeTransferFrom(another, owner, 1, {from:another});
+            await creator.safeTransferFrom(another, owner, 2, {from:another});
+            await creator.safeTransferFrom(another, owner, 3, {from:another});
+
+            // block extension only
+            await extApprover.setApproveEnabled(false);
+            await creator.safeTransferFrom(owner, another, 1, {from:owner});
+            await truffleAssert.reverts(creator.safeTransferFrom(owner, another, 2, {from:owner}), 'Extension approval failure');
+            await creator.safeTransferFrom(owner, another, 3, {from:owner});
+
+            // block on base; approval extension override
+            await baseApprover.setApproveEnabled(false);
+            await extApprover.setApproveEnabled(true);
+            await truffleAssert.reverts(creator.transferFrom(another, owner, 1, {from:another}), 'Extension approval failure');
+            await creator.transferFrom(owner, another, 2, {from:owner});
+            await truffleAssert.reverts(creator.transferFrom(another, owner, 3, {from:another}), 'Extension approval failure');
+
+            // unregister approval extension
+            await extApprover.setApproveEnabled(false);
+            await creator.unregisterExtension(extApprover.address, {from:owner});
+            await truffleAssert.reverts(creator.transferFrom(another, owner, 1, {from:another}), 'Extension approval failure');
+            await truffleAssert.reverts(creator.transferFrom(another, owner, 2, {from:another}), 'Extension approval failure');
+            await truffleAssert.reverts(creator.transferFrom(another, owner, 3, {from:another}), 'Extension approval failure');
+            
+            // disable base approver, approval extension override should still block
+            await creator.setApproveTransfer("0x0000000000000000000000000000000000000000", {from:owner});
+            await creator.transferFrom(another, owner, 1, {from:another});
+            await truffleAssert.reverts(creator.transferFrom(another, owner, 2, {from:another}), 'Extension approval failure');
+            await creator.transferFrom(another, owner, 3, {from:another});
+        });
+
         it('creator extension override test', async function () {
             await truffleAssert.reverts(creator.registerExtension(creator.address, '', {from:owner}), "Invalid")
             var extension = await MockERC721CreatorExtensionOverride.new(creator.address, {from:owner});
@@ -69,7 +123,6 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             await truffleAssert.reverts(creator.transferFrom(another, anyone, tokenId, {from:another}), "Extension approval failure");
             await extension.setApproveEnabled(true);
             await creator.transferFrom(another, anyone, tokenId, {from:another});
-
 
             // test tokenuri overrides
             await extension.setTokenURI('override');

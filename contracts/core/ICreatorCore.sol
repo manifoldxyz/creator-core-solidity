@@ -148,8 +148,7 @@ interface ICreatorCore is IERC165 {
     function royaltyInfo(uint256 tokenId, uint256 value) external view returns (address, uint256);
 
     /**
-     * @dev the base contract's approve transfer contract location
+     * @dev Set the default approve transfer contract location.
      */
     function setApproveTransfer(address extension) external; 
-
 }

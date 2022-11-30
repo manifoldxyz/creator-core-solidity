@@ -26,6 +26,9 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
 
     uint256 _tokenCount = 0;
 
+    // Base approve transfers address location
+    address _approveTransferBase;
+
     // Track registered extensions data
     EnumerableSet.AddressSet internal _extensions;
     EnumerableSet.AddressSet internal _blacklistedExtensions;
@@ -52,6 +55,8 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     }
     mapping (address => RoyaltyConfig[]) internal _extensionRoyalty;
     mapping (uint256 => RoyaltyConfig[]) internal _tokenRoyalty;
+
+    bytes4 private constant _CREATOR_CORE_V1 = 0x28f10a21;
 
     /**
      * External interface identifiers for royalties
@@ -98,7 +103,7 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
      * @dev See {IERC165-supportsInterface}.
      */
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
-        return interfaceId == type(ICreatorCore).interfaceId || super.supportsInterface(interfaceId)
+        return interfaceId == type(ICreatorCore).interfaceId || interfaceId == _CREATOR_CORE_V1 || super.supportsInterface(interfaceId)
             || interfaceId == _INTERFACE_ID_ROYALTIES_CREATORCORE || interfaceId == _INTERFACE_ID_ROYALTIES_RARIBLE
             || interfaceId == _INTERFACE_ID_ROYALTIES_FOUNDATION || interfaceId == _INTERFACE_ID_ROYALTIES_EIP2981;
     }
@@ -106,17 +111,15 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     /**
      * @dev Only allows registered extensions to call the specified function
      */
-    modifier extensionRequired() {
+    function requireExtension() internal view {
         require(_extensions.contains(msg.sender), "Must be registered extension");
-        _;
     }
 
     /**
      * @dev Only allows non-blacklisted extensions
      */
-    modifier nonBlacklistRequired(address extension) {
+    function requireNonBlacklist(address extension) internal view {
         require(!_blacklistedExtensions.contains(extension), "Extension blacklisted");
-        _;
     }   
 
     /**
@@ -135,8 +138,7 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
      * @dev Register an extension
      */
     function _registerExtension(address extension, string calldata baseURI, bool baseURIIdentical) internal {
-        require(extension != address(0) && extension != address(this), "Invalid");
-        require(extension.isContract(), "Extension must be a contract");
+        require(extension != address(this) && extension.isContract(), "Invalid");
         if (!_extensions.contains(extension)) {
             _extensionBaseURI[extension] = baseURI;
             _extensionBaseURIIdentical[extension] = baseURIIdentical;
@@ -149,7 +151,8 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     /**
      * @dev See {ICreatorCore-setApproveTransferExtension}.
      */
-    function setApproveTransferExtension(bool enabled) external override extensionRequired {
+    function setApproveTransferExtension(bool enabled) external override {
+        requireExtension();
         _setApproveTransferExtension(msg.sender, enabled);
     }
 

@@ -41,6 +41,14 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
     }
 
     /**
+     * @dev Set the base contract's approve transfer contract location
+     */
+    function _setApproveTransferBase(address extension) internal {
+        _approveTransferBase = extension;
+        emit ApproveTransferUpdated(extension);
+    }
+
+    /**
      * @dev Set mint permissions for an extension
      */
     function _setMintPermissions(address extension, address permissions) internal {
@@ -91,6 +99,8 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
         }
         if (_extensionApproveTransfers[extension]) {
             require(IERC1155CreatorExtensionApproveTransfer(extension).approveTransfer(msg.sender, from, to, tokenIds, amounts), "Extension approval failure");
+        } else if (_approveTransferBase != address(0)) {
+            require(IERC1155CreatorExtensionApproveTransfer(_approveTransferBase).approveTransfer(msg.sender, from, to, tokenIds, amounts), "Extension approval failure");
         }
     }
 }

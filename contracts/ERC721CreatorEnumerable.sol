@@ -44,5 +44,4 @@ contract ERC721CreatorEnumerable is ERC721Creator, ERC721CreatorCoreEnumerable, 
     function tokenURI(uint256 tokenId) public view virtual override(ERC721Creator, ERC721) returns (string memory) {
         return ERC721Creator.tokenURI(tokenId);
     }
-
 }

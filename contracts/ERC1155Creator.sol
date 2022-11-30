@@ -35,14 +35,16 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
     /**
      * @dev See {ICreatorCore-registerExtension}.
      */
-    function registerExtension(address extension, string calldata baseURI) external override adminRequired nonBlacklistRequired(extension) {
+    function registerExtension(address extension, string calldata baseURI) external override adminRequired {
+        requireNonBlacklist(extension);
         _registerExtension(extension, baseURI, false);
     }
 
     /**
      * @dev See {ICreatorCore-registerExtension}.
      */
-    function registerExtension(address extension, string calldata baseURI, bool baseURIIdentical) external override adminRequired nonBlacklistRequired(extension) {
+    function registerExtension(address extension, string calldata baseURI, bool baseURIIdentical) external override adminRequired {
+        requireNonBlacklist(extension);
         _registerExtension(extension, baseURI, baseURIIdentical);
     }
 
@@ -64,35 +66,40 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
     /**
      * @dev See {ICreatorCore-setBaseTokenURIExtension}.
      */
-    function setBaseTokenURIExtension(string calldata uri_) external override extensionRequired {
+    function setBaseTokenURIExtension(string calldata uri_) external override {
+        requireExtension();
         _setBaseTokenURIExtension(uri_, false);
     }
 
     /**
      * @dev See {ICreatorCore-setBaseTokenURIExtension}.
      */
-    function setBaseTokenURIExtension(string calldata uri_, bool identical) external override extensionRequired {
+    function setBaseTokenURIExtension(string calldata uri_, bool identical) external override {
+        requireExtension();
         _setBaseTokenURIExtension(uri_, identical);
     }
 
     /**
      * @dev See {ICreatorCore-setTokenURIPrefixExtension}.
      */
-    function setTokenURIPrefixExtension(string calldata prefix) external override extensionRequired {
+    function setTokenURIPrefixExtension(string calldata prefix) external override {
+        requireExtension();
         _setTokenURIPrefixExtension(prefix);
     }
 
     /**
      * @dev See {ICreatorCore-setTokenURIExtension}.
      */
-    function setTokenURIExtension(uint256 tokenId, string calldata uri_) external override extensionRequired {
+    function setTokenURIExtension(uint256 tokenId, string calldata uri_) external override {
+        requireExtension();
         _setTokenURIExtension(tokenId, uri_);
     }
 
     /**
      * @dev See {ICreatorCore-setTokenURIExtension}.
      */
-    function setTokenURIExtension(uint256[] memory tokenIds, string[] calldata uris) external override extensionRequired {
+    function setTokenURIExtension(uint256[] memory tokenIds, string[] calldata uris) external override {
+        requireExtension();
         require(tokenIds.length == uris.length, "Invalid input");
         for (uint i; i < tokenIds.length;) {
             _setTokenURIExtension(tokenIds[i], uris[i]);
@@ -162,14 +169,16 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
     /**
      * @dev See {IERC1155CreatorCore-mintExtensionNew}.
      */
-    function mintExtensionNew(address[] calldata to, uint256[] calldata amounts, string[] calldata uris) public virtual override nonReentrant extensionRequired returns(uint256[] memory tokenIds) {
+    function mintExtensionNew(address[] calldata to, uint256[] calldata amounts, string[] calldata uris) public virtual override nonReentrant returns(uint256[] memory tokenIds) {
+        requireExtension();
         return _mintNew(msg.sender, to, amounts, uris);
     }
 
     /**
      * @dev See {IERC1155CreatorCore-mintExtensionExisting}.
      */
-    function mintExtensionExisting(address[] calldata to, uint256[] calldata tokenIds, uint256[] calldata amounts) public virtual override nonReentrant extensionRequired {
+    function mintExtensionExisting(address[] calldata to, uint256[] calldata tokenIds, uint256[] calldata amounts) public virtual override nonReentrant {
+        requireExtension();
         for (uint i; i < tokenIds.length;) {
             require(_tokensExtension[tokenIds[i]] == address(msg.sender), "Token not created by this extension");
             unchecked { ++i; }
@@ -398,5 +407,12 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
             _totalSupply[ids[i]] -= amounts[i];
             unchecked { ++i; }
         }
+    }
+
+    /**
+     * @dev See {ICreatorCore-setApproveTransfer}.
+     */
+    function setApproveTransfer(address extension) external override adminRequired {
+        _setApproveTransferBase(extension);
     }
 }

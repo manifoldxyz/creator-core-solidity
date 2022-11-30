@@ -37,14 +37,16 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
     /**
      * @dev See {IERC721CreatorCoreEnumerable-totalSupplyExtension}.
      */
-    function totalSupplyExtension(address extension) public view virtual override nonBlacklistRequired(extension) returns (uint256) {
+    function totalSupplyExtension(address extension) public view virtual override returns (uint256) {
+        requireNonBlacklist(extension);
         return _extensionBalances[extension];
     }
 
     /**
      * @dev See {IERC721CreatorCoreEnumerable-tokenByIndexExtension}.
      */
-    function tokenByIndexExtension(address extension, uint256 index) external view virtual override nonBlacklistRequired(extension) returns (uint256) {
+    function tokenByIndexExtension(address extension, uint256 index) external view virtual override returns (uint256) {
+        requireNonBlacklist(extension);
         require(index < totalSupplyExtension(extension), "ERC721Creator: Index out of bounds");
         return _extensionTokens[extension][index];
     }
@@ -52,14 +54,16 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
     /**
      * @dev See {IERC721CreatorCoreEnumerable-balanceOfExtension}.
      */
-    function balanceOfExtension(address extension, address owner) public view virtual override nonBlacklistRequired(extension) returns (uint256) {
+    function balanceOfExtension(address extension, address owner) public view virtual override returns (uint256) {
+        requireNonBlacklist(extension);
         return _extensionBalancesByOwner[extension][owner];
     }
 
     /*
      * @dev See {IERC721CeratorCoreEnumerable-tokenOfOwnerByIndexExtension}.
      */
-    function tokenOfOwnerByIndexExtension(address extension, address owner, uint256 index) external view virtual override nonBlacklistRequired(extension) returns (uint256) {
+    function tokenOfOwnerByIndexExtension(address extension, address owner, uint256 index) external view virtual override returns (uint256) {
+        requireNonBlacklist(extension);
         require(index < balanceOfExtension(extension, owner), "ERC721Creator: Index out of bounds");
         return _extensionTokensByOwner[extension][owner][index];
     }

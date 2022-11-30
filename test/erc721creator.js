@@ -34,8 +34,10 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
         });
 
         it('supportsInterface test', async function () {
-            // ICreatorCore
+            // ICreatorCoreV1
             assert.equal(true, await creator.supportsInterface('0x28f10a21'));
+            // ICreatorCoreV2
+            assert.equal(true, await creator.supportsInterface('0x7196928c'));
             // IERC721CreatorCore
             assert.equal(true, await creator.supportsInterface('0x9088c207'));
             // Creator Core Royalites

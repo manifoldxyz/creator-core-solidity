@@ -39,6 +39,14 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
     }
 
     /**
+     * @dev Set the base contract's approve transfer contract location
+     */
+    function _setApproveTransferBase(address extension) internal {
+        _approveTransferBase = extension;
+        emit ApproveTransferUpdated(extension);
+    }
+
+    /**
      * @dev Set mint permissions for an extension
      */
     function _setMintPermissions(address extension, address permissions) internal {
@@ -93,7 +101,9 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
      */
     function _approveTransfer(address from, address to, uint256 tokenId) internal {
        if (_extensionApproveTransfers[_tokensExtension[tokenId]]) {
-           require(IERC721CreatorExtensionApproveTransfer(_tokensExtension[tokenId]).approveTransfer(msg.sender, from, to, tokenId), "ERC721Extension approval failure");
+           require(IERC721CreatorExtensionApproveTransfer(_tokensExtension[tokenId]).approveTransfer(msg.sender, from, to, tokenId), "Extension approval failure");
+       } else if (_approveTransferBase != address(0)) {
+          require(IERC721CreatorExtensionApproveTransfer(_approveTransferBase).approveTransfer(msg.sender, from, to, tokenId), "Extension approval failure");
        }
     }
 

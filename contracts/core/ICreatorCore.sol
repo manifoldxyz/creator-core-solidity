@@ -17,6 +17,7 @@ interface ICreatorCore is IERC165 {
     event MintPermissionsUpdated(address indexed extension, address indexed permissions, address indexed sender);
     event RoyaltiesUpdated(uint256 indexed tokenId, address payable[] receivers, uint256[] basisPoints);
     event DefaultRoyaltiesUpdated(address payable[] receivers, uint256[] basisPoints);
+    event ApproveTransferUpdated(address extension);
     event ExtensionRoyaltiesUpdated(address indexed extension, address payable[] receivers, uint256[] basisPoints);
     event ExtensionApproveTransferUpdated(address indexed extension, bool enabled);
 
@@ -145,5 +146,10 @@ interface ICreatorCore is IERC165 {
     function getFeeBps(uint256 tokenId) external view returns (uint[] memory);
     function getFees(uint256 tokenId) external view returns (address payable[] memory, uint256[] memory);
     function royaltyInfo(uint256 tokenId, uint256 value) external view returns (address, uint256);
+
+    /**
+     * @dev the base contract's approve transfer contract location
+     */
+    function setApproveTransfer(address extension) external; 
 
 }

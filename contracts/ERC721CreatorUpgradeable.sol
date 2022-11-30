@@ -36,14 +36,16 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
     /**
      * @dev See {ICreatorCore-registerExtension}.
      */
-    function registerExtension(address extension, string calldata baseURI) external override adminRequired nonBlacklistRequired(extension) {
+    function registerExtension(address extension, string calldata baseURI) external override adminRequired {
+        requireNonBlacklist(extension);
         _registerExtension(extension, baseURI, false);
     }
 
     /**
      * @dev See {ICreatorCore-registerExtension}.
      */
-    function registerExtension(address extension, string calldata baseURI, bool baseURIIdentical) external override adminRequired nonBlacklistRequired(extension) {
+    function registerExtension(address extension, string calldata baseURI, bool baseURIIdentical) external override adminRequired {
+        requireNonBlacklist(extension);
         _registerExtension(extension, baseURI, baseURIIdentical);
     }
 
@@ -65,35 +67,40 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
     /**
      * @dev See {ICreatorCore-setBaseTokenURIExtension}.
      */
-    function setBaseTokenURIExtension(string calldata uri) external override extensionRequired {
+    function setBaseTokenURIExtension(string calldata uri) external override {
+        requireExtension();
         _setBaseTokenURIExtension(uri, false);
     }
 
     /**
      * @dev See {ICreatorCore-setBaseTokenURIExtension}.
      */
-    function setBaseTokenURIExtension(string calldata uri, bool identical) external override extensionRequired {
+    function setBaseTokenURIExtension(string calldata uri, bool identical) external override {
+        requireExtension();
         _setBaseTokenURIExtension(uri, identical);
     }
 
     /**
      * @dev See {ICreatorCore-setTokenURIPrefixExtension}.
      */
-    function setTokenURIPrefixExtension(string calldata prefix) external override extensionRequired {
+    function setTokenURIPrefixExtension(string calldata prefix) external override {
+        requireExtension();
         _setTokenURIPrefixExtension(prefix);
     }
 
     /**
      * @dev See {ICreatorCore-setTokenURIExtension}.
      */
-    function setTokenURIExtension(uint256 tokenId, string calldata uri) external override extensionRequired {
+    function setTokenURIExtension(uint256 tokenId, string calldata uri) external override {
+        requireExtension();
         _setTokenURIExtension(tokenId, uri);
     }
 
     /**
      * @dev See {ICreatorCore-setTokenURIExtension}.
      */
-    function setTokenURIExtension(uint256[] memory tokenIds, string[] calldata uris) external override extensionRequired {
+    function setTokenURIExtension(uint256[] memory tokenIds, string[] calldata uris) external override {
+        requireExtension();
         require(tokenIds.length == uris.length, "Invalid input");
         for (uint i; i < tokenIds.length;) {
             _setTokenURIExtension(tokenIds[i], uris[i]);
@@ -197,21 +204,24 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
     /**
      * @dev See {IERC721CreatorCore-mintExtension}.
      */
-    function mintExtension(address to) public virtual override nonReentrant extensionRequired returns(uint256) {
+    function mintExtension(address to) public virtual override nonReentrant returns(uint256) {
+        requireExtension();
         return _mintExtension(to, "");
     }
 
     /**
      * @dev See {IERC721CreatorCore-mintExtension}.
      */
-    function mintExtension(address to, string calldata uri) public virtual override nonReentrant extensionRequired returns(uint256) {
+    function mintExtension(address to, string calldata uri) public virtual override nonReentrant returns(uint256) {
+        requireExtension();
         return _mintExtension(to, uri);
     }
 
     /**
      * @dev See {IERC721CreatorCore-mintExtensionBatch}.
      */
-    function mintExtensionBatch(address to, uint16 count) public virtual override nonReentrant extensionRequired returns(uint256[] memory tokenIds) {
+    function mintExtensionBatch(address to, uint16 count) public virtual override nonReentrant returns(uint256[] memory tokenIds) {
+        requireExtension();
         tokenIds = new uint256[](count);
         for (uint16 i = 0; i < count;) {
             tokenIds[i] = _mintExtension(to, "");
@@ -222,7 +232,8 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
     /**
      * @dev See {IERC721CreatorCore-mintExtensionBatch}.
      */
-    function mintExtensionBatch(address to, string[] calldata uris) public virtual override nonReentrant extensionRequired returns(uint256[] memory tokenIds) {
+    function mintExtensionBatch(address to, string[] calldata uris) public virtual override nonReentrant returns(uint256[] memory tokenIds) {
+        requireExtension();
         tokenIds = new uint256[](uris.length);
         for (uint i; i < uris.length;) {
             tokenIds[i] = _mintExtension(to, uris[i]);
@@ -339,5 +350,11 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
         require(_exists(tokenId), "Nonexistent token");
         return _tokenURI(tokenId);
     }
-    
+
+    /**
+     * @dev See {ICreatorCore-setApproveTransfer}.
+     */
+    function setApproveTransfer(address extension) external override adminRequired {
+        _setApproveTransferBase(extension);
+    }
 }

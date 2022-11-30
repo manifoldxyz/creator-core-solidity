@@ -168,7 +168,6 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
        if (_extensions.contains(extension)) {
            emit ExtensionUnregistered(extension, msg.sender);
            _extensions.remove(extension);
-           delete _extensionApproveTransfers[extension];
        }
     }
 

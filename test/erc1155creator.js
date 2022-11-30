@@ -87,12 +87,6 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
             await creator.safeTransferFrom(owner, another, 2, 1, "0x0", {from:owner});
             await truffleAssert.reverts(creator.safeTransferFrom(another, owner, 3, 1, "0x0", {from:another}), 'Extension approval failure');
            
-            // unregister approval extension
-            await creator.unregisterExtension(extApprover.address, {from:owner});
-            await truffleAssert.reverts(creator.safeTransferFrom(another, owner, 1, 1, "0x0", {from:another}), 'Extension approval failure');
-            await truffleAssert.reverts(creator.safeTransferFrom(another, owner, 2, 1, "0x0", {from:another}), 'Extension approval failure');
-            await truffleAssert.reverts(creator.safeTransferFrom(another, owner, 3, 1, "0x0", {from:another}), 'Extension approval failure');
-                
             // disable base approver and all should transfer
             await creator.setApproveTransfer("0x0000000000000000000000000000000000000000", {from:owner});
             await creator.safeTransferFrom(another, owner, 1, 1, "0x0", {from:another});

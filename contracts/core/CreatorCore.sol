@@ -381,6 +381,14 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     }
 
     /**
+     * @dev Set the base contract's approve transfer contract location
+     */
+    function _setApproveTransferBase(address extension) internal {
+        _approveTransferBase = extension;
+        emit ApproveTransferUpdated(extension);
+    }
+
+    /**
      * @dev See {ICreatorCore-getApproveTransfer}.
      */
     function getApproveTransfer() external view override returns (address) {

@@ -41,14 +41,6 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
     }
 
     /**
-     * @dev Set the base contract's approve transfer contract location
-     */
-    function _setApproveTransferBase(address extension) internal {
-        _approveTransferBase = extension;
-        emit ApproveTransferUpdated(extension);
-    }
-
-    /**
      * @dev Set mint permissions for an extension
      */
     function _setMintPermissions(address extension, address permissions) internal {

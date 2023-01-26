@@ -67,7 +67,7 @@ The most powerful aspect of Manifold Creator Core contracts is the ability to ex
  * burn pre-burn check
  * define royalties for extension minted tokens
 
-In order to create an app, you'll need to implmenet one or more interfaces within contracts/extensions, deploy the new app and register it to the main Creator Core contract using the registerExtension function (which is only accesible to the contract owner or admins).
+In order to create an app, you'll need to implement one or more interfaces within contracts/extensions, deploy the new app and register it to the main Creator Core contract using the registerExtension function (which is only accessible to the contract owner or admins).
 
 Example applications can be found [here](https://github.com/manifoldxyz/creator-core-extensions-solidity).
 

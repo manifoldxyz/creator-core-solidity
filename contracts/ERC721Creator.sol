@@ -24,7 +24,7 @@ contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
         return ERC721CreatorCore.supportsInterface(interfaceId) || ERC721.supportsInterface(interfaceId) || AdminControl.supportsInterface(interfaceId);
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual override {
+    function _beforeTokenTransfer(address from, address to, uint256, uint256 tokenId) internal virtual override {
         _approveTransfer(from, to, tokenId);    
     }
 

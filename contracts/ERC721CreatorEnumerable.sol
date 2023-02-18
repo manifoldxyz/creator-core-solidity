@@ -24,9 +24,9 @@ contract ERC721CreatorEnumerable is ERC721Creator, ERC721CreatorCoreEnumerable, 
         return interfaceId == type(IERC721CreatorCoreEnumerable).interfaceId || ERC721Creator.supportsInterface(interfaceId) || ERC721Enumerable.supportsInterface(interfaceId);
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256, uint256 tokenId) internal virtual override(ERC721Enumerable, ERC721Creator, ERC721CreatorCoreEnumerable) {
+    function _beforeTokenTransfer(address from, address to, uint256 firstTokenId, uint256 tokenId) internal virtual override(ERC721Enumerable, ERC721Creator, ERC721CreatorCoreEnumerable) {
         _approveTransfer(from, to, tokenId);
-        ERC721Enumerable._beforeTokenTransfer(from, to, 0, tokenId);
+        ERC721Enumerable._beforeTokenTransfer(from, to, firstTokenId, tokenId);
     }
 
     function _postMintBase(address to, uint256 tokenId) internal virtual override(ERC721CreatorCore, ERC721CreatorCoreEnumerable) {

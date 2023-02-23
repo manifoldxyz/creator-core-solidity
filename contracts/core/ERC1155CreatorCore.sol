@@ -23,6 +23,9 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
     string public name;
     string public symbol;
 
+    // For tracking which extension a token was minted by
+    mapping (uint256 => address) internal _tokensExtension;
+
     /**
      * @dev See {IERC165-supportsInterface}.
      */
@@ -94,5 +97,9 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
         } else if (_approveTransferBase != address(0)) {
             require(IERC1155CreatorExtensionApproveTransfer(_approveTransferBase).approveTransfer(msg.sender, from, to, tokenIds, amounts), "Extension approval failure");
         }
+    }
+
+    function _tokenExtension(uint256 tokenId) internal view override returns(address) {
+        return _tokensExtension[tokenId];
     }
 }

@@ -13,6 +13,7 @@ import "./core/ERC1155CreatorCore.sol";
  * @dev ERC1155Creator implementation
  */
 contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
+    using EnumerableSet for EnumerableSet.AddressSet;
 
     mapping(uint256 => uint256) private _totalSupply;
 
@@ -160,7 +161,7 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
         for (uint i; i < tokenIds.length;) {
             uint256 tokenId = tokenIds[i];
             require(tokenId > 0 && tokenId <= _tokenCount, "Invalid token");
-            require(_tokensExtension[tokenId] == address(0), "Token created by extension");
+            require(_tokenExtension(tokenId) == address(0), "Token created by extension");
             unchecked { ++i; }
         }
         _mintExisting(address(0), to, tokenIds, amounts);
@@ -180,7 +181,7 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
     function mintExtensionExisting(address[] calldata to, uint256[] calldata tokenIds, uint256[] calldata amounts) public virtual override nonReentrant {
         requireExtension();
         for (uint i; i < tokenIds.length;) {
-            require(_tokensExtension[tokenIds[i]] == address(msg.sender), "Token not created by this extension");
+            require(_tokenExtension(tokenIds[i]) == address(msg.sender), "Token not created by this extension");
             unchecked { ++i; }
         }
         _mintExisting(msg.sender, to, tokenIds, amounts);
@@ -283,8 +284,10 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
     /**
      * @dev See {IERC1155CreatorCore-tokenExtension}.
      */
-    function tokenExtension(uint256 tokenId) public view virtual override returns (address) {
-        return _tokenExtension(tokenId);
+    function tokenExtension(uint256 tokenId) public view virtual override returns (address extension) {
+        extension = _tokenExtension(tokenId);
+        require(extension != address(0), "No extension for token");
+        require(!_blacklistedExtensions.contains(extension), "Extension blacklisted");
     }
 
     /**

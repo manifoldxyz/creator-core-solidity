@@ -165,7 +165,7 @@ contract ERC1155CreatorUpgradeable is AdminControlUpgradeable, ERC1155Upgradeabl
         for (uint i; i < tokenIds.length;) {
             uint256 tokenId = tokenIds[i];
             require(tokenId > 0 && tokenId <= _tokenCount, "Invalid token");
-            require(_tokensExtension[tokenId] == address(0), "Token created by extension");
+            require(_tokenExtension(tokenId) == address(0), "Token created by extension");
             unchecked { ++i; }
         }
         _mintExisting(address(0), to, tokenIds, amounts);
@@ -185,7 +185,7 @@ contract ERC1155CreatorUpgradeable is AdminControlUpgradeable, ERC1155Upgradeabl
     function mintExtensionExisting(address[] calldata to, uint256[] calldata tokenIds, uint256[] calldata amounts) public virtual override nonReentrant {
         requireExtension();
         for (uint i; i < tokenIds.length;) {
-            require(_tokensExtension[tokenIds[i]] == address(msg.sender), "Token not created by this extension");
+            require(_tokenExtension(tokenIds[i]) == address(msg.sender), "Token not created by this extension");
             unchecked { ++i; }
         }
         _mintExisting(msg.sender, to, tokenIds, amounts);

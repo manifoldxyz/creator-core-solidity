@@ -21,6 +21,11 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
 
     using EnumerableSet for EnumerableSet.AddressSet;
 
+    // For tracking extension indices
+    uint96 private _extensionCounter;
+    mapping (address => uint96) internal _extensionToIndex;    
+    mapping (uint96 => address) internal _indexToExtension;
+
     /**
      * @dev See {IERC165-supportsInterface}.
      */
@@ -60,43 +65,62 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
     }
 
     /**
-     * Override for post mint actions
+     * Override for pre mint actions
      */
-    function _postMintBase(address, uint256) internal virtual {}
+    function _preMintBase(address, uint256) internal virtual {}
 
     
     /**
      * Override for post mint actions
      */
-    function _postMintExtension(address, uint256) internal virtual {}
+    function _preMintExtension(address, uint256) internal virtual {}
 
     /**
      * Post-burning callback and metadata cleanup
      */
-    function _postBurn(address owner, uint256 tokenId) internal virtual {
+    function _postBurn(address owner, uint256 tokenId, address extension) internal virtual {
         // Callback to originating extension if needed
-        if (_tokensExtension[tokenId] != address(0)) {
-           if (ERC165Checker.supportsInterface(_tokensExtension[tokenId], type(IERC721CreatorExtensionBurnable).interfaceId)) {
-               IERC721CreatorExtensionBurnable(_tokensExtension[tokenId]).onBurn(owner, tokenId);
+        if (extension != address(0)) {
+           if (ERC165Checker.supportsInterface(extension, type(IERC721CreatorExtensionBurnable).interfaceId)) {
+               IERC721CreatorExtensionBurnable(extension).onBurn(owner, tokenId);
            }
         }
         // Clear metadata (if any)
         if (bytes(_tokenURIs[tokenId]).length != 0) {
             delete _tokenURIs[tokenId];
-        }    
-        // Delete token origin extension tracking
-        delete _tokensExtension[tokenId];    
+        } 
     }
 
     /**
      * Approve a transfer
      */
     function _approveTransfer(address from, address to, uint256 tokenId) internal {
-       if (_extensionApproveTransfers[_tokensExtension[tokenId]]) {
-           require(IERC721CreatorExtensionApproveTransfer(_tokensExtension[tokenId]).approveTransfer(msg.sender, from, to, tokenId), "Extension approval failure");
-       } else if (_approveTransferBase != address(0)) {
-          require(IERC721CreatorExtensionApproveTransfer(_approveTransferBase).approveTransfer(msg.sender, from, to, tokenId), "Extension approval failure");
-       }
+        _approveTransfer(from, to, tokenId, _tokenExtension(tokenId));
     }
+
+    function _approveTransfer(address from, address to, uint256 tokenId, uint96 extensionIndex) internal {
+        _approveTransfer(from, to, tokenId, _indexToExtension[extensionIndex]);
+    }
+
+    function _approveTransfer(address from, address to, uint256 tokenId, address extension) internal {
+        if (_extensionApproveTransfers[extension]) {
+            require(IERC721CreatorExtensionApproveTransfer(extension).approveTransfer(msg.sender, from, to, tokenId), "Extension approval failure");
+        } else if (_approveTransferBase != address(0)) {
+           require(IERC721CreatorExtensionApproveTransfer(_approveTransferBase).approveTransfer(msg.sender, from, to, tokenId), "Extension approval failure");
+        }
+    }
+
+    /**
+     * @dev Register an extension
+     */
+    function _registerExtension(address extension, string calldata baseURI, bool baseURIIdentical) internal override {
+        if (_extensionToIndex[extension] == 0) {
+            ++_extensionCounter;
+            _extensionToIndex[extension] = _extensionCounter;
+            _indexToExtension[_extensionCounter] = extension;
+        }
+        super._registerExtension(extension, baseURI, baseURIIdentical);
+    }
+
 
 }

@@ -4,15 +4,15 @@ pragma solidity ^0.8.0;
 
 /// @author: manifold.xyz
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-
 import "@manifoldxyz/libraries-solidity/contracts/access/AdminControl.sol";
 import "./core/ERC721CreatorCore.sol";
+import "./token/ERC721/ERC721.sol";
 
 /**
  * @dev ERC721Creator implementation
  */
 contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
+    using EnumerableSet for EnumerableSet.AddressSet;
 
     constructor (string memory _name, string memory _symbol) ERC721(_name, _symbol) {
     }
@@ -20,12 +20,12 @@ contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, ERC721CreatorCore, AdminControl) returns (bool) {
-        return ERC721CreatorCore.supportsInterface(interfaceId) || ERC721.supportsInterface(interfaceId) || AdminControl.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721Core, ERC721CreatorCore, AdminControl) returns (bool) {
+        return ERC721CreatorCore.supportsInterface(interfaceId) || ERC721Core.supportsInterface(interfaceId) || AdminControl.supportsInterface(interfaceId);
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual override {
-        _approveTransfer(from, to, tokenId);    
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint96 extensionIndex) internal virtual override {
+        _approveTransfer(from, to, tokenId, extensionIndex);    
     }
 
     /**
@@ -185,14 +185,13 @@ contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
         ++_tokenCount;
         tokenId = _tokenCount;
 
-        _safeMint(to, tokenId);
+        // Call pre mint
+        _preMintBase(to, tokenId);
+        _safeMint(to, tokenId, 0);
 
         if (bytes(uri).length > 0) {
             _tokenURIs[tokenId] = uri;
         }
-
-        // Call post mint
-        _postMintBase(to, tokenId);
     }
 
 
@@ -245,25 +244,25 @@ contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
 
         _checkMintPermissions(to, tokenId);
 
-        // Track the extension that minted the token
-        _tokensExtension[tokenId] = msg.sender;
+        // Call pre mint
+        _preMintExtension(to, tokenId);
 
-        _safeMint(to, tokenId);
+        _safeMint(to, tokenId, _extensionToIndex[msg.sender]);
 
         if (bytes(uri).length > 0) {
             _tokenURIs[tokenId] = uri;
         }
         
-        // Call post mint
-        _postMintExtension(to, tokenId);
     }
 
     /**
      * @dev See {IERC721CreatorCore-tokenExtension}.
      */
-    function tokenExtension(uint256 tokenId) public view virtual override returns (address) {
+    function tokenExtension(uint256 tokenId) public view virtual override returns (address extension) {
         require(_exists(tokenId), "Nonexistent token");
-        return _tokenExtension(tokenId);
+        extension = _tokenExtension(tokenId);
+        require(extension != address(0), "No extension for token");
+        require(!_blacklistedExtensions.contains(extension), "Extension blacklisted");
     }
 
     /**
@@ -272,8 +271,9 @@ contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
     function burn(uint256 tokenId) public virtual override nonReentrant {
         require(_isApprovedOrOwner(msg.sender, tokenId), "Caller is not owner nor approved");
         address owner = ownerOf(tokenId);
+        address extension = _tokenExtension(tokenId);
         _burn(tokenId);
-        _postBurn(owner, tokenId);
+        _postBurn(owner, tokenId, extension);
     }
 
     /**
@@ -351,5 +351,11 @@ contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
      */
     function setApproveTransfer(address extension) external override adminRequired {
         _setApproveTransferBase(extension);
+    }
+
+    function _tokenExtension(uint256 tokenId) internal view override returns(address) {
+        uint96 extensionIndex = _tokenData[tokenId].extensionIndex;
+        if (extensionIndex == 0) return address(0);
+        return _indexToExtension[extensionIndex];
     }
 }

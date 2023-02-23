@@ -4,15 +4,16 @@ pragma solidity ^0.8.0;
 
 /// @author: manifold.xyz
 
-import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@manifoldxyz/libraries-solidity/contracts/access/AdminControlUpgradeable.sol";
 
 import "./core/ERC721CreatorCore.sol";
+import "./token/ERC721/ERC721Upgradeable.sol";
 
 /**
  * @dev ERC721Creator implementation
  */
 contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeable, ERC721CreatorCore {
+    using EnumerableSet for EnumerableSet.AddressSet;
 
     /**
      * Initializer
@@ -25,12 +26,12 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721Upgradeable, ERC721CreatorCore, AdminControlUpgradeable) returns (bool) {
-        return ERC721CreatorCore.supportsInterface(interfaceId) || ERC721Upgradeable.supportsInterface(interfaceId) || AdminControlUpgradeable.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721Core, ERC721CreatorCore, AdminControlUpgradeable) returns (bool) {
+        return ERC721CreatorCore.supportsInterface(interfaceId) || ERC721Core.supportsInterface(interfaceId) || AdminControlUpgradeable.supportsInterface(interfaceId);
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual override {
-        _approveTransfer(from, to, tokenId);    
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint96 extensionIndex) internal virtual override {
+        _approveTransfer(from, to, tokenId, extensionIndex);
     }
 
     /**
@@ -190,14 +191,14 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
         ++_tokenCount;
         tokenId = _tokenCount;
 
-        _safeMint(to, tokenId);
+        // Call pre mint
+        _preMintBase(to, tokenId);
+
+        _safeMint(to, tokenId, 0);
 
         if (bytes(uri).length > 0) {
             _tokenURIs[tokenId] = uri;
         }
-
-        // Call post mint
-        _postMintBase(to, tokenId);
     }
 
 
@@ -250,25 +251,25 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
 
         _checkMintPermissions(to, tokenId);
 
-        // Track the extension that minted the token
-        _tokensExtension[tokenId] = msg.sender;
+        // Call pre mint
+        _preMintExtension(to, tokenId);
 
-        _safeMint(to, tokenId);
+        _safeMint(to, tokenId, _extensionToIndex[msg.sender]);
 
         if (bytes(uri).length > 0) {
             _tokenURIs[tokenId] = uri;
         }
-        
-        // Call post mint
-        _postMintExtension(to, tokenId);
     }
 
     /**
      * @dev See {IERC721CreatorCore-tokenExtension}.
      */
-    function tokenExtension(uint256 tokenId) public view virtual override returns (address) {
+    
+    function tokenExtension(uint256 tokenId) public view virtual override returns (address extension) {
         require(_exists(tokenId), "Nonexistent token");
-        return _tokenExtension(tokenId);
+        extension = _tokenExtension(tokenId);
+        require(extension != address(0), "No extension for token");
+        require(!_blacklistedExtensions.contains(extension), "Extension blacklisted");
     }
 
     /**
@@ -277,8 +278,9 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
     function burn(uint256 tokenId) public virtual override nonReentrant {
         require(_isApprovedOrOwner(msg.sender, tokenId), "Caller is not owner nor approved");
         address owner = ownerOf(tokenId);
+        address extension = _tokenExtension(tokenId);
         _burn(tokenId);
-        _postBurn(owner, tokenId);
+        _postBurn(owner, tokenId, extension);
     }
 
     /**
@@ -356,5 +358,11 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
      */
     function setApproveTransfer(address extension) external override adminRequired {
         _setApproveTransferBase(extension);
+    }
+
+    function _tokenExtension(uint256 tokenId) internal view override returns(address) {
+        uint96 extensionIndex = _tokenData[tokenId].extensionIndex;
+        if (extensionIndex == 0) return address(0);
+        return _indexToExtension[extensionIndex];
     }
 }

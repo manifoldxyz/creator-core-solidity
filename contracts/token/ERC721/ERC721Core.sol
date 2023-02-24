@@ -277,9 +277,17 @@ abstract contract ERC721Core is ERC165, IERC721, IERC721Metadata {
         require(to != address(0), "ERC721: mint to the zero address");
 
         _beforeTokenTransfer(address(0), to, firstTokenId, batchSize, tokenData);
+
         for (uint i; i < batchSize;) {
             uint256 tokenId = firstTokenId + i;
             require(!_exists(tokenId), "ERC721: token already minted");
+            unchecked {
+                // Will not overflow unless all 2**256 token ids are minted to the same owner.
+                // Given that tokens are minted one by one, it is impossible in practice that
+                // this ever happens. Might change if we allow batch minting.
+                // The ERC fails to describe this case.
+                _balances[to] += 1;
+            }
             _tokenData[tokenId] = TokenData({
                 owner: to,
                 data: tokenData
@@ -453,19 +461,10 @@ abstract contract ERC721Core is ERC165, IERC721, IERC721Metadata {
     function _beforeTokenTransfer(
         address from,
         address to,
-        uint256 /* firstTokenId */,
+        uint256 firstTokenId,
         uint256 batchSize,
-        uint96 /* tokenData */
-    ) internal virtual {
-        if (batchSize > 1) {
-            if (from != address(0)) {
-                _balances[from] -= batchSize;
-            }
-            if (to != address(0)) {
-                _balances[to] += batchSize;
-            }
-        }
-    }
+        uint96 tokenData
+    ) internal virtual {}
 
     /**
      * @dev Hook that is called after any token transfer. This includes minting and burning. If {ERC721Consecutive} is

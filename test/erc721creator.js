@@ -351,7 +351,8 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             await creator.registerExtension(extension.address, 'http://extension/', {from:owner});
 
             // Test minting
-            await extension.methods['testMintBatch(address,uint16)'](anyone, 2);
+            var tx = await extension.methods['testMintBatch(address,uint16)'](anyone, 2);
+            console.log(`extension batch mint 2 cost: ${tx.receipt.gasUsed}`);
             let newTokenId1 = 1;
             let newTokenId2 = 2;
             assert.equal(await creator.tokenExtension(newTokenId1), extension.address);
@@ -363,7 +364,8 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             assert.equal(await creator.tokenExtension(newTokenId3), extension.address);
             assert.equal(await creator.tokenExtension(newTokenId4), extension.address);
 
-            await creator.methods['mintBaseBatch(address,uint16)'](anyone, 2, {from:owner});
+            tx = await creator.methods['mintBaseBatch(address,uint16)'](anyone, 2, {from:owner});
+            console.log(`base batch mint 2 cost: ${tx.receipt.gasUsed}`);
             let newTokenId5 = 5;
             let newTokenId6 = 6;
             await truffleAssert.reverts(creator.tokenExtension(newTokenId5), "No extension for token");

@@ -126,14 +126,20 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
         delete _extensionTokensByOwner[tokenExtension_][from][lastTokenIndexByOwner];
     }
     
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint96 extensionIndex) internal virtual {
+    function _beforeTokenTransfer(address from, address to, uint256 firstTokenId, uint256 batchSize, uint96 extensionIndex) internal virtual {
         if (from != address(0) && to != address(0)) {
             address tokenExtension_ = _indexToExtension[extensionIndex];
             if (from != to) {
-                _removeTokenFromOwnerEnumeration(from, tokenId, tokenExtension_);
+                for (uint i; i < batchSize;) {
+                    _removeTokenFromOwnerEnumeration(from, firstTokenId + i, tokenExtension_);
+                    unchecked { ++i; }
+                }
             }
             if (to != from) {
-                _addTokenToOwnerEnumeration(to, tokenId, tokenExtension_);
+                for (uint i; i < batchSize;) {
+                    _addTokenToOwnerEnumeration(to, firstTokenId + i, tokenExtension_);
+                    unchecked { ++i; }
+                }
             }
         }
     }

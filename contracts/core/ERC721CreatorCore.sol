@@ -98,12 +98,28 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
         _approveTransfer(from, to, tokenId, _tokenExtension(tokenId));
     }
 
-    function _approveTransfer(address from, address to, uint256 tokenId, uint96 extensionIndex) internal {
-        _approveTransfer(from, to, tokenId, _indexToExtension[extensionIndex]);
+    function _approveTransfer(address from, address to, uint256 tokenId, uint256 batchSize, uint96 extensionIndex) internal {
+        if (batchSize > 1) {
+            address extension = _indexToExtension[extensionIndex];
+            if (extension != address(0) && _extensionApproveTransfers[extension]) {
+                for (uint i; i < batchSize;) {
+                    require(IERC721CreatorExtensionApproveTransfer(extension).approveTransfer(msg.sender, from, to, tokenId), "Extension approval failure");
+                    unchecked { ++i; }
+                }
+            } else if (_approveTransferBase != address(0)) {
+                address baseApproveTransfer = _approveTransferBase;
+                for (uint i; i < batchSize;) {
+                    require(IERC721CreatorExtensionApproveTransfer(baseApproveTransfer).approveTransfer(msg.sender, from, to, tokenId), "Extension approval failure");
+                    unchecked { ++i; }
+                }
+            }
+        } else {
+            _approveTransfer(from, to, tokenId, _indexToExtension[extensionIndex]);
+        }
     }
 
     function _approveTransfer(address from, address to, uint256 tokenId, address extension) internal {
-        if (_extensionApproveTransfers[extension]) {
+        if (extension != address(0) && _extensionApproveTransfers[extension]) {
             require(IERC721CreatorExtensionApproveTransfer(extension).approveTransfer(msg.sender, from, to, tokenId), "Extension approval failure");
         } else if (_approveTransferBase != address(0)) {
            require(IERC721CreatorExtensionApproveTransfer(_approveTransferBase).approveTransfer(msg.sender, from, to, tokenId), "Extension approval failure");

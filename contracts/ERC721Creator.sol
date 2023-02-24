@@ -24,8 +24,8 @@ contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
         return ERC721CreatorCore.supportsInterface(interfaceId) || ERC721Core.supportsInterface(interfaceId) || AdminControl.supportsInterface(interfaceId);
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint96 extensionIndex) internal virtual override {
-        _approveTransfer(from, to, tokenId, extensionIndex);
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize, uint96 extensionIndex) internal virtual override {
+        _approveTransfer(from, to, tokenId, batchSize, extensionIndex);
     }
 
     /**
@@ -161,10 +161,17 @@ contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
      */
     function mintBaseBatch(address to, uint16 count) public virtual override nonReentrant adminRequired returns(uint256[] memory tokenIds) {
         tokenIds = new uint256[](count);
+        uint256 firstTokenId = _tokenCount+1;
+        _tokenCount += count;
+
         for (uint i; i < count;) {
-            tokenIds[i] = _mintBase(to, "");
+            uint256 tokenId = firstTokenId + i;
+            tokenIds[i] = tokenId;
+            // Call pre mint
+            _preMintBase(to, tokenId);
             unchecked { ++i; }
         }
+        _safeMint(to, firstTokenId, count, 0);
     }
 
     /**
@@ -172,10 +179,18 @@ contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
      */
     function mintBaseBatch(address to, string[] calldata uris) public virtual override nonReentrant adminRequired returns(uint256[] memory tokenIds) {
         tokenIds = new uint256[](uris.length);
+        uint256 firstTokenId = _tokenCount+1;
+        _tokenCount += uris.length;
+
         for (uint i; i < uris.length;) {
-            tokenIds[i] = _mintBase(to, uris[i]);
+            uint256 tokenId = firstTokenId + i;
+            tokenIds[i] = tokenId;
+            // Call pre mint
+            _preMintBase(to, tokenId);
+            _tokenURIs[tokenId] = uris[i];
             unchecked { ++i; }
         }
+        _safeMint(to, firstTokenId, uris.length, 0);
     }
 
     /**
@@ -217,10 +232,18 @@ contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
     function mintExtensionBatch(address to, uint16 count) public virtual override nonReentrant returns(uint256[] memory tokenIds) {
         requireExtension();
         tokenIds = new uint256[](count);
+        uint256 firstTokenId = _tokenCount+1;
+        _tokenCount += count;
+
         for (uint i; i < count;) {
-            tokenIds[i] = _mintExtension(to, "");
+            uint256 tokenId = firstTokenId + i;
+            tokenIds[i] = tokenId;
+            _checkMintPermissions(to, tokenId);
+            // Call pre mint
+            _preMintExtension(to, tokenId);
             unchecked { ++i; }
         }
+        _safeMint(to, firstTokenId, count, _extensionToIndex[msg.sender]);
     }
 
     /**
@@ -229,10 +252,19 @@ contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
     function mintExtensionBatch(address to, string[] calldata uris) public virtual override nonReentrant returns(uint256[] memory tokenIds) {
         requireExtension();
         tokenIds = new uint256[](uris.length);
+        uint256 firstTokenId = _tokenCount+1;
+        _tokenCount += uris.length;
+
         for (uint i; i < uris.length;) {
-            tokenIds[i] = _mintExtension(to, uris[i]);
+            uint256 tokenId = firstTokenId + i;
+            tokenIds[i] = tokenId;
+            _checkMintPermissions(to, tokenId);
+            // Call pre mint
+            _preMintExtension(to, tokenId);
+            _tokenURIs[tokenId] = uris[i];
             unchecked { ++i; }
         }
+        _safeMint(to, firstTokenId, uris.length, _extensionToIndex[msg.sender]);
     }
     
     /**
@@ -243,7 +275,6 @@ contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
         tokenId = _tokenCount;
 
         _checkMintPermissions(to, tokenId);
-
         // Call pre mint
         _preMintExtension(to, tokenId);
 

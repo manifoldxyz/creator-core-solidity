@@ -72,20 +72,33 @@ abstract contract ERC721Enumerable is ERC721, IERC721Enumerable {
     function _beforeTokenTransfer(
         address from,
         address to,
-        uint256 tokenId,
-        uint96 extensionIndex
+        uint256 firstTokenId,
+        uint256 batchSize,
+        uint96 tokenData
     ) internal virtual override {
-        super._beforeTokenTransfer(from, to, tokenId, extensionIndex);
+        super._beforeTokenTransfer(from, to, firstTokenId, batchSize, tokenData);
 
         if (from == address(0)) {
-            _addTokenToAllTokensEnumeration(tokenId);
+            for (uint i; i < batchSize;) {
+                _addTokenToAllTokensEnumeration(firstTokenId + i);
+                unchecked { ++i; }
+            }
         } else if (from != to) {
-            _removeTokenFromOwnerEnumeration(from, tokenId);
+            for (uint i; i < batchSize;) {
+                _removeTokenFromOwnerEnumeration(from, firstTokenId + i);
+                unchecked { ++i; }
+            }
         }
         if (to == address(0)) {
-            _removeTokenFromAllTokensEnumeration(tokenId);
+            for (uint i; i < batchSize;) {
+                _removeTokenFromAllTokensEnumeration(firstTokenId + i);
+                unchecked { ++i; }
+            }
         } else if (to != from) {
-            _addTokenToOwnerEnumeration(to, tokenId);
+            for (uint i; i < batchSize;) {
+                _addTokenToOwnerEnumeration(to, firstTokenId + i);
+                unchecked { ++i; }
+            }
         }
     }
 

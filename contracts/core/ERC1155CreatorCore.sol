@@ -86,13 +86,14 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
      * Approve a transfer
      */
     function _approveTransfer(address from, address to, uint256[] memory tokenIds, uint256[] memory amounts) internal {
-        require(tokenIds.length > 0, "Invalid input");
         address extension = _tokensExtension[tokenIds[0]];
+        if (extension == address(0)) return;
+
         for (uint i; i < tokenIds.length;) {
             require(_tokensExtension[tokenIds[i]] == extension, "Mismatched token originators");
             unchecked { ++i; }
         }
-        if (_extensionApproveTransfers[extension]) {
+        if (extension != address(0) && _extensionApproveTransfers[extension]) {
             require(IERC1155CreatorExtensionApproveTransfer(extension).approveTransfer(msg.sender, from, to, tokenIds, amounts), "Extension approval failure");
         } else if (_approveTransferBase != address(0)) {
             require(IERC1155CreatorExtensionApproveTransfer(_approveTransferBase).approveTransfer(msg.sender, from, to, tokenIds, amounts), "Extension approval failure");

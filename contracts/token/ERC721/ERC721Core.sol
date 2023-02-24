@@ -229,42 +229,69 @@ abstract contract ERC721Core is ERC165, IERC721, IERC721Metadata {
     function _safeMint(
         address to,
         uint256 tokenId,
-        uint96 extensionIndex,
+        uint96 tokenData,
         bytes memory data
     ) internal virtual {
-        _mint(to, tokenId, extensionIndex);
+        require(to != address(0), "ERC721: mint to the zero address");
+        require(!_exists(tokenId), "ERC721: token already minted");
+
+        _beforeTokenTransfer(address(0), to, tokenId, 1, tokenData);
+
+        unchecked {
+            // Will not overflow unless all 2**256 token ids are minted to the same owner.
+            // Given that tokens are minted one by one, it is impossible in practice that
+            // this ever happens. Might change if we allow batch minting.
+            // The ERC fails to describe this case.
+            _balances[to] += 1;
+        }
+
+        _tokenData[tokenId] = TokenData({
+            owner: to,
+            data: tokenData
+        });
+        emit Transfer(address(0), to, tokenId);
+
+        _afterTokenTransfer(address(0), to, tokenId, 1, tokenData);
         require(
             _checkOnERC721Received(address(0), to, tokenId, data),
             "ERC721: transfer to non ERC721Receiver implementer"
         );
     }
 
-    /**
-     * @dev Mints `tokenId` and transfers it to `to`.
-     *
-     * WARNING: Usage of this method is discouraged, use {_safeMint} whenever possible
-     *
-     * Requirements:
-     *
-     * - `tokenId` must not exist.
-     * - `to` cannot be the zero address.
-     *
-     * Emits a {Transfer} event.
-     */
-    function _mint(address to, uint256 tokenId, uint96 data) internal virtual {
+    function _safeMint(
+        address to,
+        uint256 firstTokenId,
+        uint256 batchSize,
+        uint96 tokenData
+    ) internal virtual {
+        _safeMint(to, firstTokenId, batchSize, tokenData, "");
+    }
+
+    function _safeMint(
+        address to,
+        uint256 firstTokenId,
+        uint256 batchSize,
+        uint96 tokenData,
+        bytes memory data
+    ) internal virtual {
         require(to != address(0), "ERC721: mint to the zero address");
-        require(!_exists(tokenId), "ERC721: token already minted");
 
-        _beforeTokenTransfer(address(0), to, tokenId, data);
-
-        _balances[to] += 1;
-        _tokenData[tokenId] = TokenData({
-            owner: to,
-            data: data
-        });
-        emit Transfer(address(0), to, tokenId);
-
-        _afterTokenTransfer(address(0), to, tokenId, data);
+        _beforeTokenTransfer(address(0), to, firstTokenId, batchSize, tokenData);
+        for (uint i; i < batchSize;) {
+            uint256 tokenId = firstTokenId + i;
+            require(!_exists(tokenId), "ERC721: token already minted");
+            _tokenData[tokenId] = TokenData({
+                owner: to,
+                data: tokenData
+            });
+            emit Transfer(address(0), to, tokenId);
+            require(
+                _checkOnERC721Received(address(0), to, tokenId, data),
+                "ERC721: transfer to non ERC721Receiver implementer"
+            );
+            unchecked { ++i; }
+        }
+        _afterTokenTransfer(address(0), to, firstTokenId, batchSize, tokenData);        
     }
 
     /**
@@ -282,17 +309,21 @@ abstract contract ERC721Core is ERC165, IERC721, IERC721Metadata {
         address owner = tokenData.owner;
         uint96 data = tokenData.data;
 
-        _beforeTokenTransfer(owner, address(0), tokenId, data);
+        _beforeTokenTransfer(owner, address(0), tokenId, 1, data);
 
         // Clear approvals
         _approve(address(0), tokenId);
 
-        _balances[owner] -= 1;
+        unchecked {
+            // Cannot overflow, as that would require more tokens to be burned/transferred
+            // out than the owner initially received through minting and transferring in.
+            _balances[owner] -= 1;
+        }
         delete _tokenData[tokenId];
 
         emit Transfer(owner, address(0), tokenId);
 
-        _afterTokenTransfer(owner, address(0), tokenId, data);
+        _afterTokenTransfer(owner, address(0), tokenId, 1, data);
     }
 
     /**
@@ -318,18 +349,25 @@ abstract contract ERC721Core is ERC165, IERC721, IERC721Metadata {
 
         uint96 data = tokenData.data;
 
-        _beforeTokenTransfer(from, to, tokenId, data);
+        _beforeTokenTransfer(from, to, tokenId, 1, data);
 
         // Clear approvals from the previous owner
         _approve(address(0), tokenId);
 
-        _balances[from] -= 1;
-        _balances[to] += 1;
+        unchecked {
+            // `_balances[from]` cannot overflow for the same reason as described in `_burn`:
+            // `from`'s balance is the number of token held, which is at least one before the current
+            // transfer.
+            // `_balances[to]` could overflow in the conditions described in `_mint`. That would require
+            // all 2**256 token ids to be minted, which in practice is impossible.
+            _balances[from] -= 1;
+            _balances[to] += 1;
+        }
         _tokenData[tokenId].owner = to;
 
         emit Transfer(from, to, tokenId);
 
-        _afterTokenTransfer(from, to, tokenId, data);
+        _afterTokenTransfer(from, to, tokenId, 1, data);
     }
 
     /**
@@ -399,41 +437,55 @@ abstract contract ERC721Core is ERC165, IERC721, IERC721Metadata {
     }
 
     /**
-     * @dev Hook that is called before any token transfer. This includes minting
-     * and burning.
+     * @dev Hook that is called before any token transfer. This includes minting and burning. If {ERC721Consecutive} is
+     * used, the hook may be called as part of a consecutive (batch) mint, as indicated by `batchSize` greater than 1.
      *
      * Calling conditions:
      *
-     * - When `from` and `to` are both non-zero, ``from``'s `tokenId` will be
-     * transferred to `to`.
-     * - When `from` is zero, `tokenId` will be minted for `to`.
-     * - When `to` is zero, ``from``'s `tokenId` will be burned.
+     * - When `from` and `to` are both non-zero, ``from``'s tokens will be transferred to `to`.
+     * - When `from` is zero, the tokens will be minted for `to`.
+     * - When `to` is zero, ``from``'s tokens will be burned.
      * - `from` and `to` are never both zero.
+     * - `batchSize` is non-zero.
      *
      * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
      */
     function _beforeTokenTransfer(
         address from,
         address to,
-        uint256 tokenId,
-        uint96 extensionIndex
-    ) internal virtual {}
+        uint256 /* firstTokenId */,
+        uint256 batchSize,
+        uint96 /* tokenData */
+    ) internal virtual {
+        if (batchSize > 1) {
+            if (from != address(0)) {
+                _balances[from] -= batchSize;
+            }
+            if (to != address(0)) {
+                _balances[to] += batchSize;
+            }
+        }
+    }
 
     /**
-     * @dev Hook that is called after any transfer of tokens. This includes
-     * minting and burning.
+     * @dev Hook that is called after any token transfer. This includes minting and burning. If {ERC721Consecutive} is
+     * used, the hook may be called as part of a consecutive (batch) mint, as indicated by `batchSize` greater than 1.
      *
      * Calling conditions:
      *
-     * - when `from` and `to` are both non-zero.
+     * - When `from` and `to` are both non-zero, ``from``'s tokens were transferred to `to`.
+     * - When `from` is zero, the tokens were minted for `to`.
+     * - When `to` is zero, ``from``'s tokens were burned.
      * - `from` and `to` are never both zero.
+     * - `batchSize` is non-zero.
      *
      * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
      */
     function _afterTokenTransfer(
         address from,
         address to,
-        uint256 tokenId,
-        uint96 extensionIndex
+        uint256 firstTokenId,
+        uint256 batchSize,
+        uint96 tokenData
     ) internal virtual {}
 }

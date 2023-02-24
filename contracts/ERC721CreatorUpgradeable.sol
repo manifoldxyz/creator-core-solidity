@@ -30,8 +30,8 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
         return ERC721CreatorCore.supportsInterface(interfaceId) || ERC721Core.supportsInterface(interfaceId) || AdminControlUpgradeable.supportsInterface(interfaceId);
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint96 extensionIndex) internal virtual override {
-        _approveTransfer(from, to, tokenId, extensionIndex);
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize, uint96 extensionIndex) internal virtual override {
+        _approveTransfer(from, to, tokenId, batchSize, extensionIndex);
     }
 
     /**

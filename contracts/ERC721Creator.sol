@@ -14,8 +14,7 @@ import "./token/ERC721/ERC721.sol";
 contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
     using EnumerableSet for EnumerableSet.AddressSet;
 
-    constructor (string memory _name, string memory _symbol) ERC721(_name, _symbol) {
-    }
+    constructor (string memory _name, string memory _symbol) ERC721(_name, _symbol) {}
 
     /**
      * @dev See {IERC165-supportsInterface}.

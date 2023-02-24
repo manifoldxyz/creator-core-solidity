@@ -4,10 +4,10 @@ pragma solidity ^0.8.0;
 
 /// @author: manifold.xyz
 
-import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
 import "@manifoldxyz/libraries-solidity/contracts/access/AdminControlUpgradeable.sol";
 
 import "./core/ERC1155CreatorCore.sol";
+import "./token/ERC1155/ERC1155Upgradeable.sol";
 
 /**
  * @dev ERC1155Creator implementation
@@ -20,17 +20,15 @@ contract ERC1155CreatorImplementation is AdminControlUpgradeable, ERC1155Upgrade
      * Initializer
      */
     function initialize(string memory _name, string memory _symbol) public initializer {
-        __ERC1155_init("");
+        __ERC1155_init(_name, _symbol);
         __Ownable_init();
-        name = _name;
-        symbol = _symbol;
     }
 
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155Upgradeable, ERC1155CreatorCore, AdminControlUpgradeable) returns (bool) {
-        return ERC1155CreatorCore.supportsInterface(interfaceId) || ERC1155Upgradeable.supportsInterface(interfaceId) || AdminControlUpgradeable.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155Core, ERC1155CreatorCore, AdminControlUpgradeable) returns (bool) {
+        return ERC1155CreatorCore.supportsInterface(interfaceId) || ERC1155Core.supportsInterface(interfaceId) || AdminControlUpgradeable.supportsInterface(interfaceId);
     }
 
     function _beforeTokenTransfer(address, address from, address to, uint256[] memory ids, uint256[] memory amounts, bytes memory) internal virtual override {

@@ -4,10 +4,10 @@ pragma solidity ^0.8.0;
 
 /// @author: manifold.xyz
 
-import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@manifoldxyz/libraries-solidity/contracts/access/AdminControl.sol";
 
 import "./core/ERC1155CreatorCore.sol";
+import "./token/ERC1155/ERC1155.sol";
 
 /**
  * @dev ERC1155Creator implementation
@@ -17,16 +17,13 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
 
     mapping(uint256 => uint256) private _totalSupply;
 
-    constructor (string memory _name, string memory _symbol) ERC1155("") {
-        name = _name;
-        symbol = _symbol;
-    }
+    constructor (string memory _name, string memory _symbol) ERC1155(_name, _symbol) {}
 
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155, ERC1155CreatorCore, AdminControl) returns (bool) {
-        return ERC1155CreatorCore.supportsInterface(interfaceId) || ERC1155.supportsInterface(interfaceId) || AdminControl.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155Core, ERC1155CreatorCore, AdminControl) returns (bool) {
+        return ERC1155CreatorCore.supportsInterface(interfaceId) || ERC1155Core.supportsInterface(interfaceId) || AdminControl.supportsInterface(interfaceId);
     }
 
     function _beforeTokenTransfer(address, address from, address to, uint256[] memory ids, uint256[] memory amounts, bytes memory) internal virtual override {

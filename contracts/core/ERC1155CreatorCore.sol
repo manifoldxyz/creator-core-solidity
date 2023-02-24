@@ -20,8 +20,6 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
     uint256 constant public VERSION = 2;
 
     using EnumerableSet for EnumerableSet.AddressSet;
-    string public name;
-    string public symbol;
 
     // For tracking which extension a token was minted by
     mapping (uint256 => address) internal _tokensExtension;
@@ -87,7 +85,6 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
      */
     function _approveTransfer(address from, address to, uint256[] memory tokenIds, uint256[] memory amounts) internal {
         address extension = _tokensExtension[tokenIds[0]];
-        if (extension == address(0)) return;
 
         for (uint i; i < tokenIds.length;) {
             require(_tokensExtension[tokenIds[i]] == extension, "Mismatched token originators");

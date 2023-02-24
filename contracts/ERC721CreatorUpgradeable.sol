@@ -31,7 +31,7 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
     }
 
     function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint96 extensionIndex) internal virtual override {
-        _approveTransfer(from, to, tokenId, extensionIndex);    
+        _approveTransfer(from, to, tokenId, extensionIndex);
     }
 
     /**
@@ -193,13 +193,13 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
 
         // Call pre mint
         _preMintBase(to, tokenId);
+
         _safeMint(to, tokenId, 0);
 
         if (bytes(uri).length > 0) {
             _tokenURIs[tokenId] = uri;
         }
     }
-
 
     /**
      * @dev See {IERC721CreatorCore-mintExtension}.
@@ -223,7 +223,7 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
     function mintExtensionBatch(address to, uint16 count) public virtual override nonReentrant returns(uint256[] memory tokenIds) {
         requireExtension();
         tokenIds = new uint256[](count);
-        for (uint16 i = 0; i < count;) {
+        for (uint i; i < count;) {
             tokenIds[i] = _mintExtension(to, "");
             unchecked { ++i; }
         }
@@ -359,7 +359,7 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
     }
 
     function _tokenExtension(uint256 tokenId) internal view override returns(address) {
-        uint96 extensionIndex = _tokenData[tokenId].extensionIndex;
+        uint96 extensionIndex = _tokenData[tokenId].data;
         if (extensionIndex == 0) return address(0);
         return _indexToExtension[extensionIndex];
     }

@@ -24,7 +24,7 @@ abstract contract ERC721Core is ERC165, IERC721, IERC721Metadata {
 
     struct TokenData {
         address owner;
-        uint96 extensionIndex;
+        uint96 data;
     }
 
     // Mapping from token ID to token data
@@ -251,20 +251,20 @@ abstract contract ERC721Core is ERC165, IERC721, IERC721Metadata {
      *
      * Emits a {Transfer} event.
      */
-    function _mint(address to, uint256 tokenId, uint96 extensionIndex) internal virtual {
+    function _mint(address to, uint256 tokenId, uint96 data) internal virtual {
         require(to != address(0), "ERC721: mint to the zero address");
         require(!_exists(tokenId), "ERC721: token already minted");
 
-        _beforeTokenTransfer(address(0), to, tokenId, extensionIndex);
+        _beforeTokenTransfer(address(0), to, tokenId, data);
 
         _balances[to] += 1;
         _tokenData[tokenId] = TokenData({
             owner: to,
-            extensionIndex: extensionIndex
+            data: data
         });
         emit Transfer(address(0), to, tokenId);
 
-        _afterTokenTransfer(address(0), to, tokenId, extensionIndex);
+        _afterTokenTransfer(address(0), to, tokenId, data);
     }
 
     /**
@@ -280,9 +280,9 @@ abstract contract ERC721Core is ERC165, IERC721, IERC721Metadata {
     function _burn(uint256 tokenId) internal virtual {
         TokenData memory tokenData = _tokenData[tokenId];
         address owner = tokenData.owner;
-        uint96 extensionIndex = tokenData.extensionIndex;
+        uint96 data = tokenData.data;
 
-        _beforeTokenTransfer(owner, address(0), tokenId, extensionIndex);
+        _beforeTokenTransfer(owner, address(0), tokenId, data);
 
         // Clear approvals
         _approve(address(0), tokenId);
@@ -292,7 +292,7 @@ abstract contract ERC721Core is ERC165, IERC721, IERC721Metadata {
 
         emit Transfer(owner, address(0), tokenId);
 
-        _afterTokenTransfer(owner, address(0), tokenId, extensionIndex);
+        _afterTokenTransfer(owner, address(0), tokenId, data);
     }
 
     /**
@@ -316,9 +316,9 @@ abstract contract ERC721Core is ERC165, IERC721, IERC721Metadata {
         require(owner == from, "ERC721: transfer from incorrect owner");
         require(to != address(0), "ERC721: transfer to the zero address");
 
-        uint96 extensionIndex = tokenData.extensionIndex;
+        uint96 data = tokenData.data;
 
-        _beforeTokenTransfer(from, to, tokenId, extensionIndex);
+        _beforeTokenTransfer(from, to, tokenId, data);
 
         // Clear approvals from the previous owner
         _approve(address(0), tokenId);
@@ -329,7 +329,7 @@ abstract contract ERC721Core is ERC165, IERC721, IERC721Metadata {
 
         emit Transfer(from, to, tokenId);
 
-        _afterTokenTransfer(from, to, tokenId, extensionIndex);
+        _afterTokenTransfer(from, to, tokenId, data);
     }
 
     /**

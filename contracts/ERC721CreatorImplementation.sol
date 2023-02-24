@@ -167,7 +167,7 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
      */
     function mintBaseBatch(address to, uint16 count) public virtual override nonReentrant adminRequired returns(uint256[] memory tokenIds) {
         tokenIds = new uint256[](count);
-        for (uint16 i; i < count;) {
+        for (uint i; i < count;) {
             tokenIds[i] = _mintBase(to, "");
             unchecked { ++i; }
         }
@@ -201,7 +201,6 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
         }
     }
 
-
     /**
      * @dev See {IERC721CreatorCore-mintExtension}.
      */
@@ -224,7 +223,7 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
     function mintExtensionBatch(address to, uint16 count) public virtual override nonReentrant returns(uint256[] memory tokenIds) {
         requireExtension();
         tokenIds = new uint256[](count);
-        for (uint i = 0; i < count;) {
+        for (uint i; i < count;) {
             tokenIds[i] = _mintExtension(to, "");
             unchecked { ++i; }
         }
@@ -264,7 +263,6 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
     /**
      * @dev See {IERC721CreatorCore-tokenExtension}.
      */
-    
     function tokenExtension(uint256 tokenId) public view virtual override returns (address extension) {
         require(_exists(tokenId), "Nonexistent token");
         extension = _tokenExtension(tokenId);
@@ -361,7 +359,7 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
     }
 
     function _tokenExtension(uint256 tokenId) internal view override returns(address) {
-        uint96 extensionIndex = _tokenData[tokenId].extensionIndex;
+        uint96 extensionIndex = _tokenData[tokenId].data;
         if (extensionIndex == 0) return address(0);
         return _indexToExtension[extensionIndex];
     }

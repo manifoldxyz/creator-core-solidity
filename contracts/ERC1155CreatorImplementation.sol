@@ -294,7 +294,7 @@ contract ERC1155CreatorImplementation is AdminControlUpgradeable, ERC1155Upgrade
      * @dev See {IERC1155CreatorCore-burn}.
      */
     function burn(address account, uint256[] memory tokenIds, uint256[] memory amounts) public virtual override nonReentrant {
-        require(account == msg.sender || isApprovedForAll(account, msg.sender), "Caller is not owner nor approved");
+        require(account == msg.sender || isApprovedForAll(account, msg.sender), "Caller is not owner or approved");
         require(tokenIds.length == amounts.length, "Invalid input");
         if (tokenIds.length == 1) {
             _burn(account, tokenIds[0], amounts[0]);

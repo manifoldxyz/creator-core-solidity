@@ -308,7 +308,7 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
             assert.equal(await creator.uri(newTokenId5), 'http://extension_prefix/extension5');
 
             // Burning
-            await truffleAssert.reverts(creator.burn(anyone, [newTokenId1], [100], {from:another}), "Caller is not owner nor approved");
+            await truffleAssert.reverts(creator.burn(anyone, [newTokenId1], [100], {from:another}), "Caller is not owner or approved");
             await truffleAssert.reverts(creator.burn(anyone, [newTokenId1], [1,100], {from:anyone}), "Invalid input");
             await creator.burn(anyone, [newTokenId1], [50], {from:anyone});
             await creator.burn(anyone, [newTokenId1], [25], {from:anyone});

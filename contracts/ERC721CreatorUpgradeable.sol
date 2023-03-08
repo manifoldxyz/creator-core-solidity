@@ -274,7 +274,7 @@ contract ERC721CreatorUpgradeable is AdminControlUpgradeable, ERC721Upgradeable,
      * @dev See {IERC721CreatorCore-burn}.
      */
     function burn(uint256 tokenId) public virtual override nonReentrant {
-        require(_isApprovedOrOwner(msg.sender, tokenId), "Caller is not owner nor approved");
+        require(_isApprovedOrOwner(msg.sender, tokenId), "Caller is not owner or approved");
         address owner = ownerOf(tokenId);
         address extension = _tokenExtension(tokenId);
         _burn(tokenId);

@@ -7,17 +7,17 @@ pragma solidity ^0.8.0;
 import "@manifoldxyz/libraries-solidity/contracts/access/AdminControl.sol";
 
 import "./core/ERC1155CreatorCore.sol";
-import "./token/ERC1155/ERC1155.sol";
+import "./token/ERC1155/ERC1155Base.sol";
 
 /**
  * @dev ERC1155Creator implementation
  */
-contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
+contract ERC1155Creator is AdminControl, ERC1155Base, ERC1155CreatorCore {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     mapping(uint256 => uint256) private _totalSupply;
 
-    constructor (string memory _name, string memory _symbol) ERC1155(_name, _symbol) {}
+    constructor (string memory _name, string memory _symbol) ERC1155Base(_name, _symbol) {}
 
     /**
      * @dev See {IERC165-supportsInterface}.
@@ -291,7 +291,7 @@ contract ERC1155Creator is AdminControl, ERC1155, ERC1155CreatorCore {
      * @dev See {IERC1155CreatorCore-burn}.
      */
     function burn(address account, uint256[] memory tokenIds, uint256[] memory amounts) public virtual override nonReentrant {
-        require(account == msg.sender || isApprovedForAll(account, msg.sender), "Caller is not owner nor approved");
+        require(account == msg.sender || isApprovedForAll(account, msg.sender), "Caller is not owner or approved");
         require(tokenIds.length == amounts.length, "Invalid input");
         if (tokenIds.length == 1) {
             _burn(account, tokenIds[0], amounts[0]);

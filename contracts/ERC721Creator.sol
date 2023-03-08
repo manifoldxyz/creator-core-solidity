@@ -6,15 +6,15 @@ pragma solidity ^0.8.0;
 
 import "@manifoldxyz/libraries-solidity/contracts/access/AdminControl.sol";
 import "./core/ERC721CreatorCore.sol";
-import "./token/ERC721/ERC721.sol";
+import "./token/ERC721/ERC721Base.sol";
 
 /**
  * @dev ERC721Creator implementation
  */
-contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
+contract ERC721Creator is AdminControl, ERC721Base, ERC721CreatorCore {
     using EnumerableSet for EnumerableSet.AddressSet;
 
-    constructor (string memory _name, string memory _symbol) ERC721(_name, _symbol) {}
+    constructor (string memory _name, string memory _symbol) ERC721Base(_name, _symbol) {}
 
     /**
      * @dev See {IERC165-supportsInterface}.
@@ -298,7 +298,7 @@ contract ERC721Creator is AdminControl, ERC721, ERC721CreatorCore {
      * @dev See {IERC721CreatorCore-burn}.
      */
     function burn(uint256 tokenId) public virtual override nonReentrant {
-        require(_isApprovedOrOwner(msg.sender, tokenId), "Caller is not owner nor approved");
+        require(_isApprovedOrOwner(msg.sender, tokenId), "Caller is not owner or approved");
         address owner = ownerOf(tokenId);
         address extension = _tokenExtension(tokenId);
         _burn(tokenId);

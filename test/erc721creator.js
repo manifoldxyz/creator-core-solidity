@@ -333,7 +333,7 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             assert.equal(await creator.tokenURI(newTokenId5), 'http://extension_prefix/extension5');
 
             // Burning
-            await truffleAssert.reverts(creator.burn(newTokenId1, {from:another}), "Caller is not owner nor approved");
+            await truffleAssert.reverts(creator.burn(newTokenId1, {from:another}), "Caller is not owner or approved");
             await creator.burn(newTokenId1, {from:anyone});
             await truffleAssert.reverts(creator.tokenURI(newTokenId1), "Nonexistent token");
 

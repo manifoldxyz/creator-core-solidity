@@ -193,7 +193,7 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             assert.deepEqual(await creator.tokenOfOwnerByIndexExtension(extension1.address, another, 0), newTokenId2);
 
             // Burning
-            await truffleAssert.reverts(creator.burn(newTokenId1, {from:another}), "Caller is not owner nor approved");
+            await truffleAssert.reverts(creator.burn(newTokenId1, {from:another}), "Caller is not owner or approved");
             await creator.burn(newTokenId1, {from:anyone});
             await truffleAssert.reverts(creator.tokenURI(newTokenId1), "Nonexistent token");
             assert.equal(await creator.totalSupply(), 5);

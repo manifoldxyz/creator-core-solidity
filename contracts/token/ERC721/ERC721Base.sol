@@ -2,12 +2,12 @@
 
 pragma solidity ^0.8.0;
 
-import "./ERC1155Core.sol";
+import "./ERC721Core.sol";
 
 /**
  * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard
  */
-abstract contract ERC1155 is ERC1155Core {
+abstract contract ERC721Base is ERC721Core {
     /**
      * @dev Initializes the contract by setting a `name` and a `symbol` to the token collection.
      */

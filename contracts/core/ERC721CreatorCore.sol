@@ -17,20 +17,22 @@ import "./CreatorCore.sol";
  */
 abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
 
-    uint256 constant public VERSION = 2;
+    uint256 constant public VERSION = 3;
+
+    bytes4 private constant _ERC721_CREATOR_CORE_V1 = 0x9088c207;
 
     using EnumerableSet for EnumerableSet.AddressSet;
 
     // For tracking extension indices
-    uint96 private _extensionCounter;
-    mapping (address => uint96) internal _extensionToIndex;    
-    mapping (uint96 => address) internal _indexToExtension;
+    uint32 private _extensionCounter;
+    mapping (address => uint32) internal _extensionToIndex;    
+    mapping (uint32 => address) internal _indexToExtension;
 
     /**
      * @dev See {IERC165-supportsInterface}.
      */
     function supportsInterface(bytes4 interfaceId) public view virtual override(CreatorCore, IERC165) returns (bool) {
-        return interfaceId == type(IERC721CreatorCore).interfaceId || super.supportsInterface(interfaceId);
+        return interfaceId == type(IERC721CreatorCore).interfaceId || interfaceId == _ERC721_CREATOR_CORE_V1 || super.supportsInterface(interfaceId);
     }
 
     /**
@@ -95,30 +97,23 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
      * Approve a transfer
      */
     function _approveTransfer(address from, address to, uint256 tokenId) internal {
+        // Do not need to approve mints
+        if (from == address(0)) return;
+
         _approveTransfer(from, to, tokenId, _tokenExtension(tokenId));
     }
 
-    function _approveTransfer(address from, address to, uint256 tokenId, uint256 batchSize, uint96 extensionIndex) internal {
-        if (batchSize > 1) {
-            address extension = _indexToExtension[extensionIndex];
-            if (extension != address(0) && _extensionApproveTransfers[extension]) {
-                for (uint i; i < batchSize;) {
-                    require(IERC721CreatorExtensionApproveTransfer(extension).approveTransfer(msg.sender, from, to, tokenId), "Extension approval failure");
-                    unchecked { ++i; }
-                }
-            } else if (_approveTransferBase != address(0)) {
-                address baseApproveTransfer = _approveTransferBase;
-                for (uint i; i < batchSize;) {
-                    require(IERC721CreatorExtensionApproveTransfer(baseApproveTransfer).approveTransfer(msg.sender, from, to, tokenId), "Extension approval failure");
-                    unchecked { ++i; }
-                }
-            }
-        } else {
-            _approveTransfer(from, to, tokenId, _indexToExtension[extensionIndex]);
-        }
+    function _approveTransfer(address from, address to, uint256 tokenId, uint32 extensionIndex) internal {
+        // Do not need to approve mints
+        if (from == address(0)) return;
+
+        _approveTransfer(from, to, tokenId, _indexToExtension[extensionIndex]);
     }
 
     function _approveTransfer(address from, address to, uint256 tokenId, address extension) internal {
+        // Do not need to approve mints
+        if (from == address(0)) return;
+
         if (extension != address(0) && _extensionApproveTransfers[extension]) {
             require(IERC721CreatorExtensionApproveTransfer(extension).approveTransfer(msg.sender, from, to, tokenId), "Extension approval failure");
         } else if (_approveTransferBase != address(0)) {
@@ -137,6 +132,4 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
         }
         super._registerExtension(extension, baseURI, baseURIIdentical);
     }
-
-
 }

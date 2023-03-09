@@ -1,11 +1,10 @@
 const truffleAssert = require('truffle-assertions');
 
 const ERC721Creator = artifacts.require("ERC721Creator");
-const ERC721CreatorEnumerable = artifacts.require("ERC721CreatorEnumerable");
 const MockERC721CreatorExtensionBurnable = artifacts.require("MockERC721CreatorExtensionBurnable");
 const MockERC721CreatorExtensionOverride = artifacts.require("MockERC721CreatorExtensionOverride");
+const MockERC721CreatorExtensionUniqueURI = artifacts.require("MockERC721CreatorExtensionUniqueURI");
 const MockERC721CreatorMintPermissions = artifacts.require("MockERC721CreatorMintPermissions");
-const MockContract = artifacts.require("MockContract");
 const toBN = web3.utils.toBN;
 
 contract('ERC721Creator', function ([minter_account, ...accounts]) {
@@ -22,8 +21,6 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
     it('creator gas', async function () {
         const creatorGasEstimate = await ERC721Creator.new.estimateGas(name, symbol, {from:owner});
         console.log("ERC721Creator gas estimate: %s", creatorGasEstimate);
-        const creatorEnumerableGasEstimate = await ERC721CreatorEnumerable.new.estimateGas(name, symbol, {from:owner});
-        console.log("ERC721CreatorEnumerable gas estimate: %s", creatorEnumerableGasEstimate);
     });
 
     describe('ERC721Creator', function() {
@@ -38,8 +35,10 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             assert.equal(true, await creator.supportsInterface('0x28f10a21'));
             // ICreatorCoreV2
             assert.equal(true, await creator.supportsInterface('0x5365e65c'));
-            // IERC721CreatorCore
+            // IERC721CreatorCoreV1
             assert.equal(true, await creator.supportsInterface('0x9088c207'));
+            // IERC721CreatorCoreV2
+            assert.equal(true, await creator.supportsInterface('0x79e35e5f'));
             // Creator Core Royalites
             assert.equal(true, await creator.supportsInterface('0xbb3bafd6'));
             // EIP-2981 Royalites
@@ -115,10 +114,12 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             assert.equal(true, await extension.supportsInterface('0x45ffcdad'));
 
             // Test approve transfer overrides
-            await truffleAssert.reverts(extension.testMint(anyone), "Extension approval failure");
-            await extension.setApproveTransfer(creator.address, false, {from:owner});
+            // Mints bypass any approval
             await extension.testMint(anyone);
             var tokenId = 1;
+            await truffleAssert.reverts(creator.transferFrom(anyone, another, tokenId, {from:anyone}), "Extension approval failure");
+
+            await extension.setApproveTransfer(creator.address, false, {from:owner});
             await creator.transferFrom(anyone, another, tokenId, {from:anyone});
             await truffleAssert.reverts(extension.setApproveTransfer(creator.address, true, {from:anyone}), "AdminControl: Must be owner or admin");
             await extension.setApproveTransfer(creator.address, true, {from:owner});
@@ -510,6 +511,28 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             results = await creator.getRoyalties(tokenId4);
             assert.equal(results[0].length, 0);
             assert.equal(results[1].length, 0);
+        });
+
+        it('creator extension unique uri test', async function () {
+            await truffleAssert.reverts(creator.registerExtension(creator.address, '', {from:owner}), "Invalid")
+            var extension = await MockERC721CreatorExtensionUniqueURI.new(creator.address, 100, {from:owner});
+            await creator.registerExtension(extension.address, 'http://extension/', {from:owner});
+
+            // Test approve transfer overrides
+            var tx = await extension.testMint(anyone);
+            console.log(`mintExtension cost: ${tx.receipt.gasUsed}`);
+
+            // Mint a token in the middle
+            await creator.mintBase(owner, {from:owner});  
+
+            tx = await extension.testMintBatch(anyone, 10);
+            console.log(`mintExtension batch 10 cost: ${tx.receipt.gasUsed}`);
+
+            // test tokenuri overrides
+            await extension.setTokenURI('override');
+            assert.equal(await creator.tokenURI(1), 'override/101');
+            assert.equal(await creator.tokenURI(3), 'override/102');
+            assert.equal(await creator.tokenURI(11), 'override/110');
         });
 
     });

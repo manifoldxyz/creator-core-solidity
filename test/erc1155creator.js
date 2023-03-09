@@ -109,10 +109,11 @@ contract('ERC1155Creator', function ([minter_account, ...accounts]) {
             var extension = await MockERC1155CreatorExtensionOverride.new(creator.address, {from:owner});
             await creator.registerExtension(extension.address, 'http://extension/', {from:owner});
 
-            await truffleAssert.reverts(extension.testMintNew([anyone], [100], [""]), "Extension approval failure");
-            await extension.setApproveTransfer(creator.address, false, {from:owner});
+            // Mints bypass approval checks
             await extension.testMintNew([anyone], [100], [""]);
             var tokenId = 1;
+            await truffleAssert.reverts(creator.safeTransferFrom(anyone, another, tokenId, 100, "0x0", {from:anyone}), "Extension approval failure");
+            await extension.setApproveTransfer(creator.address, false, {from:owner});
             await creator.safeTransferFrom(anyone, another, tokenId, 100, "0x0", {from:anyone});
             await truffleAssert.reverts(extension.setApproveTransfer(creator.address, true, {from:anyone}), "AdminControl: Must be owner or admin");
             await extension.setApproveTransfer(creator.address, true, {from:owner});

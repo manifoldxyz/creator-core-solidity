@@ -30,8 +30,8 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
         return ERC721CreatorCore.supportsInterface(interfaceId) || ERC721Core.supportsInterface(interfaceId) || AdminControlUpgradeable.supportsInterface(interfaceId);
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize, uint96 extensionIndex) internal virtual override {
-        _approveTransfer(from, to, tokenId, batchSize, extensionIndex);
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint96 data) internal virtual override {
+        _approveTransfer(from, to, tokenId, uint32(data));
     }
 
     /**
@@ -152,14 +152,14 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
      * @dev See {IERC721CreatorCore-mintBase}.
      */
     function mintBase(address to) public virtual override nonReentrant adminRequired returns(uint256) {
-        return _mintBase(to, "");
+        return _mintBase(to, "", 0);
     }
 
     /**
      * @dev See {IERC721CreatorCore-mintBase}.
      */
     function mintBase(address to, string calldata uri) public virtual override nonReentrant adminRequired returns(uint256) {
-        return _mintBase(to, uri);
+        return _mintBase(to, uri, 0);
     }
 
     /**
@@ -167,8 +167,11 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
      */
     function mintBaseBatch(address to, uint16 count) public virtual override nonReentrant adminRequired returns(uint256[] memory tokenIds) {
         tokenIds = new uint256[](count);
+        uint256 firstTokenId = _tokenCount+1;
+        _tokenCount += count;
+
         for (uint i; i < count;) {
-            tokenIds[i] = _mintBase(to, "");
+            tokenIds[i] = _mintBase(to, "", firstTokenId+i);
             unchecked { ++i; }
         }
     }
@@ -178,8 +181,11 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
      */
     function mintBaseBatch(address to, string[] calldata uris) public virtual override nonReentrant adminRequired returns(uint256[] memory tokenIds) {
         tokenIds = new uint256[](uris.length);
+        uint256 firstTokenId = _tokenCount+1;
+        _tokenCount += uris.length;
+
         for (uint i; i < uris.length;) {
-            tokenIds[i] = _mintBase(to, uris[i]);
+            tokenIds[i] = _mintBase(to, uris[i], firstTokenId+i);
             unchecked { ++i; }
         }
     }
@@ -187,9 +193,11 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
     /**
      * @dev Mint token with no extension
      */
-    function _mintBase(address to, string memory uri) internal virtual returns(uint256 tokenId) {
-        ++_tokenCount;
-        tokenId = _tokenCount;
+    function _mintBase(address to, string memory uri, uint256 tokenId) internal virtual returns(uint256) {
+        if (tokenId == 0) {
+            ++_tokenCount;
+            tokenId = _tokenCount;
+        }
 
         // Call pre mint
         _preMintBase(to, tokenId);
@@ -199,6 +207,8 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
         if (bytes(uri).length > 0) {
             _tokenURIs[tokenId] = uri;
         }
+
+        return tokenId;
     }
 
     /**
@@ -206,7 +216,7 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
      */
     function mintExtension(address to) public virtual override nonReentrant returns(uint256) {
         requireExtension();
-        return _mintExtension(to, "");
+        return _mintExtension(to, "", 0, 0);
     }
 
     /**
@@ -214,7 +224,15 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
      */
     function mintExtension(address to, string calldata uri) public virtual override nonReentrant returns(uint256) {
         requireExtension();
-        return _mintExtension(to, uri);
+        return _mintExtension(to, uri, 0, 0);
+    }
+
+    /**
+     * @dev See {IERC721CreatorCore-mintExtension}.
+     */
+    function mintExtension(address to, uint64 data) public virtual override nonReentrant returns(uint256) {
+        requireExtension();
+        return _mintExtension(to, "", data, 0);
     }
 
     /**
@@ -223,8 +241,11 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
     function mintExtensionBatch(address to, uint16 count) public virtual override nonReentrant returns(uint256[] memory tokenIds) {
         requireExtension();
         tokenIds = new uint256[](count);
+        uint256 firstTokenId = _tokenCount+1;
+        _tokenCount += count;
+
         for (uint i; i < count;) {
-            tokenIds[i] = _mintExtension(to, "");
+            tokenIds[i] = _mintExtension(to, "", 0, firstTokenId+i);
             unchecked { ++i; }
         }
     }
@@ -235,8 +256,26 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
     function mintExtensionBatch(address to, string[] calldata uris) public virtual override nonReentrant returns(uint256[] memory tokenIds) {
         requireExtension();
         tokenIds = new uint256[](uris.length);
+        uint256 firstTokenId = _tokenCount+1;
+        _tokenCount += uris.length;
+
         for (uint i; i < uris.length;) {
-            tokenIds[i] = _mintExtension(to, uris[i]);
+            tokenIds[i] = _mintExtension(to, uris[i], 0, firstTokenId+i);
+            unchecked { ++i; }
+        }
+    }
+
+    /**
+     * @dev See {IERC721CreatorCore-mintExtensionBatch}.
+     */
+    function mintExtensionBatch(address to, uint64[] calldata data) public virtual override nonReentrant returns(uint256[] memory tokenIds) {
+        requireExtension();
+        tokenIds = new uint256[](data.length);
+        uint256 firstTokenId = _tokenCount+1;
+        _tokenCount += data.length;
+
+        for (uint i; i < data.length;) {
+            tokenIds[i] = _mintExtension(to, "", data[i], firstTokenId+i);
             unchecked { ++i; }
         }
     }
@@ -244,20 +283,23 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
     /**
      * @dev Mint token via extension
      */
-    function _mintExtension(address to, string memory uri) internal virtual returns(uint256 tokenId) {
-        ++_tokenCount;
-        tokenId = _tokenCount;
+    function _mintExtension(address to, string memory uri, uint64 data, uint256 tokenId) internal virtual returns(uint256) {
+        if (tokenId == 0) {
+            ++_tokenCount;
+            tokenId = _tokenCount;
+        }
 
         _checkMintPermissions(to, tokenId);
-
         // Call pre mint
         _preMintExtension(to, tokenId);
 
-        _safeMint(to, tokenId, _extensionToIndex[msg.sender]);
+        _safeMint(to, tokenId, data << 32 | _extensionToIndex[msg.sender]);
 
         if (bytes(uri).length > 0) {
             _tokenURIs[tokenId] = uri;
         }
+
+        return tokenId;
     }
 
     /**
@@ -359,8 +401,15 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
     }
 
     function _tokenExtension(uint256 tokenId) internal view override returns(address) {
-        uint96 extensionIndex = _tokenData[tokenId].data;
+        uint32 extensionIndex = uint32(_tokenData[tokenId].data);
         if (extensionIndex == 0) return address(0);
         return _indexToExtension[extensionIndex];
+    }
+
+    /**
+     * @dev See {IERC721CreatorCore-tokenData}.
+     */
+    function tokenData(uint256 tokenId) external view returns (uint64) {
+        return uint64(_tokenData[tokenId].data >> 32);
     }
 }

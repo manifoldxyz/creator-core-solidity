@@ -235,7 +235,7 @@ abstract contract ERC721Core is ERC165, IERC721, IERC721Metadata {
         require(to != address(0), "ERC721: mint to the zero address");
         require(!_exists(tokenId), "ERC721: token already minted");
 
-        _beforeTokenTransfer(address(0), to, tokenId, 1, tokenData);
+        _beforeTokenTransfer(address(0), to, tokenId, tokenData);
 
         unchecked {
             // Will not overflow unless all 2**256 token ids are minted to the same owner.
@@ -251,55 +251,11 @@ abstract contract ERC721Core is ERC165, IERC721, IERC721Metadata {
         });
         emit Transfer(address(0), to, tokenId);
 
-        _afterTokenTransfer(address(0), to, tokenId, 1, tokenData);
+        _afterTokenTransfer(address(0), to, tokenId, tokenData);
         require(
             _checkOnERC721Received(address(0), to, tokenId, data),
             "ERC721: transfer to non ERC721Receiver implementer"
         );
-    }
-
-    function _safeMint(
-        address to,
-        uint256 firstTokenId,
-        uint256 batchSize,
-        uint96 tokenData
-    ) internal virtual {
-        _safeMint(to, firstTokenId, batchSize, tokenData, "");
-    }
-
-    function _safeMint(
-        address to,
-        uint256 firstTokenId,
-        uint256 batchSize,
-        uint96 tokenData,
-        bytes memory data
-    ) internal virtual {
-        require(to != address(0), "ERC721: mint to the zero address");
-
-        _beforeTokenTransfer(address(0), to, firstTokenId, batchSize, tokenData);
-
-        for (uint i; i < batchSize;) {
-            uint256 tokenId = firstTokenId + i;
-            require(!_exists(tokenId), "ERC721: token already minted");
-            unchecked {
-                // Will not overflow unless all 2**256 token ids are minted to the same owner.
-                // Given that tokens are minted one by one, it is impossible in practice that
-                // this ever happens. Might change if we allow batch minting.
-                // The ERC fails to describe this case.
-                _balances[to] += 1;
-            }
-            _tokenData[tokenId] = TokenData({
-                owner: to,
-                data: tokenData
-            });
-            emit Transfer(address(0), to, tokenId);
-            require(
-                _checkOnERC721Received(address(0), to, tokenId, data),
-                "ERC721: transfer to non ERC721Receiver implementer"
-            );
-            unchecked { ++i; }
-        }
-        _afterTokenTransfer(address(0), to, firstTokenId, batchSize, tokenData);        
     }
 
     /**
@@ -317,7 +273,7 @@ abstract contract ERC721Core is ERC165, IERC721, IERC721Metadata {
         address owner = tokenData.owner;
         uint96 data = tokenData.data;
 
-        _beforeTokenTransfer(owner, address(0), tokenId, 1, data);
+        _beforeTokenTransfer(owner, address(0), tokenId, data);
 
         // Clear approvals
         _approve(address(0), tokenId);
@@ -331,7 +287,7 @@ abstract contract ERC721Core is ERC165, IERC721, IERC721Metadata {
 
         emit Transfer(owner, address(0), tokenId);
 
-        _afterTokenTransfer(owner, address(0), tokenId, 1, data);
+        _afterTokenTransfer(owner, address(0), tokenId, data);
     }
 
     /**
@@ -357,7 +313,7 @@ abstract contract ERC721Core is ERC165, IERC721, IERC721Metadata {
 
         uint96 data = tokenData.data;
 
-        _beforeTokenTransfer(from, to, tokenId, 1, data);
+        _beforeTokenTransfer(from, to, tokenId, data);
 
         // Clear approvals from the previous owner
         _approve(address(0), tokenId);
@@ -375,7 +331,7 @@ abstract contract ERC721Core is ERC165, IERC721, IERC721Metadata {
 
         emit Transfer(from, to, tokenId);
 
-        _afterTokenTransfer(from, to, tokenId, 1, data);
+        _afterTokenTransfer(from, to, tokenId, data);
     }
 
     /**
@@ -461,8 +417,7 @@ abstract contract ERC721Core is ERC165, IERC721, IERC721Metadata {
     function _beforeTokenTransfer(
         address from,
         address to,
-        uint256 firstTokenId,
-        uint256 batchSize,
+        uint256 tokenId,
         uint96 tokenData
     ) internal virtual {}
 
@@ -483,8 +438,7 @@ abstract contract ERC721Core is ERC165, IERC721, IERC721Metadata {
     function _afterTokenTransfer(
         address from,
         address to,
-        uint256 firstTokenId,
-        uint256 batchSize,
+        uint256 tokenId,
         uint96 tokenData
     ) internal virtual {}
 }

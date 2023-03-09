@@ -236,7 +236,7 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
 
         if (bytes(_tokenURIs[tokenId]).length != 0) {
             if (bytes(_extensionURIPrefix[extension]).length != 0) {
-                return string(abi.encodePacked(_extensionURIPrefix[extension],_tokenURIs[tokenId]));
+                return string(abi.encodePacked(_extensionURIPrefix[extension], _tokenURIs[tokenId]));
             }
             return _tokenURIs[tokenId];
         }

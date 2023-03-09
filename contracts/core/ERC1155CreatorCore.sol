@@ -17,7 +17,7 @@ import "./CreatorCore.sol";
  */
 abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
 
-    uint256 constant public VERSION = 2;
+    uint256 constant public VERSION = 3;
 
     using EnumerableSet for EnumerableSet.AddressSet;
 
@@ -84,6 +84,9 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
      * Approve a transfer
      */
     function _approveTransfer(address from, address to, uint256[] memory tokenIds, uint256[] memory amounts) internal {
+        // Do not need to approve mints
+        if (from == address(0)) return;
+
         address extension = _tokensExtension[tokenIds[0]];
 
         for (uint i; i < tokenIds.length;) {

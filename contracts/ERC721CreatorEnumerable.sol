@@ -24,7 +24,7 @@ contract ERC721CreatorEnumerable is ERC721Creator, ERC721CreatorCoreEnumerable, 
     }
 
     function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint96 data) internal virtual override(ERC721Enumerable, ERC721Creator, ERC721CreatorCoreEnumerable) {
-        _approveTransfer(from, to, tokenId, uint32(data));
+        _approveTransfer(from, to, tokenId, uint16(data));
         ERC721Enumerable._beforeTokenTransfer(from, to, tokenId, data);
     }
 

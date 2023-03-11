@@ -24,9 +24,9 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     // For tracking extension indices
-    uint32 private _extensionCounter;
-    mapping (address => uint32) internal _extensionToIndex;    
-    mapping (uint32 => address) internal _indexToExtension;
+    uint16 private _extensionCounter;
+    mapping (address => uint16) internal _extensionToIndex;    
+    mapping (uint16 => address) internal _indexToExtension;
 
     /**
      * @dev See {IERC165-supportsInterface}.
@@ -103,7 +103,7 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
         _approveTransfer(from, to, tokenId, _tokenExtension(tokenId));
     }
 
-    function _approveTransfer(address from, address to, uint256 tokenId, uint32 extensionIndex) internal {
+    function _approveTransfer(address from, address to, uint256 tokenId, uint16 extensionIndex) internal {
         // Do not need to approve mints
         if (from == address(0)) return;
 

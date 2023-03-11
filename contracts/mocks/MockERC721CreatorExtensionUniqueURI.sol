@@ -12,7 +12,7 @@ contract MockERC721CreatorExtensionUniqueURI is ERC165, ICreatorExtensionTokenUR
 
     string _tokenURI;
     address _creator;
-    uint64 _mintCount;
+    uint80 _mintCount;
     mapping(uint256 => RoyaltyInfo) _royaltyInfo;
 
     struct RoyaltyInfo {
@@ -20,7 +20,7 @@ contract MockERC721CreatorExtensionUniqueURI is ERC165, ICreatorExtensionTokenUR
         uint256[] values;
     }
 
-    constructor(address creator, uint64 startIndex) {
+    constructor(address creator, uint80 startIndex) {
         _creator = creator;
         _mintCount = startIndex;
     }
@@ -38,9 +38,9 @@ contract MockERC721CreatorExtensionUniqueURI is ERC165, ICreatorExtensionTokenUR
     }
 
     function testMintBatch(address to, uint16 count) external {
-        uint64[] memory data = new uint64[](count);
+        uint80[] memory data = new uint80[](count);
         for (uint i = 0; i < count;) {
-            data[i] = uint64(_mintCount + 1 + i);
+            data[i] = uint80(_mintCount + 1 + i);
             unchecked { ++i; }
         }
         _mintCount += count;
@@ -53,7 +53,7 @@ contract MockERC721CreatorExtensionUniqueURI is ERC165, ICreatorExtensionTokenUR
 
     function tokenURI(address creator, uint256 tokenId) external view virtual override returns (string memory) {
         require(creator == _creator, "Invalid");
-        uint64 data = IERC721CreatorCore(creator).tokenData(tokenId);
+        uint80 data = IERC721CreatorCore(creator).tokenData(tokenId);
         return string(abi.encodePacked(_tokenURI, '/', uint256(data).toString()));
     }
 

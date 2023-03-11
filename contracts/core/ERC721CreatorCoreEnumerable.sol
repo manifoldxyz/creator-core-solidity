@@ -128,7 +128,7 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
     
     function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint96 data) internal virtual {
         if (from != address(0) && to != address(0)) {
-            address tokenExtension_ = _indexToExtension[uint32(data)];
+            address tokenExtension_ = _indexToExtension[uint16(data)];
             if (from != to) {
                 _removeTokenFromOwnerEnumeration(from, tokenId, tokenExtension_);
             }

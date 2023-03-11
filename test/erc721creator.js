@@ -38,7 +38,7 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             // IERC721CreatorCoreV1
             assert.equal(true, await creator.supportsInterface('0x9088c207'));
             // IERC721CreatorCoreV2
-            assert.equal(true, await creator.supportsInterface('0x79e35e5f'));
+            assert.equal(true, await creator.supportsInterface('0xb5d2729f'));
             // Creator Core Royalites
             assert.equal(true, await creator.supportsInterface('0xbb3bafd6'));
             // EIP-2981 Royalites

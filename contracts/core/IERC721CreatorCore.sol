@@ -51,7 +51,7 @@ interface IERC721CreatorCore is ICreatorCore {
      * @dev mint a token. Can only be called by a registered extension.
      * Returns tokenId minted
      */
-    function mintExtension(address to, uint64 data) external returns (uint256);
+    function mintExtension(address to, uint80 data) external returns (uint256);
 
     /**
      * @dev batch mint a token. Can only be called by a registered extension.
@@ -69,7 +69,7 @@ interface IERC721CreatorCore is ICreatorCore {
      * @dev batch mint a token. Can only be called by a registered extension.
      * Returns tokenId minted
      */
-    function mintExtensionBatch(address to, uint64[] calldata data) external returns (uint256[] memory);
+    function mintExtensionBatch(address to, uint80[] calldata data) external returns (uint256[] memory);
 
     /**
      * @dev burn a token. Can only be called by token owner or approved address.
@@ -80,6 +80,6 @@ interface IERC721CreatorCore is ICreatorCore {
     /**
      * @dev get token data
      */
-    function tokenData(uint256 tokenId) external view returns (uint64);
+    function tokenData(uint256 tokenId) external view returns (uint80);
 
 }

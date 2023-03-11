@@ -24,7 +24,7 @@ contract ERC721Creator is AdminControl, ERC721Base, ERC721CreatorCore {
     }
 
     function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint96 data) internal virtual override {
-        _approveTransfer(from, to, tokenId, uint32(data));
+        _approveTransfer(from, to, tokenId, uint16(data));
     }
 
     /**
@@ -223,7 +223,7 @@ contract ERC721Creator is AdminControl, ERC721Base, ERC721CreatorCore {
     /**
      * @dev See {IERC721CreatorCore-mintExtension}.
      */
-    function mintExtension(address to, uint64 data) public virtual override nonReentrant returns(uint256) {
+    function mintExtension(address to, uint80 data) public virtual override nonReentrant returns(uint256) {
         requireExtension();
         return _mintExtension(to, "", data, 0);
     }
@@ -261,7 +261,7 @@ contract ERC721Creator is AdminControl, ERC721Base, ERC721CreatorCore {
     /**
      * @dev See {IERC721CreatorCore-mintExtensionBatch}.
      */
-    function mintExtensionBatch(address to, uint64[] calldata data) public virtual override nonReentrant returns(uint256[] memory tokenIds) {
+    function mintExtensionBatch(address to, uint80[] calldata data) public virtual override nonReentrant returns(uint256[] memory tokenIds) {
         requireExtension();
         tokenIds = new uint256[](data.length);
         uint256 firstTokenId = _tokenCount+1;
@@ -276,7 +276,7 @@ contract ERC721Creator is AdminControl, ERC721Base, ERC721CreatorCore {
     /**
      * @dev Mint token via extension
      */
-    function _mintExtension(address to, string memory uri, uint64 data, uint256 tokenId) internal virtual returns(uint256) {
+    function _mintExtension(address to, string memory uri, uint80 data, uint256 tokenId) internal virtual returns(uint256) {
         if (tokenId == 0) {
             ++_tokenCount;
             tokenId = _tokenCount;
@@ -286,7 +286,7 @@ contract ERC721Creator is AdminControl, ERC721Base, ERC721CreatorCore {
         // Call pre mint
         _preMintExtension(to, tokenId);
 
-        _safeMint(to, tokenId, data << 32 | _extensionToIndex[msg.sender]);
+        _safeMint(to, tokenId, data << 16 | _extensionToIndex[msg.sender]);
 
         if (bytes(uri).length > 0) {
             _tokenURIs[tokenId] = uri;
@@ -394,7 +394,7 @@ contract ERC721Creator is AdminControl, ERC721Base, ERC721CreatorCore {
     }
 
     function _tokenExtension(uint256 tokenId) internal view override returns(address) {
-        uint32 extensionIndex = uint32(_tokenData[tokenId].data);
+        uint16 extensionIndex = uint16(_tokenData[tokenId].data);
         if (extensionIndex == 0) return address(0);
         return _indexToExtension[extensionIndex];
     }
@@ -402,7 +402,7 @@ contract ERC721Creator is AdminControl, ERC721Base, ERC721CreatorCore {
     /**
      * @dev See {IERC721CreatorCore-tokenData}.
      */
-    function tokenData(uint256 tokenId) external view returns (uint64) {
-        return uint64(_tokenData[tokenId].data >> 32);
+    function tokenData(uint256 tokenId) external view returns (uint80) {
+        return uint80(_tokenData[tokenId].data >> 16);
     }
 }

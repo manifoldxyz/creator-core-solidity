@@ -23,6 +23,10 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
 
     using EnumerableSet for EnumerableSet.AddressSet;
 
+    // Track registered extensions data
+    mapping (address => bool) internal _extensionApproveTransfers;
+    mapping (address => address) internal _extensionPermissions;
+
     // For tracking extension indices
     uint16 private _extensionCounter;
     mapping (address => uint16) internal _extensionToIndex;    

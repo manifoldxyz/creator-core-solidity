@@ -32,8 +32,6 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     // Track registered extensions data
     EnumerableSet.AddressSet internal _extensions;
     EnumerableSet.AddressSet internal _blacklistedExtensions;
-    mapping (address => address) internal _extensionPermissions;
-    mapping (address => bool) internal _extensionApproveTransfers;
 
     // The baseURI for a given extension
     mapping (address => string) private _extensionBaseURI;

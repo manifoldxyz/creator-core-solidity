@@ -21,6 +21,10 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
 
     using EnumerableSet for EnumerableSet.AddressSet;
 
+    // Track registered extensions data
+    mapping (address => bool) internal _extensionApproveTransfers;
+    mapping (address => address) internal _extensionPermissions;
+
     // For tracking which extension a token was minted by
     mapping (uint256 => address) internal _tokensExtension;
 

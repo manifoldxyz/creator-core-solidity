@@ -44,7 +44,7 @@ abstract contract ERC1155CreatorExtensionBurnable is AdminControl, IERC1155Creat
     }
 
     /**
-     * @dev See {IERC1155CreatorExtension-onBurn}.
+     * @dev See {IERC1155CreatorExtensionBurnable-onBurn}.
      */
     function onBurn(address, uint256[] calldata tokenIds, uint256[] calldata) public virtual override {
         for (uint i; i < tokenIds.length;) {

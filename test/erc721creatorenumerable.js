@@ -1,11 +1,9 @@
 const truffleAssert = require('truffle-assertions');
 
-const ERC721Creator = artifacts.require("ERC721Creator");
 const ERC721CreatorEnumerable = artifacts.require("ERC721CreatorEnumerable");
 const MockERC721CreatorExtensionBurnable = artifacts.require("MockERC721CreatorExtensionBurnable");
 const MockERC721CreatorExtensionOverride = artifacts.require("MockERC721CreatorExtensionOverride");
 const MockERC721CreatorMintPermissions = artifacts.require("MockERC721CreatorMintPermissions");
-const MockContract = artifacts.require("MockContract");
 
 contract('ERC721Creator', function ([minter_account, ...accounts]) {
     const name = 'Token';
@@ -19,8 +17,6 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
            ] = accounts;
 
     it('creator gas', async function () {
-        const creatorGasEstimate = await ERC721Creator.new.estimateGas(name, symbol, {from:owner});
-        console.log("ERC721Creator gas estimate: %s", creatorGasEstimate);
         const creatorEnumerableGasEstimate = await ERC721CreatorEnumerable.new.estimateGas(name, symbol, {from:owner});
         console.log("ERC721CreatorEnumerable gas estimate: %s", creatorEnumerableGasEstimate);
     });
@@ -39,10 +35,11 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             assert.equal(true, await extension.supportsInterface('0x7005caad'));
             assert.equal(true, await extension.supportsInterface('0x45ffcdad'));
 
-            await truffleAssert.reverts(extension.testMint(anyone), "Extension approval failure");
-            await extension.setApproveTransfer(creator.address, false, {from:owner});
+            // Mints bypass any approval
             await extension.testMint(anyone);
             var tokenId = 1;
+            await truffleAssert.reverts(creator.transferFrom(anyone, another, tokenId, {from:anyone}), "Extension approval failure");
+            await extension.setApproveTransfer(creator.address, false, {from:owner});
             await creator.transferFrom(anyone, another, tokenId, {from:anyone});
             await truffleAssert.reverts(extension.setApproveTransfer(creator.address, true, {from:anyone}), "AdminControl: Must be owner or admin");
             await extension.setApproveTransfer(creator.address, true, {from:owner});
@@ -193,7 +190,7 @@ contract('ERC721Creator', function ([minter_account, ...accounts]) {
             assert.deepEqual(await creator.tokenOfOwnerByIndexExtension(extension1.address, another, 0), newTokenId2);
 
             // Burning
-            await truffleAssert.reverts(creator.burn(newTokenId1, {from:another}), "Caller is not owner nor approved");
+            await truffleAssert.reverts(creator.burn(newTokenId1, {from:another}), "Caller is not owner or approved");
             await creator.burn(newTokenId1, {from:anyone});
             await truffleAssert.reverts(creator.tokenURI(newTokenId1), "Nonexistent token");
             assert.equal(await creator.totalSupply(), 5);

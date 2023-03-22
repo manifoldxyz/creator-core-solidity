@@ -13,8 +13,6 @@ import "./IERC721CreatorCoreEnumerable.sol";
  * @dev Core ERC721 creator implementation (with enumerable api's)
  */
 abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721CreatorCoreEnumerable {
-    using Strings for uint256;
-    using EnumerableSet for EnumerableSet.AddressSet;
 
     // For enumerating tokens for a given extension
     mapping (address => uint256) private _extensionBalances;
@@ -60,7 +58,7 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
     }
 
     /*
-     * @dev See {IERC721CeratorCoreEnumerable-tokenOfOwnerByIndexExtension}.
+     * @dev See {IERC721CreatorCoreEnumerable-tokenOfOwnerByIndexExtension}.
      */
     function tokenOfOwnerByIndexExtension(address extension, address owner, uint256 index) external view virtual override returns (uint256) {
         requireNonBlacklist(extension);
@@ -91,7 +89,7 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
     }
 
     /*
-     * @dev See {IERC721CeratorCoreEnumerable-tokenOfOwnerByIndeBase}.
+     * @dev See {IERC721CreatorCoreEnumerable-tokenOfOwnerByIndexBase}.
      */
     function tokenOfOwnerByIndexBase(address owner, uint256 index) external view virtual override returns (uint256) {
         require(index < balanceOfBase(owner), "ERC721Creator: Index out of bounds");
@@ -126,60 +124,54 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
         delete _extensionTokensByOwner[tokenExtension_][from][lastTokenIndexByOwner];
     }
     
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual {
-        if (from != address(0) && to != address(0)) {
-            address tokenExtension_ = _tokenExtension(tokenId);
-            if (from != to) {
-                _removeTokenFromOwnerEnumeration(from, tokenId, tokenExtension_);
-            }
-            if (to != from) {
-                _addTokenToOwnerEnumeration(to, tokenId, tokenExtension_);
-            }
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint96 data) internal virtual {
+        if (from != address(0) && to != address(0) && from != to) {
+            address tokenExtension_ = _indexToExtension[uint16(data)];
+            _removeTokenFromOwnerEnumeration(from, tokenId, tokenExtension_);
+            _addTokenToOwnerEnumeration(to, tokenId, tokenExtension_);
         }
     }
 
-    function _postMintBase(address to, uint256 tokenId) internal virtual override {
+    function _preMintBase(address to, uint256 tokenId) internal virtual override {
         // Add to extension token tracking
         uint256 length = totalSupplyBase();
         _extensionTokens[address(0)][length] = tokenId;
         _extensionTokensIndex[tokenId] = length;
-        _extensionBalances[address(0)] += 1;
+        ++_extensionBalances[address(0)];
 
         _addTokenToOwnerEnumeration(to, tokenId, address(0));
     }
 
-    function _postMintExtension(address to, uint256 tokenId) internal virtual override {
+    function _preMintExtension(address to, uint256 tokenId) internal virtual override {
         // Add to extension token tracking
         uint256 length = totalSupplyExtension(msg.sender);
         _extensionTokens[msg.sender][length] = tokenId;
         _extensionTokensIndex[tokenId] = length;
-        _extensionBalances[msg.sender] += 1;
+        ++_extensionBalances[msg.sender];
 
         _addTokenToOwnerEnumeration(to, tokenId, msg.sender);
     }
     
-    function _postBurn(address owner, uint256 tokenId) internal override(ERC721CreatorCore) virtual {
-        address tokenExtension_ = _tokensExtension[tokenId];
-
+    function _postBurn(address owner, uint256 tokenId, address extension) internal override(ERC721CreatorCore) virtual {
         /*************************************************
          *  START: Remove from extension token tracking
          *************************************************/
 
-        uint256 lastTokenIndex = totalSupplyExtension(tokenExtension_) - 1;
+        uint256 lastTokenIndex = totalSupplyExtension(extension) - 1;
         uint256 tokenIndex = _extensionTokensIndex[tokenId];
 
         // When the token to delete is the last token, the swap operation is unnecessary
         if (tokenIndex != lastTokenIndex) {
-            uint256 lastTokenId = _extensionTokens[tokenExtension_][lastTokenIndex];
+            uint256 lastTokenId = _extensionTokens[extension][lastTokenIndex];
 
-            _extensionTokens[tokenExtension_][tokenIndex] = lastTokenId; // Move the last token to the slot of the to-delete token
+            _extensionTokens[extension][tokenIndex] = lastTokenId; // Move the last token to the slot of the to-delete token
             _extensionTokensIndex[lastTokenId] = tokenIndex; // Update the moved token's index
         }
-        _extensionBalances[tokenExtension_] -= 1;
+        _extensionBalances[extension] -= 1;
 
         // This also deletes the contents at the last position of the array
         delete _extensionTokensIndex[tokenId];
-        delete _extensionTokens[tokenExtension_][lastTokenIndex];
+        delete _extensionTokens[extension][lastTokenIndex];
 
         /*************************************************
          * END
@@ -189,13 +181,13 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
         /********************************************************
          *  START: Remove from extension token tracking by owner
          ********************************************************/
-         _removeTokenFromOwnerEnumeration(owner, tokenId, tokenExtension_);
+         _removeTokenFromOwnerEnumeration(owner, tokenId, extension);
 
         /********************************************************
          *  END
          ********************************************************/
          
-         ERC721CreatorCore._postBurn(owner, tokenId);
+         ERC721CreatorCore._postBurn(owner, tokenId, extension);
     }
 
 }

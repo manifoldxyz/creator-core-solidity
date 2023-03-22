@@ -17,15 +17,26 @@ import "./CreatorCore.sol";
  */
 abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
 
-    uint256 constant public VERSION = 2;
+    uint256 constant public VERSION = 3;
+
+    bytes4 private constant _ERC721_CREATOR_CORE_V1 = 0x9088c207;
 
     using EnumerableSet for EnumerableSet.AddressSet;
+
+    // Track registered extensions data
+    mapping (address => bool) internal _extensionApproveTransfers;
+    mapping (address => address) internal _extensionPermissions;
+
+    // For tracking extension indices
+    uint16 private _extensionCounter;
+    mapping (address => uint16) internal _extensionToIndex;    
+    mapping (uint16 => address) internal _indexToExtension;
 
     /**
      * @dev See {IERC165-supportsInterface}.
      */
     function supportsInterface(bytes4 interfaceId) public view virtual override(CreatorCore, IERC165) returns (bool) {
-        return interfaceId == type(IERC721CreatorCore).interfaceId || super.supportsInterface(interfaceId);
+        return interfaceId == type(IERC721CreatorCore).interfaceId || interfaceId == _ERC721_CREATOR_CORE_V1 || super.supportsInterface(interfaceId);
     }
 
     /**
@@ -51,7 +62,8 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
     }
 
     /**
-     * Check if an extension can mint
+     * If mint permissions have been set for an extension (extensions can mint by default),
+     * check if an extension can mint via the permission contract's approveMint function.
      */
     function _checkMintPermissions(address to, uint256 tokenId) internal {
         if (_extensionPermissions[msg.sender] != address(0)) {
@@ -60,43 +72,70 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
     }
 
     /**
-     * Override for post mint actions
+     * Override for pre mint actions
      */
-    function _postMintBase(address, uint256) internal virtual {}
+    function _preMintBase(address, uint256) internal virtual {}
 
     
     /**
-     * Override for post mint actions
+     * Override for pre mint actions for _mintExtension
      */
-    function _postMintExtension(address, uint256) internal virtual {}
+    function _preMintExtension(address, uint256) internal virtual {}
 
     /**
      * Post-burning callback and metadata cleanup
      */
-    function _postBurn(address owner, uint256 tokenId) internal virtual {
+    function _postBurn(address owner, uint256 tokenId, address extension) internal virtual {
         // Callback to originating extension if needed
-        if (_tokensExtension[tokenId] != address(0)) {
-           if (ERC165Checker.supportsInterface(_tokensExtension[tokenId], type(IERC721CreatorExtensionBurnable).interfaceId)) {
-               IERC721CreatorExtensionBurnable(_tokensExtension[tokenId]).onBurn(owner, tokenId);
+        if (extension != address(0)) {
+           if (ERC165Checker.supportsInterface(extension, type(IERC721CreatorExtensionBurnable).interfaceId)) {
+               IERC721CreatorExtensionBurnable(extension).onBurn(owner, tokenId);
            }
         }
         // Clear metadata (if any)
         if (bytes(_tokenURIs[tokenId]).length != 0) {
             delete _tokenURIs[tokenId];
-        }    
-        // Delete token origin extension tracking
-        delete _tokensExtension[tokenId];    
+        } 
     }
 
     /**
      * Approve a transfer
      */
     function _approveTransfer(address from, address to, uint256 tokenId) internal {
-       if (_extensionApproveTransfers[_tokensExtension[tokenId]]) {
-           require(IERC721CreatorExtensionApproveTransfer(_tokensExtension[tokenId]).approveTransfer(msg.sender, from, to, tokenId), "Extension approval failure");
-       } else if (_approveTransferBase != address(0)) {
-          require(IERC721CreatorExtensionApproveTransfer(_approveTransferBase).approveTransfer(msg.sender, from, to, tokenId), "Extension approval failure");
-       }
+        // Do not need to approve mints
+        if (from == address(0)) return;
+
+        _approveTransfer(from, to, tokenId, _tokenExtension(tokenId));
     }
 
+    function _approveTransfer(address from, address to, uint256 tokenId, uint16 extensionIndex) internal {
+        // Do not need to approve mints
+        if (from == address(0)) return;
+
+        _approveTransfer(from, to, tokenId, _indexToExtension[extensionIndex]);
+    }
+
+    function _approveTransfer(address from, address to, uint256 tokenId, address extension) internal {
+        // Do not need to approve mints
+        if (from == address(0)) return;
+
+        if (extension != address(0) && _extensionApproveTransfers[extension]) {
+            require(IERC721CreatorExtensionApproveTransfer(extension).approveTransfer(msg.sender, from, to, tokenId), "Extension approval failure");
+        } else if (_approveTransferBase != address(0)) {
+           require(IERC721CreatorExtensionApproveTransfer(_approveTransferBase).approveTransfer(msg.sender, from, to, tokenId), "Extension approval failure");
+        }
+    }
+
+    /**
+     * @dev Register an extension
+     */
+    function _registerExtension(address extension, string calldata baseURI, bool baseURIIdentical) internal override {
+        require(_extensionCounter < 0xFFFF, "Too many extensions");
+        if (_extensionToIndex[extension] == 0) {
+            ++_extensionCounter;
+            _extensionToIndex[extension] = _extensionCounter;
+            _indexToExtension[_extensionCounter] = extension;
+        }
+        super._registerExtension(extension, baseURI, baseURIIdentical);
+    }
 }

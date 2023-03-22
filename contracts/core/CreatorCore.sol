@@ -32,11 +32,6 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     // Track registered extensions data
     EnumerableSet.AddressSet internal _extensions;
     EnumerableSet.AddressSet internal _blacklistedExtensions;
-    mapping (address => address) internal _extensionPermissions;
-    mapping (address => bool) internal _extensionApproveTransfers;
-    
-    // For tracking which extension a token was minted by
-    mapping (uint256 => address) internal _tokensExtension;
 
     // The baseURI for a given extension
     mapping (address => string) private _extensionBaseURI;
@@ -137,7 +132,7 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     /**
      * @dev Register an extension
      */
-    function _registerExtension(address extension, string calldata baseURI, bool baseURIIdentical) internal {
+    function _registerExtension(address extension, string calldata baseURI, bool baseURIIdentical) internal virtual {
         require(extension != address(this) && extension.isContract(), "Invalid");
         emit ExtensionRegistered(extension, msg.sender);
         _extensionBaseURI[extension] = baseURI;
@@ -201,14 +196,14 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
      * @dev Set token uri for a token of an extension
      */
     function _setTokenURIExtension(uint256 tokenId, string calldata uri) internal {
-        require(_tokensExtension[tokenId] == msg.sender, "Invalid token");
+        require(_tokenExtension(tokenId) == msg.sender, "Invalid token");
         _tokenURIs[tokenId] = uri;
     }
 
     /**
      * @dev Set base token uri for tokens with no extension
      */
-    function _setBaseTokenURI(string memory uri) internal {
+    function _setBaseTokenURI(string calldata uri) internal {
         _extensionBaseURI[address(0)] = uri;
     }
 
@@ -224,7 +219,7 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
      * @dev Set token uri for a token with no extension
      */
     function _setTokenURI(uint256 tokenId, string calldata uri) internal {
-        require(tokenId > 0 && tokenId <= _tokenCount && _tokensExtension[tokenId] == address(0), "Invalid token");
+        require(tokenId > 0 && tokenId <= _tokenCount && _tokenExtension(tokenId) == address(0), "Invalid token");
         _tokenURIs[tokenId] = uri;
     }
 
@@ -234,12 +229,12 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     function _tokenURI(uint256 tokenId) internal view returns (string memory) {
         require(tokenId > 0 && tokenId <= _tokenCount, "Invalid token");
 
-        address extension = _tokensExtension[tokenId];
+        address extension = _tokenExtension(tokenId);
         require(!_blacklistedExtensions.contains(extension), "Extension blacklisted");
 
         if (bytes(_tokenURIs[tokenId]).length != 0) {
             if (bytes(_extensionURIPrefix[extension]).length != 0) {
-                return string(abi.encodePacked(_extensionURIPrefix[extension],_tokenURIs[tokenId]));
+                return string(abi.encodePacked(_extensionURIPrefix[extension], _tokenURIs[tokenId]));
             }
             return _tokenURIs[tokenId];
         }
@@ -256,18 +251,6 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     }
 
     /**
-     * Get token extension
-     */
-    function _tokenExtension(uint256 tokenId) internal view returns (address extension) {
-        extension = _tokensExtension[tokenId];
-
-        require(extension != address(0), "No extension for token");
-        require(!_blacklistedExtensions.contains(extension), "Extension blacklisted");
-
-        return extension;
-    }
-
-    /**
      * Helper to get royalties for a token
      */
     function _getRoyalties(uint256 tokenId) view internal returns (address payable[] memory receivers, uint256[] memory bps) {
@@ -276,7 +259,7 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
         RoyaltyConfig[] memory royalties = _tokenRoyalty[tokenId];
         if (royalties.length == 0) {
             // Get extension specific royalties
-            address extension = _tokensExtension[tokenId];
+            address extension = _tokenExtension(tokenId);
             if (extension != address(0)) {
                 if (ERC165Checker.supportsInterface(extension, type(ICreatorExtensionRoyalties).interfaceId)) {
                     (receivers, bps) = ICreatorExtensionRoyalties(extension).getRoyalties(address(this), tokenId);
@@ -394,4 +377,9 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     function getApproveTransfer() external view override returns (address) {
         return _approveTransferBase;
     }
+
+    /**
+     * @dev Get the extension for the given token
+     */
+    function _tokenExtension(uint256 tokenId) internal virtual view returns(address);
 }

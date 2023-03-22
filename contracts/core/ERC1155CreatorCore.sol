@@ -17,11 +17,16 @@ import "./CreatorCore.sol";
  */
 abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
 
-    uint256 constant public VERSION = 2;
+    uint256 constant public VERSION = 3;
 
     using EnumerableSet for EnumerableSet.AddressSet;
-    string public name;
-    string public symbol;
+
+    // Track registered extensions data
+    mapping (address => bool) internal _extensionApproveTransfers;
+    mapping (address => address) internal _extensionPermissions;
+
+    // For tracking which extension a token was minted by
+    mapping (uint256 => address) internal _tokensExtension;
 
     /**
      * @dev See {IERC165-supportsInterface}.
@@ -53,7 +58,8 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
     }
 
     /**
-     * Check if an extension can mint
+     * If mint permissions have been set for an extension (extensions can mint by default),
+     * check if an extension can mint via the permission contract's approveMint function.
      */
     function _checkMintPermissions(address[] memory to, uint256[] memory tokenIds, uint256[] memory amounts) internal {
         if (_extensionPermissions[msg.sender] != address(0)) {
@@ -64,7 +70,7 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
     /**
      * Post burn actions
      */
-    function _postBurn(address owner, uint256[] memory tokenIds, uint256[] memory amounts) internal virtual {
+    function _postBurn(address owner, uint256[] calldata tokenIds, uint256[] calldata amounts) internal virtual {
         require(tokenIds.length > 0, "Invalid input");
         address extension = _tokensExtension[tokenIds[0]];
         for (uint i; i < tokenIds.length;) {
@@ -83,16 +89,23 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
      * Approve a transfer
      */
     function _approveTransfer(address from, address to, uint256[] memory tokenIds, uint256[] memory amounts) internal {
-        require(tokenIds.length > 0, "Invalid input");
+        // Do not need to approve mints
+        if (from == address(0)) return;
+
         address extension = _tokensExtension[tokenIds[0]];
+
         for (uint i; i < tokenIds.length;) {
             require(_tokensExtension[tokenIds[i]] == extension, "Mismatched token originators");
             unchecked { ++i; }
         }
-        if (_extensionApproveTransfers[extension]) {
+        if (extension != address(0) && _extensionApproveTransfers[extension]) {
             require(IERC1155CreatorExtensionApproveTransfer(extension).approveTransfer(msg.sender, from, to, tokenIds, amounts), "Extension approval failure");
         } else if (_approveTransferBase != address(0)) {
             require(IERC1155CreatorExtensionApproveTransfer(_approveTransferBase).approveTransfer(msg.sender, from, to, tokenIds, amounts), "Extension approval failure");
         }
+    }
+
+    function _tokenExtension(uint256 tokenId) internal view override returns(address) {
+        return _tokensExtension[tokenId];
     }
 }

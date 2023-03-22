@@ -96,7 +96,7 @@ contract ERC1155Creator is AdminControl, ERC1155Base, ERC1155CreatorCore {
     /**
      * @dev See {ICreatorCore-setTokenURIExtension}.
      */
-    function setTokenURIExtension(uint256[] memory tokenIds, string[] calldata uris) external override {
+    function setTokenURIExtension(uint256[] calldata tokenIds, string[] calldata uris) external override {
         requireExtension();
         require(tokenIds.length == uris.length, "Invalid input");
         for (uint i; i < tokenIds.length;) {
@@ -129,7 +129,7 @@ contract ERC1155Creator is AdminControl, ERC1155Base, ERC1155CreatorCore {
     /**
      * @dev See {ICreatorCore-setTokenURI}.
      */
-    function setTokenURI(uint256[] memory tokenIds, string[] calldata uris) external override adminRequired {
+    function setTokenURI(uint256[] calldata tokenIds, string[] calldata uris) external override adminRequired {
         require(tokenIds.length == uris.length, "Invalid input");
         for (uint i; i < tokenIds.length;) {
             _setTokenURI(tokenIds[i], uris[i]);
@@ -187,7 +187,7 @@ contract ERC1155Creator is AdminControl, ERC1155Base, ERC1155CreatorCore {
     /**
      * @dev Mint new tokens
      */
-    function _mintNew(address extension, address[] memory to, uint256[] memory amounts, string[] memory uris) internal returns(uint256[] memory tokenIds) {
+    function _mintNew(address extension, address[] calldata to, uint256[] calldata amounts, string[] calldata uris) internal returns(uint256[] memory tokenIds) {
         if (to.length > 1) {
             // Multiple receiver.  Give every receiver the same new token
             tokenIds = new uint256[](1);
@@ -244,7 +244,7 @@ contract ERC1155Creator is AdminControl, ERC1155Base, ERC1155CreatorCore {
     /**
      * @dev Mint existing tokens
      */
-    function _mintExisting(address extension, address[] memory to, uint256[] memory tokenIds, uint256[] memory amounts) internal {
+    function _mintExisting(address extension, address[] calldata to, uint256[] calldata tokenIds, uint256[] calldata amounts) internal {
         if (extension != address(0)) {
             _checkMintPermissions(to, tokenIds, amounts);
         }
@@ -290,7 +290,7 @@ contract ERC1155Creator is AdminControl, ERC1155Base, ERC1155CreatorCore {
     /**
      * @dev See {IERC1155CreatorCore-burn}.
      */
-    function burn(address account, uint256[] memory tokenIds, uint256[] memory amounts) public virtual override nonReentrant {
+    function burn(address account, uint256[] calldata tokenIds, uint256[] calldata amounts) public virtual override nonReentrant {
         require(account == msg.sender || isApprovedForAll(account, msg.sender), "Caller is not owner or approved");
         require(tokenIds.length == amounts.length, "Invalid input");
         if (tokenIds.length == 1) {
@@ -358,7 +358,7 @@ contract ERC1155Creator is AdminControl, ERC1155Base, ERC1155CreatorCore {
     } 
 
     /**
-     * @dev See {IERC1155-uri}.
+     * @dev See {IERC1155MetadataURI-uri}.
      */
     function uri(uint256 tokenId) public view virtual override returns (string memory) {
         return _tokenURI(tokenId);

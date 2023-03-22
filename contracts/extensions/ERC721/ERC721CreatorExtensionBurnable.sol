@@ -74,7 +74,7 @@ abstract contract ERC721CreatorExtensionBurnable is AdminControl, ERC721CreatorE
     }
 
     /**
-     * @dev See {IERC721CreatorExtension-onBurn}.
+     * @dev See {IERC721CreatorExtensionBurnable-onBurn}.
      */
     function onBurn(address, uint256 tokenId) public virtual override {
         require(_tokenCreators[tokenId] == msg.sender, "Can only be called by token creator");

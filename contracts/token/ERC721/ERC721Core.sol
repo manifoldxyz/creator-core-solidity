@@ -218,8 +218,8 @@ abstract contract ERC721Core is ERC165, IERC721, IERC721Metadata {
      *
      * Emits a {Transfer} event.
      */
-    function _safeMint(address to, uint256 tokenId, uint96 extensionIndex) internal virtual {
-        _safeMint(to, tokenId, extensionIndex, "");
+    function _safeMint(address to, uint256 tokenId, uint96 tokenData) internal virtual {
+        _safeMint(to, tokenId, tokenData, "");
     }
 
     /**
@@ -410,7 +410,6 @@ abstract contract ERC721Core is ERC165, IERC721, IERC721Metadata {
      * - When `from` is zero, the tokens will be minted for `to`.
      * - When `to` is zero, ``from``'s tokens will be burned.
      * - `from` and `to` are never both zero.
-     * - `batchSize` is non-zero.
      *
      * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
      */
@@ -431,7 +430,6 @@ abstract contract ERC721Core is ERC165, IERC721, IERC721Metadata {
      * - When `from` is zero, the tokens were minted for `to`.
      * - When `to` is zero, ``from``'s tokens were burned.
      * - `from` and `to` are never both zero.
-     * - `batchSize` is non-zero.
      *
      * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
      */

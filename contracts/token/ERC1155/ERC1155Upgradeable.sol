@@ -6,9 +6,14 @@ import "./ERC1155Core.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 /**
- * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard,
+ * @dev Implementation of https://eips.ethereum.org/EIPS/eip-1155[ERC1155] Non-Fungible Token Standard,
  */
 abstract contract ERC1155Upgradeable is Initializable, ERC1155Core {
+
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
 
     /**
      * @dev Initializes the contract by setting a `name` and a `symbol` to the token collection.
@@ -21,11 +26,4 @@ abstract contract ERC1155Upgradeable is Initializable, ERC1155Core {
         _name = name_;
         _symbol = symbol_;
     }
-
-    /**
-     * @dev This empty reserved space is put in place to allow future versions to add new
-     * variables without shifting down storage in the inheritance chain.
-     * See https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps
-     */
-    uint256[44] private __gap;
 }

@@ -100,7 +100,7 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
     /**
      * @dev See {ICreatorCore-setTokenURIExtension}.
      */
-    function setTokenURIExtension(uint256[] memory tokenIds, string[] calldata uris) external override {
+    function setTokenURIExtension(uint256[] calldata tokenIds, string[] calldata uris) external override {
         requireExtension();
         require(tokenIds.length == uris.length, "Invalid input");
         for (uint i; i < tokenIds.length;) {
@@ -133,7 +133,7 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
     /**
      * @dev See {ICreatorCore-setTokenURI}.
      */
-    function setTokenURI(uint256[] memory tokenIds, string[] calldata uris) external override adminRequired {
+    function setTokenURI(uint256[] calldata tokenIds, string[] calldata uris) external override adminRequired {
         require(tokenIds.length == uris.length, "Invalid input");
         for (uint i; i < tokenIds.length;) {
             _setTokenURI(tokenIds[i], uris[i]);

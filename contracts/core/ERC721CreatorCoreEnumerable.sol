@@ -13,8 +13,6 @@ import "./IERC721CreatorCoreEnumerable.sol";
  * @dev Core ERC721 creator implementation (with enumerable api's)
  */
 abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721CreatorCoreEnumerable {
-    using Strings for uint256;
-    using EnumerableSet for EnumerableSet.AddressSet;
 
     // For enumerating tokens for a given extension
     mapping (address => uint256) private _extensionBalances;
@@ -60,7 +58,7 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
     }
 
     /*
-     * @dev See {IERC721CeratorCoreEnumerable-tokenOfOwnerByIndexExtension}.
+     * @dev See {IERC721CreatorCoreEnumerable-tokenOfOwnerByIndexExtension}.
      */
     function tokenOfOwnerByIndexExtension(address extension, address owner, uint256 index) external view virtual override returns (uint256) {
         requireNonBlacklist(extension);
@@ -91,7 +89,7 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
     }
 
     /*
-     * @dev See {IERC721CeratorCoreEnumerable-tokenOfOwnerByIndeBase}.
+     * @dev See {IERC721CreatorCoreEnumerable-tokenOfOwnerByIndexBase}.
      */
     function tokenOfOwnerByIndexBase(address owner, uint256 index) external view virtual override returns (uint256) {
         require(index < balanceOfBase(owner), "ERC721Creator: Index out of bounds");
@@ -127,14 +125,10 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
     }
     
     function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint96 data) internal virtual {
-        if (from != address(0) && to != address(0)) {
+        if (from != address(0) && to != address(0) && from != to) {
             address tokenExtension_ = _indexToExtension[uint16(data)];
-            if (from != to) {
-                _removeTokenFromOwnerEnumeration(from, tokenId, tokenExtension_);
-            }
-            if (to != from) {
-                _addTokenToOwnerEnumeration(to, tokenId, tokenExtension_);
-            }
+            _removeTokenFromOwnerEnumeration(from, tokenId, tokenExtension_);
+            _addTokenToOwnerEnumeration(to, tokenId, tokenExtension_);
         }
     }
 

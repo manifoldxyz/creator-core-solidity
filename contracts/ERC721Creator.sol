@@ -93,7 +93,7 @@ contract ERC721Creator is AdminControl, ERC721Base, ERC721CreatorCore {
     /**
      * @dev See {ICreatorCore-setTokenURIExtension}.
      */
-    function setTokenURIExtension(uint256[] memory tokenIds, string[] calldata uris) external override {
+    function setTokenURIExtension(uint256[] calldata tokenIds, string[] calldata uris) external override {
         requireExtension();
         require(tokenIds.length == uris.length, "Invalid input");
         for (uint i; i < tokenIds.length;) {
@@ -126,7 +126,7 @@ contract ERC721Creator is AdminControl, ERC721Base, ERC721CreatorCore {
     /**
      * @dev See {ICreatorCore-setTokenURI}.
      */
-    function setTokenURI(uint256[] memory tokenIds, string[] calldata uris) external override adminRequired {
+    function setTokenURI(uint256[] calldata tokenIds, string[] calldata uris) external override adminRequired {
         require(tokenIds.length == uris.length, "Invalid input");
         for (uint i; i < tokenIds.length;) {
             _setTokenURI(tokenIds[i], uris[i]);
@@ -296,7 +296,7 @@ contract ERC721Creator is AdminControl, ERC721Base, ERC721CreatorCore {
     }
 
     /**
-     * @dev See {IERC721CreatorCore-tokenExtension}.
+     * @dev See {ICreatorCore-tokenExtension}.
      */
     function tokenExtension(uint256 tokenId) public view virtual override returns (address extension) {
         require(_exists(tokenId), "Nonexistent token");

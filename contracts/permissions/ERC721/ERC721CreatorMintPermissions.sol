@@ -31,12 +31,9 @@ abstract contract ERC721CreatorMintPermissions is ERC165, AdminControl, IERC721C
     }
 
     /**
-     * @dev See {IERC721CreatorMintPermissions-approve}.
+     * @dev See {IERC721CreatorMintPermissions-approveMint}.
      */
     function approveMint(address, address, uint256) public virtual override {
         require(msg.sender == _creator, "Can only be called by token creator");
     }
-     
-
-
 }

@@ -10,6 +10,11 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
  */
 abstract contract ERC721Upgradeable is Initializable, ERC721Core {
 
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
     /**
      * @dev Initializes the contract by setting a `name` and a `symbol` to the token collection.
      */
@@ -21,11 +26,4 @@ abstract contract ERC721Upgradeable is Initializable, ERC721Core {
         _name = name_;
         _symbol = symbol_;
     }
-
-    /**
-     * @dev This empty reserved space is put in place to allow future versions to add new
-     * variables without shifting down storage in the inheritance chain.
-     * See https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps
-     */
-    uint256[44] private __gap;
 }

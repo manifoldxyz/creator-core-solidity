@@ -205,7 +205,7 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     /**
      * @dev Set base token uri for tokens with no extension
      */
-    function _setBaseTokenURI(string memory uri) internal {
+    function _setBaseTokenURI(string calldata uri) internal {
         _extensionBaseURI[address(0)] = uri;
     }
 

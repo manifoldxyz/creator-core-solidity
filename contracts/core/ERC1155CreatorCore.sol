@@ -54,7 +54,8 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
     }
 
     /**
-     * Check if an extension can mint
+     * If mint permissions have been set for an extension (extensions can mint by default),
+     * check if an extension can mint via the permission contract's approveMint function.
      */
     function _checkMintPermissions(address[] memory to, uint256[] memory tokenIds, uint256[] memory amounts) internal {
         if (_extensionPermissions[msg.sender] != address(0)) {
@@ -65,7 +66,7 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
     /**
      * Post burn actions
      */
-    function _postBurn(address owner, uint256[] memory tokenIds, uint256[] memory amounts) internal virtual {
+    function _postBurn(address owner, uint256[] calldata tokenIds, uint256[] calldata amounts) internal virtual {
         require(tokenIds.length > 0, "Invalid input");
         address extension = _tokensExtension[tokenIds[0]];
         for (uint i; i < tokenIds.length;) {

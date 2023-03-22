@@ -58,7 +58,8 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
     }
 
     /**
-     * Check if an extension can mint
+     * If mint permissions have been set for an extension (extensions can mint by default),
+     * check if an extension can mint via the permission contract's approveMint function.
      */
     function _checkMintPermissions(address to, uint256 tokenId) internal {
         if (_extensionPermissions[msg.sender] != address(0)) {
@@ -73,7 +74,7 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
 
     
     /**
-     * Override for post mint actions
+     * Override for pre mint actions for _mintExtension
      */
     function _preMintExtension(address, uint256) internal virtual {}
 

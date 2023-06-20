@@ -9,91 +9,6 @@ import {RoyaltiesExtension, RoyaltyInfo} from "./helpers/extensions/RoyaltiesExt
 import {BurnableExtension} from "./helpers/extensions/BurnableExtension.sol";
 
 contract ERC721CreatorExtensionSupportTest is ERC721CreatorTest {
-    TransferApprovalExtension transferApprovalExtension;
-    TokenURIExtension tokenURIExtension;
-    RoyaltiesExtension royaltiesExtension;
-    BurnableExtension burnableExtension;
-
-    /**
-     * @dev Test helpers
-     */
-
-    modifier withTransferApprovalExtension() {
-        vm.prank(creator);
-        transferApprovalExtension = new TransferApprovalExtension(
-            address(creatorContract)
-        );
-
-        // Supports legacy interfaces
-        assertTrue(
-            transferApprovalExtension.supportsInterface(bytes4(0x7005caad))
-        );
-        assertTrue(
-            transferApprovalExtension.supportsInterface(bytes4(0x45ffcdad))
-        );
-
-        vm.prank(creator);
-        creatorContract.registerExtension(
-            address(transferApprovalExtension),
-            ""
-        );
-
-        _;
-    }
-
-    modifier withTokenURIExtension() {
-        vm.prank(creator);
-        tokenURIExtension = new TokenURIExtension(address(creatorContract));
-
-        vm.prank(creator);
-        creatorContract.registerExtension(address(tokenURIExtension), "");
-
-        _;
-    }
-
-    modifier withRoyaltiesExtension() {
-        vm.prank(creator);
-        royaltiesExtension = new RoyaltiesExtension(address(creatorContract));
-
-        vm.prank(creator);
-        creatorContract.registerExtension(address(royaltiesExtension), "");
-
-        _;
-    }
-
-    modifier withBurnableExtension() {
-        vm.prank(creator);
-        burnableExtension = new BurnableExtension(address(creatorContract));
-
-        vm.prank(creator);
-        creatorContract.registerExtension(address(burnableExtension), "");
-
-        _;
-    }
-
-    function _assertRoyalties(
-        uint256 tokenId,
-        address payable[] memory expectedRecipients,
-        uint256[] memory expectedValues
-    ) private {
-        (
-            address payable[] memory recipients,
-            uint256[] memory values
-        ) = creatorContract.getRoyalties(tokenId);
-
-        if (
-            expectedRecipients.length != recipients.length ||
-            expectedValues.length != values.length
-        ) {
-            fail();
-        }
-
-        for (uint256 i = 0; i < recipients.length; i++) {
-            assertEq(recipients[i], expectedRecipients[i]);
-            assertEq(values[i], expectedValues[i]);
-        }
-    }
-
     function testTransferApprovalExtension()
         public
         withTransferApprovalExtension
@@ -199,6 +114,29 @@ contract ERC721CreatorExtensionSupportTest is ERC721CreatorTest {
         _assertRoyalties(2, recipients, values);
     }
 
+    function _assertRoyalties(
+        uint256 tokenId,
+        address payable[] memory expectedRecipients,
+        uint256[] memory expectedValues
+    ) private {
+        (
+            address payable[] memory recipients,
+            uint256[] memory values
+        ) = creatorContract.getRoyalties(tokenId);
+
+        if (
+            expectedRecipients.length != recipients.length ||
+            expectedValues.length != values.length
+        ) {
+            fail();
+        }
+
+        for (uint256 i = 0; i < recipients.length; i++) {
+            assertEq(recipients[i], expectedRecipients[i]);
+            assertEq(values[i], expectedValues[i]);
+        }
+    }
+
     function testBurnableExtension() public withBurnableExtension {
         burnableExtension.mint(alice);
 
@@ -237,6 +175,11 @@ contract ERC721CreatorExtensionSupportTest is ERC721CreatorTest {
     }
 
     function testFuzzInvalidExtensionOverride(address extension) public {
+        // Ignore Cheat Codes address which will be a false positive
+        if (extension == 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D) {
+            return;
+        }
+
         // Extension is not a valid contract
         vm.prank(creator);
         vm.expectRevert("Invalid");

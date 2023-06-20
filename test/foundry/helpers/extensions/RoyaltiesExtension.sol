@@ -18,8 +18,8 @@ contract RoyaltiesExtension is CreatorExtensionRoyalties {
         _creator = creator;
     }
 
-    function mint(address to) external {
-        IERC721CreatorCore(_creator).mintExtension(to);
+    function mint(address to) external returns (uint256) {
+        return IERC721CreatorCore(_creator).mintExtension(to);
     }
 
     function setRoyaltyOverrides(

@@ -6,7 +6,7 @@ import {ERC721CreatorTest} from "./helpers/ERC721CreatorTest.sol";
 import {BurnableExtension} from "./helpers/extensions/BurnableExtension.sol";
 
 contract ERC721CreatorCoreFunctionalityTest is ERC721CreatorTest {
-    function testFuzzSupportsInterface() public {
+    function testSupportsInterface() public {
         uint32[8] memory interfaceIds = [
             0x28f10a21, // ICreatorCoreV1
             0x5365e65c, // ICreatorCoreV2
@@ -22,6 +22,18 @@ contract ERC721CreatorCoreFunctionalityTest is ERC721CreatorTest {
                 creatorContract.supportsInterface(bytes4(interfaceIds[i]))
             );
         }
+    }
+
+    function testInvalidExtensionOverride() public {
+        // Extension is not a contract
+        vm.prank(creator);
+        vm.expectRevert("Invalid");
+        creatorContract.registerExtension(alice, "");
+
+        // Creator contract can't register itself
+        vm.prank(creator);
+        vm.expectRevert("Invalid");
+        creatorContract.registerExtension(address(creatorContract), "");
     }
 
     function testExtensionRegistration() public {
@@ -50,5 +62,22 @@ contract ERC721CreatorCoreFunctionalityTest is ERC721CreatorTest {
         vm.stopPrank();
 
         assertEq(creatorContract.getExtensions().length, 2);
+    }
+
+    function testMint() public {
+        // Mint a token without an override URI
+        mintWithCreator(alice);
+
+        // Mint a token with an override URI
+        mintWithCreator(alice, "ar://");
+    }
+
+    function testExtensionMint() public withTokenURIExtension {
+        // Check tokenExtension is registered on mint
+        uint256 tokenId = tokenURIExtension.mint(alice);
+        assertEq(
+            creatorContract.tokenExtension(tokenId),
+            address(tokenURIExtension)
+        );
     }
 }

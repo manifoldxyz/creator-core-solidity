@@ -13,8 +13,8 @@ contract TransferApprovalExtension is ERC721CreatorExtensionApproveTransfer {
         _creator = creator;
     }
 
-    function mint(address to) external {
-        IERC721CreatorCore(_creator).mintExtension(to);
+    function mint(address to) external returns (uint256) {
+        return IERC721CreatorCore(_creator).mintExtension(to);
     }
 
     function setApproveEnabled(bool enabled) public {

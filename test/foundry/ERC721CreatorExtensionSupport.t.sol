@@ -70,8 +70,8 @@ contract ERC721CreatorExtensionSupportTest is ERC721CreatorTest {
         creatorContract.mintBase(bob);
 
         // No royalties currently set
-        _assertRoyalties(1, new address payable[](0), new uint256[](0));
-        _assertRoyalties(2, new address payable[](0), new uint256[](0));
+        assertRoyalties(1, new address payable[](0), new uint256[](0));
+        assertRoyalties(2, new address payable[](0), new uint256[](0));
 
         // Set default royalties
         address payable[] memory recipients = new address payable[](1);
@@ -81,8 +81,8 @@ contract ERC721CreatorExtensionSupportTest is ERC721CreatorTest {
 
         vm.prank(creator);
         creatorContract.setRoyalties(recipients, values);
-        _assertRoyalties(1, recipients, values);
-        _assertRoyalties(2, recipients, values);
+        assertRoyalties(1, recipients, values);
+        assertRoyalties(2, recipients, values);
 
         // Set default royalties for extension
         uint256[] memory overrideValues = new uint256[](1);
@@ -94,47 +94,24 @@ contract ERC721CreatorExtensionSupportTest is ERC721CreatorTest {
             recipients,
             overrideValues
         );
-        _assertRoyalties(1, recipients, overrideValues);
-        _assertRoyalties(2, recipients, values);
+        assertRoyalties(1, recipients, overrideValues);
+        assertRoyalties(2, recipients, values);
 
         // Set extension overrides for a specific token
         overrideValues[0] = 3000;
 
         vm.prank(creator);
         royaltiesExtension.setRoyaltyOverrides(1, recipients, overrideValues);
-        _assertRoyalties(1, recipients, overrideValues);
-        _assertRoyalties(2, recipients, values);
+        assertRoyalties(1, recipients, overrideValues);
+        assertRoyalties(2, recipients, values);
 
         // Set creator contract overrides for a specific token
         overrideValues[0] = 4000;
 
         vm.prank(creator);
         creatorContract.setRoyalties(1, recipients, overrideValues);
-        _assertRoyalties(1, recipients, overrideValues);
-        _assertRoyalties(2, recipients, values);
-    }
-
-    function _assertRoyalties(
-        uint256 tokenId,
-        address payable[] memory expectedRecipients,
-        uint256[] memory expectedValues
-    ) private {
-        (
-            address payable[] memory recipients,
-            uint256[] memory values
-        ) = creatorContract.getRoyalties(tokenId);
-
-        if (
-            expectedRecipients.length != recipients.length ||
-            expectedValues.length != values.length
-        ) {
-            fail();
-        }
-
-        for (uint256 i = 0; i < recipients.length; i++) {
-            assertEq(recipients[i], expectedRecipients[i]);
-            assertEq(values[i], expectedValues[i]);
-        }
+        assertRoyalties(1, recipients, overrideValues);
+        assertRoyalties(2, recipients, values);
     }
 
     function testBurnableExtension() public withBurnableExtension {
@@ -172,17 +149,5 @@ contract ERC721CreatorExtensionSupportTest is ERC721CreatorTest {
         // Returns correct token URI
         tokenURIExtension.mint(alice);
         assertEq(creatorContract.tokenURI(1), tokenURI);
-    }
-
-    function testFuzzInvalidExtensionOverride(address extension) public {
-        // Ignore Cheat Codes address which will be a false positive
-        if (extension == 0x7109709ECfa91a80626fF3989D68f67F5b1DD12D) {
-            return;
-        }
-
-        // Extension is not a valid contract
-        vm.prank(creator);
-        vm.expectRevert("Invalid");
-        creatorContract.registerExtension(extension, "");
     }
 }

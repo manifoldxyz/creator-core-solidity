@@ -6,18 +6,6 @@ import {ERC721CreatorTest} from "./helpers/ERC721CreatorTest.sol";
 import {BurnableExtension} from "./helpers/extensions/BurnableExtension.sol";
 
 contract ERC721CreatorCoreFunctionalityTest is ERC721CreatorTest {
-    address extension;
-
-    modifier withExtension() {
-        vm.prank(creator);
-        extension = address(new BurnableExtension(address(creatorContract)));
-
-        vm.prank(creator);
-        creatorContract.registerExtension(extension, "");
-
-        _;
-    }
-
     function testFuzzSupportsInterface() public {
         uint32[8] memory interfaceIds = [
             0x28f10a21, // ICreatorCoreV1
@@ -36,7 +24,7 @@ contract ERC721CreatorCoreFunctionalityTest is ERC721CreatorTest {
         }
     }
 
-    function testRegisteringExtensions() public {
+    function testExtensionRegistration() public {
         assertEq(creatorContract.getExtensions().length, 0);
 
         // Creator can register an extension

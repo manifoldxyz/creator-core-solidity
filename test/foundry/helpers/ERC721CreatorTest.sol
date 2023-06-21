@@ -5,20 +5,12 @@ pragma solidity ^0.8.0;
 import {Test} from "forge-std/Test.sol";
 import {ERC721Creator} from "creator-core/ERC721Creator.sol";
 import {ICreatorExtensionTokenURI} from "creator-core/extensions/ICreatorExtensionTokenURI.sol";
-import {TransferApprovalExtension} from "./extensions/TransferApprovalExtension.sol";
-import {TokenURIExtension} from "./extensions/TokenURIExtension.sol";
-import {RoyaltiesExtension} from "./extensions/RoyaltiesExtension.sol";
-import {BurnableExtension} from "./extensions/BurnableExtension.sol";
 import {MintableExtension, IMintableExtension} from "./extensions/MintableExtension.sol";
 import {Strings} from "openzeppelin/utils/Strings.sol";
 import {ERC165Checker} from "openzeppelin/utils/introspection/ERC165Checker.sol";
 
 contract ERC721CreatorTest is Test {
     ERC721Creator creatorContract;
-    TransferApprovalExtension transferApprovalExtension;
-    TokenURIExtension tokenURIExtension;
-    RoyaltiesExtension royaltiesExtension;
-    BurnableExtension burnableExtension;
     MintableExtension mintableExtension;
 
     address alice = address(0xA11CE);
@@ -28,7 +20,7 @@ contract ERC721CreatorTest is Test {
     string baseTokenURI = "creator://";
     string extensionTokenURI = "extension://";
 
-    function setUp() public {
+    function setUp() public virtual {
         vm.label(alice, "alice");
         vm.label(bob, "bob");
         vm.label(creator, "creator");
@@ -43,57 +35,18 @@ contract ERC721CreatorTest is Test {
         // Set base token URI
         vm.prank(creator);
         creatorContract.setBaseTokenURI(baseTokenURI);
+
+        // Register mintable extension
+        vm.prank(creator);
+        mintableExtension = new MintableExtension(address(creatorContract));
+        _registerExtension(address(mintableExtension));
     }
 
     /**
      * @dev Extension helpers
      */
 
-    modifier withTransferApprovalExtension() {
-        vm.prank(creator);
-        transferApprovalExtension = new TransferApprovalExtension(
-            address(creatorContract)
-        );
-        // Supports legacy interfaces
-        assertTrue(
-            transferApprovalExtension.supportsInterface(bytes4(0x7005caad))
-        );
-        assertTrue(
-            transferApprovalExtension.supportsInterface(bytes4(0x45ffcdad))
-        );
-        _registerExtension(address(transferApprovalExtension));
-        _;
-    }
-
-    modifier withTokenURIExtension() {
-        vm.prank(creator);
-        tokenURIExtension = new TokenURIExtension(address(creatorContract));
-        _registerExtension(address(tokenURIExtension));
-        _;
-    }
-
-    modifier withRoyaltiesExtension() {
-        vm.prank(creator);
-        royaltiesExtension = new RoyaltiesExtension(address(creatorContract));
-        _registerExtension(address(royaltiesExtension));
-        _;
-    }
-
-    modifier withBurnableExtension() {
-        vm.prank(creator);
-        burnableExtension = new BurnableExtension(address(creatorContract));
-        _registerExtension(address(burnableExtension));
-        _;
-    }
-
-    modifier withMintableExtension() {
-        vm.prank(creator);
-        mintableExtension = new MintableExtension(address(creatorContract));
-        _registerExtension(address(mintableExtension));
-        _;
-    }
-
-    function _registerExtension(address extension) private {
+    function _registerExtension(address extension) internal {
         vm.prank(creator);
         creatorContract.registerExtension(extension, extensionTokenURI);
     }
@@ -290,32 +243,5 @@ contract ERC721CreatorTest is Test {
         uint256 tokenId
     ) internal pure returns (string memory) {
         return string(abi.encodePacked(uri, Strings.toString(tokenId)));
-    }
-
-    /**
-     * @dev Royalty helpers
-     */
-
-    function assertRoyalties(
-        uint256 tokenId,
-        address payable[] memory expectedRecipients,
-        uint256[] memory expectedValues
-    ) internal {
-        (
-            address payable[] memory recipients,
-            uint256[] memory values
-        ) = creatorContract.getRoyalties(tokenId);
-
-        if (
-            expectedRecipients.length != recipients.length ||
-            expectedValues.length != values.length
-        ) {
-            fail();
-        }
-
-        for (uint256 i = 0; i < recipients.length; i++) {
-            assertEq(recipients[i], expectedRecipients[i]);
-            assertEq(values[i], expectedValues[i]);
-        }
     }
 }

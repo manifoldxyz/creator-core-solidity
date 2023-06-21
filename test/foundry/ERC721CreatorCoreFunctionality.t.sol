@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 
 import {ERC721CreatorTest} from "./helpers/ERC721CreatorTest.sol";
 import {BurnableExtension} from "./helpers/extensions/BurnableExtension.sol";
+import {Strings} from "openzeppelin/utils/Strings.sol";
 
 contract ERC721CreatorCoreFunctionalityTest is ERC721CreatorTest {
     function testSupportsInterface() public {
@@ -74,13 +75,51 @@ contract ERC721CreatorCoreFunctionalityTest is ERC721CreatorTest {
         mintWithCreator(alice, "override://");
     }
 
-    function testExtensionMint() public withMintableExtension {
+    function testMintBatch() public {
+        // Mint a batch of tokens without an override URI
+        mintBatchWithCreator(alice, 5);
+    }
+
+    function testMintBatchWithOverrideURI() public {
+        // Mint a batch of tokens with an override URI
+        string[] memory overrideURIs = new string[](5);
+        for (uint256 i = 0; i < 5; i++) {
+            overrideURIs[i] = string(
+                abi.encodePacked("override://", Strings.toString(i))
+            );
+        }
+        mintBatchWithCreator(alice, overrideURIs);
+    }
+
+    function testMintWithExtension() public withMintableExtension {
         // Mint a token without an override URI
         mintWithExtension(address(mintableExtension), alice);
     }
 
-    function testExtensionMintWithOverrideURI() public withMintableExtension {
+    function testMintWithExtensionAndOverrideURI()
+        public
+        withMintableExtension
+    {
         // Mint a token with an override URI
         mintWithExtension(address(mintableExtension), alice, "override://");
+    }
+
+    function testMintBatchWithExtension() public withMintableExtension {
+        // Mint a batch of tokens without an override URI
+        mintBatchWithExtension(address(mintableExtension), alice, 5);
+    }
+
+    function testMintBatchWithExtensionAndOverrideURI()
+        public
+        withMintableExtension
+    {
+        // Mint a batch of tokens with an override URI
+        string[] memory overrideURIs = new string[](5);
+        for (uint256 i = 0; i < 5; i++) {
+            overrideURIs[i] = string(
+                abi.encodePacked("override://", Strings.toString(i))
+            );
+        }
+        mintBatchWithExtension(address(mintableExtension), alice, overrideURIs);
     }
 }

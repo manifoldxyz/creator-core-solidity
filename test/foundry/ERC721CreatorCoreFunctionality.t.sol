@@ -67,17 +67,20 @@ contract ERC721CreatorCoreFunctionalityTest is ERC721CreatorTest {
     function testMint() public {
         // Mint a token without an override URI
         mintWithCreator(alice);
-
-        // Mint a token with an override URI
-        mintWithCreator(alice, "ar://");
     }
 
-    function testExtensionMint() public withTokenURIExtension {
-        // Check tokenExtension is registered on mint
-        uint256 tokenId = tokenURIExtension.mint(alice);
-        assertEq(
-            creatorContract.tokenExtension(tokenId),
-            address(tokenURIExtension)
-        );
+    function testMintWithOverrideURI() public {
+        // Mint a token with an override URI
+        mintWithCreator(alice, "override://");
+    }
+
+    function testExtensionMint() public withMintableExtension {
+        // Mint a token without an override URI
+        mintWithExtension(address(mintableExtension), alice);
+    }
+
+    function testExtensionMintWithOverrideURI() public withMintableExtension {
+        // Mint a token with an override URI
+        mintWithExtension(address(mintableExtension), alice, "override://");
     }
 }

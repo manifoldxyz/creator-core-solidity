@@ -64,7 +64,7 @@ contract ERC721CreatorExtensionFunctionalityTest is ERC721CreatorTest {
         vm.stopPrank();
     }
 
-    function testBlacklistExtension() public {
+    function testExtensionBlacklist() public {
         // Revert on blacklisting self
         vm.prank(creator);
         vm.expectRevert("Cannot blacklist yourself");
@@ -84,7 +84,7 @@ contract ERC721CreatorExtensionFunctionalityTest is ERC721CreatorTest {
         _registerExtension(extension);
     }
 
-    function testBlacklistExtensionRemovesRegistration() public {
+    function testExtensionBlacklistRemovesRegistration() public {
         // Deploy a new extension
         address extension = address(
             new MintableExtension(address(creatorContract))

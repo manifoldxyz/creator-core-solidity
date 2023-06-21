@@ -14,7 +14,7 @@ contract ERC721CreatorExtensionSupportTest is ERC721CreatorTest {
         withTransferApprovalExtension
     {
         // Mints bypass approvals
-        transferApprovalExtension.mint(alice);
+        mintWithExtension(address(transferApprovalExtension), alice);
 
         // Transfer lock transferApprovalExtension is enabled by default
         vm.prank(alice);
@@ -63,11 +63,10 @@ contract ERC721CreatorExtensionSupportTest is ERC721CreatorTest {
 
     function testRoyaltiesExtension() public withRoyaltiesExtension {
         // Mint extension token
-        royaltiesExtension.mint(alice);
+        mintWithExtension(address(royaltiesExtension), alice);
 
         // Mint base token
-        vm.prank(creator);
-        creatorContract.mintBase(bob);
+        mintWithCreator(bob);
 
         // No royalties currently set
         assertRoyalties(1, new address payable[](0), new uint256[](0));
@@ -135,19 +134,20 @@ contract ERC721CreatorExtensionSupportTest is ERC721CreatorTest {
         assertEq(burnableExtension.burntTokens(0), 1);
     }
 
-    /**
-     * @dev Fuzz Tests
-     */
+    function testTokenURIExtension() public withTokenURIExtension {
+        string memory tokenURI = "override://";
 
-    function testFuzzTokenURIExtension(
-        string memory tokenURI
-    ) public withTokenURIExtension {
+        // Mint a token
+        uint256 tokenId = mintWithExtension(address(tokenURIExtension), alice);
+
+        // Returns no tokenURI
+        assertEq(creatorContract.tokenURI(tokenId), "");
+
         // Set token URI
         vm.prank(creator);
         tokenURIExtension.setTokenURI(tokenURI);
 
         // Returns correct token URI
-        tokenURIExtension.mint(alice);
-        assertEq(creatorContract.tokenURI(1), tokenURI);
+        assertEq(creatorContract.tokenURI(tokenId), tokenURI);
     }
 }

@@ -4,8 +4,18 @@ pragma solidity ^0.8.0;
 
 import {ERC721CreatorTest} from "./helpers/ERC721CreatorTest.sol";
 import {Strings} from "openzeppelin/utils/Strings.sol";
+import {MintableExtension} from "./helpers/extensions/MintableExtension.sol";
 
 contract ERC721CreatorMintFunctionalityTest is ERC721CreatorTest {
+    MintableExtension mintableExtension;
+
+    function setUp() public override {
+        super.setUp();
+        vm.prank(creator);
+        mintableExtension = new MintableExtension(address(creatorContract));
+        _registerExtension(address(mintableExtension));
+    }
+
     function testMint() public {
         // Mint a token without an override URI
         mintWithCreator(alice);

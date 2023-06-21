@@ -51,16 +51,62 @@ contract ERC721CreatorExtensionFunctionalityTest is ERC721CreatorTest {
         address extension = address(
             new MintableExtension(address(creatorContract))
         );
-        assertEq(creatorContract.getExtensions().length, 1);
+        assertEq(creatorContract.getExtensions().length, 0);
 
         // Register the extension
         creatorContract.registerExtension(extension, "extension2");
-        assertEq(creatorContract.getExtensions().length, 2);
+        assertEq(creatorContract.getExtensions().length, 1);
 
         // Unregister the extension
         creatorContract.unregisterExtension(extension);
-        assertEq(creatorContract.getExtensions().length, 1);
+        assertEq(creatorContract.getExtensions().length, 0);
 
         vm.stopPrank();
+    }
+
+    function testBlacklistExtension() public {
+        // Revert on blacklisting self
+        vm.prank(creator);
+        vm.expectRevert("Cannot blacklist yourself");
+        creatorContract.blacklistExtension(address(creatorContract));
+
+        // Deploy a new extension
+        address extension = address(
+            new MintableExtension(address(creatorContract))
+        );
+
+        // Blacklist the extension
+        vm.prank(creator);
+        creatorContract.blacklistExtension(extension);
+
+        // Can't register a blacklisted extension
+        vm.expectRevert("Extension blacklisted");
+        _registerExtension(extension);
+    }
+
+    function testBlacklistExtensionRemovesRegistration() public {
+        // Deploy a new extension
+        address extension = address(
+            new MintableExtension(address(creatorContract))
+        );
+
+        // Register the extension
+        _registerExtension(extension);
+        assertEq(creatorContract.getExtensions().length, 1);
+
+        // Mint a token
+        uint256 tokenId = mintWithExtension(extension, alice);
+
+        // Blacklist the extension
+        vm.prank(creator);
+        creatorContract.blacklistExtension(extension);
+        assertEq(creatorContract.getExtensions().length, 0);
+
+        // Check token is no longer valid
+        vm.expectRevert("Extension blacklisted");
+        creatorContract.tokenURI(tokenId);
+
+        vm.expectRevert("Extension blacklisted");
+        creatorContract.tokenExtension(tokenId);
     }
 }

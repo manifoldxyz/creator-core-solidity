@@ -5,13 +5,12 @@ pragma solidity ^0.8.0;
 import {Test} from "forge-std/Test.sol";
 import {ERC721Creator} from "creator-core/ERC721Creator.sol";
 import {ICreatorExtensionTokenURI} from "creator-core/extensions/ICreatorExtensionTokenURI.sol";
-import {MintableExtension, IMintableExtension} from "./extensions/MintableExtension.sol";
+import {IMintableExtension} from "./extensions/MintableExtension.sol";
 import {Strings} from "openzeppelin/utils/Strings.sol";
 import {ERC165Checker} from "openzeppelin/utils/introspection/ERC165Checker.sol";
 
 contract ERC721CreatorTest is Test {
     ERC721Creator creatorContract;
-    MintableExtension mintableExtension;
 
     address alice = address(0xA11CE);
     address bob = address(0xB0B);
@@ -35,11 +34,6 @@ contract ERC721CreatorTest is Test {
         // Set base token URI
         vm.prank(creator);
         creatorContract.setBaseTokenURI(baseTokenURI);
-
-        // Register mintable extension
-        vm.prank(creator);
-        mintableExtension = new MintableExtension(address(creatorContract));
-        _registerExtension(address(mintableExtension));
     }
 
     /**

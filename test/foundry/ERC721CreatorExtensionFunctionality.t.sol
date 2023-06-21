@@ -54,7 +54,7 @@ contract ERC721CreatorExtensionFunctionalityTest is ERC721CreatorTest {
         assertEq(creatorContract.getExtensions().length, 0);
 
         // Register the extension
-        creatorContract.registerExtension(extension, "extension2");
+        creatorContract.registerExtension(extension, "");
         assertEq(creatorContract.getExtensions().length, 1);
 
         // Unregister the extension

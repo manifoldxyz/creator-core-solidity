@@ -26,6 +26,13 @@ contract TokenURIExtension is ICreatorExtensionTokenURI {
         return IERC721CreatorCore(_creator).mintExtension(to);
     }
 
+    function mintBatch(
+        address to,
+        uint16 count
+    ) external returns (uint256[] memory) {
+        return IERC721CreatorCore(_creator).mintExtensionBatch(to, count);
+    }
+
     function setTokenURI(string calldata uri) public {
         _tokenURI = uri;
     }

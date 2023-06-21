@@ -25,8 +25,8 @@ contract ERC721CreatorTest is Test {
     address bob = address(0xB0B);
     address creator = address(0xC12EA7012);
 
-    string baseTokenURI = "ipfs://";
-    string extensionTokenURI = "ar://";
+    string baseTokenURI = "creator://";
+    string extensionTokenURI = "extension://";
 
     function setUp() public {
         vm.label(alice, "alice");
@@ -127,6 +127,42 @@ contract ERC721CreatorTest is Test {
         return tokenId;
     }
 
+    function mintBatchWithCreator(
+        address to,
+        uint16 count
+    ) internal returns (uint256[] memory) {
+        // Mint a token
+        vm.prank(creator);
+        uint256[] memory tokenIds = creatorContract.mintBaseBatch(to, count);
+
+        // Assert mints were successful
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            assertMintWithCreator(
+                tokenIds[i],
+                to,
+                _tokenURI(baseTokenURI, tokenIds[i])
+            );
+        }
+
+        return tokenIds;
+    }
+
+    function mintBatchWithCreator(
+        address to,
+        string[] memory uris
+    ) internal returns (uint256[] memory) {
+        // Mint a token
+        vm.prank(creator);
+        uint256[] memory tokenIds = creatorContract.mintBaseBatch(to, uris);
+
+        // Assert mints were successful
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            assertMintWithCreator(tokenIds[i], to, uris[i]);
+        }
+
+        return tokenIds;
+    }
+
     function mintWithExtension(
         address extension,
         address to
@@ -159,6 +195,51 @@ contract ERC721CreatorTest is Test {
         assertMintWithExtension(extension, tokenId, to, uri);
 
         return tokenId;
+    }
+
+    function mintBatchWithExtension(
+        address extension,
+        address to,
+        uint16 count
+    ) internal returns (uint256[] memory) {
+        // Mint a token
+        vm.prank(creator);
+        uint256[] memory tokenIds = IMintableExtension(extension).mintBatch(
+            to,
+            count
+        );
+
+        // Assert mints were successful
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            assertMintWithExtension(
+                extension,
+                tokenIds[i],
+                to,
+                _tokenURI(extensionTokenURI, tokenIds[i])
+            );
+        }
+
+        return tokenIds;
+    }
+
+    function mintBatchWithExtension(
+        address extension,
+        address to,
+        string[] memory uris
+    ) internal returns (uint256[] memory) {
+        // Mint a token
+        vm.prank(creator);
+        uint256[] memory tokenIds = IMintableExtension(extension).mintBatch(
+            to,
+            uris
+        );
+
+        // Assert mints were successful
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            assertMintWithExtension(extension, tokenIds[i], to, uris[i]);
+        }
+
+        return tokenIds;
     }
 
     function assertMintWithCreator(

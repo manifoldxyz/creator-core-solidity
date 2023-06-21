@@ -8,6 +8,16 @@ interface IMintableExtension {
     function mint(address to) external returns (uint256);
 
     function mint(address to, string calldata uri) external returns (uint256);
+
+    function mintBatch(
+        address to,
+        uint16 count
+    ) external returns (uint256[] memory);
+
+    function mintBatch(
+        address to,
+        string[] calldata uris
+    ) external returns (uint256[] memory);
 }
 
 contract MintableExtension {
@@ -23,5 +33,19 @@ contract MintableExtension {
 
     function mint(address to, string calldata uri) external returns (uint256) {
         return IERC721CreatorCore(_creator).mintExtension(to, uri);
+    }
+
+    function mintBatch(
+        address to,
+        uint16 count
+    ) external returns (uint256[] memory) {
+        return IERC721CreatorCore(_creator).mintExtensionBatch(to, count);
+    }
+
+    function mintBatch(
+        address to,
+        string[] calldata uris
+    ) external returns (uint256[] memory) {
+        return IERC721CreatorCore(_creator).mintExtensionBatch(to, uris);
     }
 }

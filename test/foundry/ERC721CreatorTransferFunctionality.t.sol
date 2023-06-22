@@ -24,52 +24,100 @@ contract ERC721CreatorTransferFunctionalityTest is ERC721CreatorTest {
         _registerExtension(address(transferApprovalExtension));
     }
 
-    function testTransferApprovalExtension() public {
-        // Mints bypass approvals
-        mintWithExtension(address(transferApprovalExtension), alice);
+    function testTransferApprovalBase() public {
+        // Deploy new extension for the base transfer approval
+        TransferApprovalExtension baseExtension = new TransferApprovalExtension(
+            address(creatorContract)
+        );
 
-        // Transfer lock transferApprovalExtension is enabled by default
-        vm.prank(alice);
-        vm.expectRevert("Extension approval failure");
-        creatorContract.safeTransferFrom(alice, bob, 1);
+        // Enable the extension
+        vm.prank(creator);
+        baseExtension.setApproveEnabled(true);
 
-        // User can't modify transfer lock transferApprovalExtension
+        // Only creator can set the base transfer approval extension
         vm.prank(alice);
         vm.expectRevert("AdminControl: Must be owner or admin");
-        transferApprovalExtension.setApproveTransfer(
-            address(creatorContract),
-            false
-        );
+        creatorContract.setApproveTransfer(address(baseExtension));
 
-        // Creator can disable transfer lock transferApprovalExtension
+        // Set the base transfer approval extension
         vm.prank(creator);
-        transferApprovalExtension.setApproveTransfer(
-            address(creatorContract),
-            false
-        );
+        creatorContract.setApproveTransfer(address(baseExtension));
 
-        // Transfer lock transferApprovalExtension is disabled
-        vm.prank(alice);
-        creatorContract.safeTransferFrom(alice, bob, 1);
+        // Validate the base transfer approval extension
+        assertEq(address(baseExtension), creatorContract.getApproveTransfer());
 
-        // Creator can re-enable transfer lock transferApprovalExtension
+        // Mint tokens
+        uint256[] memory tokenIds = mintBatchWithCreator(alice, 3);
+
+        // Transfer tokens
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            vm.prank(alice);
+            creatorContract.safeTransferFrom(alice, bob, tokenIds[i]);
+        }
+
+        // Disable the base transfer approval extension
         vm.prank(creator);
-        transferApprovalExtension.setApproveTransfer(
-            address(creatorContract),
-            true
-        );
+        baseExtension.setApproveEnabled(false);
 
-        // Extension logic itself disables transfers
-        vm.prank(bob);
-        vm.expectRevert("Extension approval failure");
-        creatorContract.safeTransferFrom(bob, alice, 1);
+        // Validate tokens can't be transferred
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            vm.prank(bob);
+            vm.expectRevert("Extension approval failure");
+            creatorContract.safeTransferFrom(bob, alice, tokenIds[i]);
+        }
 
-        // Creator can enable transfers in transferApprovalExtension logic
+        // Disable the base transfer approval extension
+        vm.prank(creator);
+        creatorContract.setApproveTransfer(address(0));
+
+        // Validate the base transfer approval extension
+        assertEq(address(0), creatorContract.getApproveTransfer());
+
+        // Validate tokens can be transferred
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            vm.prank(bob);
+            creatorContract.safeTransferFrom(bob, alice, tokenIds[i]);
+        }
+    }
+
+    function testTransferApprovalExtension() public {
+        // Enable the extension
         vm.prank(creator);
         transferApprovalExtension.setApproveEnabled(true);
 
-        // Successful transfer
-        vm.prank(bob);
-        creatorContract.safeTransferFrom(bob, alice, 1);
+        // Mint tokens
+        uint256[] memory tokenIds = mintBatchWithExtension(
+            address(transferApprovalExtension),
+            alice,
+            3
+        );
+
+        // Transfer tokens
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            vm.prank(alice);
+            creatorContract.safeTransferFrom(alice, bob, tokenIds[i]);
+        }
+
+        // Disable the base transfer approval extension
+        vm.prank(creator);
+        transferApprovalExtension.setApproveEnabled(false);
+
+        // Validate tokens can't be transferred
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            vm.prank(bob);
+            vm.expectRevert("Extension approval failure");
+            creatorContract.safeTransferFrom(bob, alice, tokenIds[i]);
+        }
+
+        // Unregister the extension
+        vm.prank(creator);
+        creatorContract.unregisterExtension(address(transferApprovalExtension));
+
+        // Validate tokens can't be transferred without extension
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            vm.prank(bob);
+            vm.expectRevert("Extension approval failure");
+            creatorContract.safeTransferFrom(bob, alice, tokenIds[i]);
+        }
     }
 }

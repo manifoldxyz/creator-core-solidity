@@ -4,23 +4,17 @@ pragma solidity ^0.8.0;
 
 import {IERC721CreatorCore} from "creator-core/core/IERC721CreatorCore.sol";
 import {CreatorExtensionRoyalties} from "creator-core/extensions/CreatorExtensionRoyalties.sol";
+import {Extension} from "./Extension.sol";
 
 struct RoyaltyInfo {
     address payable[] recipients;
     uint256[] values;
 }
 
-contract RoyaltiesExtension is CreatorExtensionRoyalties {
-    address _creator;
+contract RoyaltiesExtension is CreatorExtensionRoyalties, Extension {
     mapping(uint256 => RoyaltyInfo) _royaltyInfo;
 
-    constructor(address creator) {
-        _creator = creator;
-    }
-
-    function mint(address to) external returns (uint256) {
-        return IERC721CreatorCore(_creator).mintExtension(to);
-    }
+    constructor(address creator) Extension(creator) {}
 
     function setRoyaltyOverrides(
         uint256 tokenId,

@@ -4,16 +4,16 @@ pragma solidity ^0.8.0;
 
 import {ERC721CreatorTest} from "./helpers/ERC721CreatorTest.sol";
 import {Strings} from "openzeppelin/utils/Strings.sol";
-import {MintableExtension} from "./helpers/extensions/MintableExtension.sol";
+import {Extension} from "./helpers/extensions/Extension.sol";
 
-contract ERC721CreatorMintFunctionalityTest is ERC721CreatorTest {
-    MintableExtension mintableExtension;
+contract ERC721CreatorMintsTest is ERC721CreatorTest {
+    Extension extension;
 
     function setUp() public override {
         super.setUp();
         vm.prank(creator);
-        mintableExtension = new MintableExtension(address(creatorContract));
-        _registerExtension(address(mintableExtension));
+        extension = new Extension(address(creatorContract));
+        _registerExtension(address(extension));
     }
 
     function testMint() public {
@@ -44,17 +44,17 @@ contract ERC721CreatorMintFunctionalityTest is ERC721CreatorTest {
 
     function testMintWithExtension() public {
         // Mint a token without an override URI
-        mintWithExtension(address(mintableExtension), alice);
+        mintWithExtension(address(extension), alice);
     }
 
     function testMintWithExtensionAndOverrideURI() public {
         // Mint a token with an override URI
-        mintWithExtension(address(mintableExtension), alice, "override://");
+        mintWithExtension(address(extension), alice, "override://");
     }
 
     function testMintBatchWithExtension() public {
         // Mint a batch of tokens without an override URI
-        mintBatchWithExtension(address(mintableExtension), alice, 5);
+        mintBatchWithExtension(address(extension), alice, 5);
     }
 
     function testMintBatchWithExtensionAndOverrideURI() public {
@@ -65,6 +65,6 @@ contract ERC721CreatorMintFunctionalityTest is ERC721CreatorTest {
                 abi.encodePacked("override://", Strings.toString(i))
             );
         }
-        mintBatchWithExtension(address(mintableExtension), alice, overrideURIs);
+        mintBatchWithExtension(address(extension), alice, overrideURIs);
     }
 }

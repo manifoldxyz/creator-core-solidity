@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 import {ERC721CreatorTest} from "./helpers/ERC721CreatorTest.sol";
 import {TransferApprovalExtension} from "./helpers/extensions/TransferApprovalExtension.sol";
 
-contract ERC721CreatorTransferFunctionalityTest is ERC721CreatorTest {
+contract ERC721CreatorTransfersTest is ERC721CreatorTest {
     TransferApprovalExtension transferApprovalExtension;
 
     function setUp() public override {

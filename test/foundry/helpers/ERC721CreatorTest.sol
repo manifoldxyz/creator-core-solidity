@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 import {Test} from "forge-std/Test.sol";
 import {ERC721Creator} from "creator-core/ERC721Creator.sol";
 import {ICreatorExtensionTokenURI} from "creator-core/extensions/ICreatorExtensionTokenURI.sol";
-import {IMintableExtension} from "./extensions/MintableExtension.sol";
+import {IExtension} from "./extensions/Extension.sol";
 import {Strings} from "openzeppelin/utils/Strings.sol";
 import {ERC165Checker} from "openzeppelin/utils/introspection/ERC165Checker.sol";
 
@@ -116,7 +116,7 @@ contract ERC721CreatorTest is Test {
     ) internal returns (uint256) {
         // Mint a token
         vm.prank(creator);
-        uint256 tokenId = IMintableExtension(extension).mint(to);
+        uint256 tokenId = IExtension(extension).mint(to);
 
         // If tokenId == 0, call reverted
         if (tokenId == 0) {
@@ -141,7 +141,7 @@ contract ERC721CreatorTest is Test {
     ) internal returns (uint256) {
         // Mint a token
         vm.prank(creator);
-        uint256 tokenId = IMintableExtension(extension).mint(to, uri);
+        uint256 tokenId = IExtension(extension).mint(to, uri);
 
         // Assert mint was successful
         assertMintWithExtension(extension, tokenId, to, uri);
@@ -156,10 +156,7 @@ contract ERC721CreatorTest is Test {
     ) internal returns (uint256[] memory) {
         // Mint a token
         vm.prank(creator);
-        uint256[] memory tokenIds = IMintableExtension(extension).mintBatch(
-            to,
-            count
-        );
+        uint256[] memory tokenIds = IExtension(extension).mintBatch(to, count);
 
         // Assert mints were successful
         for (uint256 i = 0; i < tokenIds.length; i++) {
@@ -181,10 +178,7 @@ contract ERC721CreatorTest is Test {
     ) internal returns (uint256[] memory) {
         // Mint a token
         vm.prank(creator);
-        uint256[] memory tokenIds = IMintableExtension(extension).mintBatch(
-            to,
-            uris
-        );
+        uint256[] memory tokenIds = IExtension(extension).mintBatch(to, uris);
 
         // Assert mints were successful
         for (uint256 i = 0; i < tokenIds.length; i++) {

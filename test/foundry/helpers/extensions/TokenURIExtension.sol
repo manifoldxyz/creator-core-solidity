@@ -5,14 +5,12 @@ pragma solidity ^0.8.0;
 import {IERC721CreatorCore} from "creator-core/core/IERC721CreatorCore.sol";
 import {ICreatorExtensionTokenURI} from "creator-core/extensions/ICreatorExtensionTokenURI.sol";
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {Extension} from "./Extension.sol";
 
-contract TokenURIExtension is ICreatorExtensionTokenURI {
-    address _creator;
+contract TokenURIExtension is ICreatorExtensionTokenURI, Extension {
     string _tokenURI;
 
-    constructor(address creator) {
-        _creator = creator;
-    }
+    constructor(address creator) Extension(creator) {}
 
     function supportsInterface(
         bytes4 interfaceId
@@ -20,17 +18,6 @@ contract TokenURIExtension is ICreatorExtensionTokenURI {
         return
             interfaceId == type(ICreatorExtensionTokenURI).interfaceId ||
             interfaceId == type(IERC165).interfaceId;
-    }
-
-    function mint(address to) external returns (uint256) {
-        return IERC721CreatorCore(_creator).mintExtension(to);
-    }
-
-    function mintBatch(
-        address to,
-        uint16 count
-    ) external returns (uint256[] memory) {
-        return IERC721CreatorCore(_creator).mintExtensionBatch(to, count);
     }
 
     function setTokenURI(string calldata uri) public {

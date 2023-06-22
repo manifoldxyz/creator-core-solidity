@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 import {ERC721CreatorTest} from "./helpers/ERC721CreatorTest.sol";
 import {BurnableExtension} from "./helpers/extensions/BurnableExtension.sol";
 
-contract ERC721CreatorBurnableFunctionalityTest is ERC721CreatorTest {
+contract ERC721CreatorBurnsTest is ERC721CreatorTest {
     BurnableExtension burnableExtension;
 
     function setUp() public override {
@@ -17,10 +17,6 @@ contract ERC721CreatorBurnableFunctionalityTest is ERC721CreatorTest {
 
     function testBurnableExtension() public {
         burnableExtension.mint(alice);
-
-        // onBurn can't be called directly by a user
-        vm.expectRevert("Can only be called by token creator");
-        burnableExtension.onBurn(alice, 1);
 
         // Only the owner can burn the token
         vm.expectRevert("Caller is not owner or approved");

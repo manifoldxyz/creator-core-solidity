@@ -3,52 +3,67 @@
 pragma solidity ^0.8.0;
 
 import {IERC721CreatorCore} from "creator-core/core/IERC721CreatorCore.sol";
-import {ERC721CreatorExtensionBurnable} from "creator-core/extensions/ERC721/ERC721CreatorExtensionBurnable.sol";
+import {IERC721CreatorExtensionBurnable} from "creator-core/extensions/ERC721/IERC721CreatorExtensionBurnable.sol";
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {Extension} from "./Extension.sol";
 
-struct RoyaltyInfo {
-    address payable[] recipients;
-    uint256[] values;
-}
-
-contract BurnableExtension is ERC721CreatorExtensionBurnable {
-    address _creator;
+contract BurnableExtension is IERC721CreatorExtensionBurnable, Extension {
     uint256[] public mintedTokens;
     uint256[] public burntTokens;
 
-    constructor(address creator) {
-        _creator = creator;
+    constructor(address creator) Extension(creator) {}
+
+    function supportsInterface(bytes4 interfaceId) public pure returns (bool) {
+        return
+            interfaceId == 0xf3f4e68b || // LEGACY_ERC721_EXTENSION_BURNABLE_INTERFACE
+            interfaceId == type(IERC721CreatorExtensionBurnable).interfaceId ||
+            interfaceId == type(IERC165).interfaceId;
     }
 
-    function mint(address to) external {
-        mintedTokens.push(_mint(_creator, to));
+    function mint(address to) public override returns (uint256) {
+        uint256 tokenId = super.mint(to);
+        mintedTokens.push(tokenId);
+        return tokenId;
     }
 
-    function mint(address to, string calldata uri) external {
-        mintedTokens.push(_mint(_creator, to, uri));
+    function mint(
+        address to,
+        string calldata uri
+    ) public override returns (uint256) {
+        uint256 tokenId = super.mint(to, uri);
+        mintedTokens.push(tokenId);
+        return tokenId;
     }
 
-    function mintBatch(address to, uint16 count) external {
-        uint256[] memory tokenIds = _mintBatch(_creator, to, count);
+    function mintBatch(
+        address to,
+        uint16 count
+    ) public override returns (uint256[] memory) {
+        uint256[] memory tokenIds = super.mintBatch(to, count);
         for (uint i; i < tokenIds.length; ) {
             mintedTokens.push(tokenIds[i]);
             unchecked {
                 ++i;
             }
         }
+        return tokenIds;
     }
 
-    function mintBatch(address to, string[] calldata uris) external {
-        uint256[] memory tokenIds = _mintBatch(_creator, to, uris);
+    function mintBatch(
+        address to,
+        string[] calldata uris
+    ) public override returns (uint256[] memory) {
+        uint256[] memory tokenIds = super.mintBatch(to, uris);
         for (uint i; i < tokenIds.length; ) {
             mintedTokens.push(tokenIds[i]);
             unchecked {
                 ++i;
             }
         }
+        return tokenIds;
     }
 
-    function onBurn(address to, uint256 tokenId) public override {
-        ERC721CreatorExtensionBurnable.onBurn(to, tokenId);
+    function onBurn(address, uint256 tokenId) public {
         burntTokens.push(tokenId);
     }
 }

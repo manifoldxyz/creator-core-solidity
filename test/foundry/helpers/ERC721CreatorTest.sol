@@ -118,6 +118,11 @@ contract ERC721CreatorTest is Test {
         vm.prank(creator);
         uint256 tokenId = IMintableExtension(extension).mint(to);
 
+        // If tokenId == 0, call reverted
+        if (tokenId == 0) {
+            return tokenId;
+        }
+
         // Assert mint was successful
         assertMintWithExtension(
             extension,

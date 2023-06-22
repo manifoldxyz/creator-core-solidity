@@ -3,21 +3,17 @@
 pragma solidity ^0.8.0;
 
 import {ERC721CreatorTest} from "./helpers/ERC721CreatorTest.sol";
-import {MintPermissions} from "./helpers/extensions/MintPermissions.sol";
-import {MintableExtension} from "./helpers/extensions/MintableExtension.sol";
+import {MintPermissions} from "./helpers/permissions/MintPermissions.sol";
+import {Extension} from "./helpers/extensions/Extension.sol";
 
-contract ERC721CreatorPermissionsFunctionalityTest is ERC721CreatorTest {
+contract ERC721CreatorPermissionsTest is ERC721CreatorTest {
     function testMintPermissions() public {
         // Register the first extension
-        address extension1 = address(
-            new MintableExtension(address(creatorContract))
-        );
+        address extension1 = address(new Extension(address(creatorContract)));
         _registerExtension(extension1);
 
         // Register the second extension
-        address extension2 = address(
-            new MintableExtension(address(creatorContract))
-        );
+        address extension2 = address(new Extension(address(creatorContract)));
         _registerExtension(extension2);
 
         // Mint permissions can only be used with valid creator contracts

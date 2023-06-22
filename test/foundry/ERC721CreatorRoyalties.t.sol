@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 import {ERC721CreatorTest} from "./helpers/ERC721CreatorTest.sol";
 import {RoyaltiesExtension} from "./helpers/extensions/RoyaltiesExtension.sol";
 
-contract ERC721CreatorRoyaltyFunctionalityTest is ERC721CreatorTest {
+contract ERC721CreatorRoyaltiesTest is ERC721CreatorTest {
     RoyaltiesExtension royaltiesExtension;
 
     function setUp() public override {

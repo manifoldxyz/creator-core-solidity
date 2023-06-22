@@ -3,9 +3,9 @@
 pragma solidity ^0.8.0;
 
 import {ERC721CreatorTest} from "./helpers/ERC721CreatorTest.sol";
-import {MintableExtension} from "./helpers/extensions/MintableExtension.sol";
+import {Extension} from "./helpers/extensions/Extension.sol";
 
-contract ERC721CreatorExtensionFunctionalityTest is ERC721CreatorTest {
+contract ERC721CreatorExtensionsTest is ERC721CreatorTest {
     function testSupportsInterface() public {
         uint32[8] memory interfaceIds = [
             0x28f10a21, // ICreatorCoreV1
@@ -48,9 +48,7 @@ contract ERC721CreatorExtensionFunctionalityTest is ERC721CreatorTest {
         creatorContract.registerExtension(address(creatorContract), "");
 
         // Deploy a new extension
-        address extension = address(
-            new MintableExtension(address(creatorContract))
-        );
+        address extension = address(new Extension(address(creatorContract)));
         assertEq(creatorContract.getExtensions().length, 0);
 
         // Register the extension
@@ -71,9 +69,7 @@ contract ERC721CreatorExtensionFunctionalityTest is ERC721CreatorTest {
         creatorContract.blacklistExtension(address(creatorContract));
 
         // Deploy a new extension
-        address extension = address(
-            new MintableExtension(address(creatorContract))
-        );
+        address extension = address(new Extension(address(creatorContract)));
 
         // Blacklist the extension
         vm.prank(creator);
@@ -86,9 +82,7 @@ contract ERC721CreatorExtensionFunctionalityTest is ERC721CreatorTest {
 
     function testExtensionBlacklistRemovesRegistration() public {
         // Deploy a new extension
-        address extension = address(
-            new MintableExtension(address(creatorContract))
-        );
+        address extension = address(new Extension(address(creatorContract)));
 
         // Register the extension
         _registerExtension(extension);

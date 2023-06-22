@@ -4,25 +4,15 @@ pragma solidity ^0.8.0;
 
 import {IERC721CreatorCore} from "creator-core/core/IERC721CreatorCore.sol";
 import {ERC721CreatorExtensionApproveTransfer} from "creator-core/extensions/ERC721/ERC721CreatorExtensionApproveTransfer.sol";
+import {Extension} from "./Extension.sol";
 
-contract TransferApprovalExtension is ERC721CreatorExtensionApproveTransfer {
-    address _creator;
+contract TransferApprovalExtension is
+    ERC721CreatorExtensionApproveTransfer,
+    Extension
+{
     bool _approveEnabled;
 
-    constructor(address creator) {
-        _creator = creator;
-    }
-
-    function mint(address to) external returns (uint256) {
-        return IERC721CreatorCore(_creator).mintExtension(to);
-    }
-
-    function mintBatch(
-        address to,
-        uint16 count
-    ) external returns (uint256[] memory) {
-        return IERC721CreatorCore(_creator).mintExtensionBatch(to, count);
-    }
+    constructor(address creator) Extension(creator) {}
 
     function setApproveEnabled(bool enabled) public {
         _approveEnabled = enabled;

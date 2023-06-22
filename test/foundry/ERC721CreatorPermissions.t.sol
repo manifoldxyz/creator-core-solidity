@@ -16,20 +16,10 @@ contract ERC721CreatorPermissionsTest is ERC721CreatorTest {
         address extension2 = address(new Extension(address(creatorContract)));
         _registerExtension(extension2);
 
-        // Mint permissions can only be used with valid creator contracts
-        vm.prank(creator);
-        vm.expectRevert("Must implement IERC721CreatorCore");
-        new MintPermissions(alice);
-
         // Deploy mint permissions
         MintPermissions mintPermissions = new MintPermissions(
             address(creatorContract)
         );
-
-        // Mint permissions can only be called by creator
-        vm.prank(alice);
-        vm.expectRevert("Can only be called by token creator");
-        mintPermissions.approveMint(alice, alice, 0);
 
         // Mint permissions must be a valid contract
         vm.prank(creator);

@@ -3,21 +3,27 @@
 pragma solidity ^0.8.0;
 
 import { ERC721CreatorTest } from "./helpers/ERC721CreatorTest.sol";
-import { MintPermissions } from "./helpers/permissions/MintPermissions.sol";
-import { Extension } from "./helpers/extensions/Extension.sol";
+import {
+    ERC721MintPermissions
+} from "./helpers/permissions/ERC721MintPermissions.sol";
+import { ERC721Extension } from "./helpers/extensions/ERC721Extension.sol";
 
 contract ERC721CreatorPermissionsTest is ERC721CreatorTest {
     function testMintPermissions() public {
-        // Register the first extension
-        address extension1 = address(new Extension(address(creatorContract)));
+        // Register the first ERC721Extension
+        address extension1 = address(
+            new ERC721Extension(address(creatorContract))
+        );
         _registerExtension(extension1);
 
-        // Register the second extension
-        address extension2 = address(new Extension(address(creatorContract)));
+        // Register the second ERC721Extension
+        address extension2 = address(
+            new ERC721Extension(address(creatorContract))
+        );
         _registerExtension(extension2);
 
         // Deploy mint permissions
-        MintPermissions mintPermissions = new MintPermissions(
+        ERC721MintPermissions mintPermissions = new ERC721MintPermissions(
             address(creatorContract)
         );
 
@@ -41,7 +47,7 @@ contract ERC721CreatorPermissionsTest is ERC721CreatorTest {
         vm.prank(creator);
         mintPermissions.setApproveEnabled(false);
 
-        // Minting is disabled on the first extension, but not second extension
+        // Minting is disabled on the first ERC721Extension, but not second ERC721Extension
         vm.expectRevert("MintPermissions: Disabled");
         mintWithExtension(extension1, alice);
         mintWithExtension(extension2, alice);
@@ -122,7 +128,7 @@ contract ERC721CreatorPermissionsTest is ERC721CreatorTest {
 
     function textExtensionPermissions() private {
         // Set up utilities
-        bytes memory revertMessage = "Must be registered extension";
+        bytes memory revertMessage = "Must be registered ERC721Extension";
 
         string[] memory strings = new string[](1);
         strings[0] = "test";

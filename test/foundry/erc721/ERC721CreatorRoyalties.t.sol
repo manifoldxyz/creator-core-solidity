@@ -4,16 +4,18 @@ pragma solidity ^0.8.0;
 
 import { ERC721CreatorTest } from "./helpers/ERC721CreatorTest.sol";
 import {
-    RoyaltiesExtension
-} from "./helpers/extensions/RoyaltiesExtension.sol";
+    ERC721RoyaltiesExtension
+} from "./helpers/extensions/ERC721RoyaltiesExtension.sol";
 
 contract ERC721CreatorRoyaltiesTest is ERC721CreatorTest {
-    RoyaltiesExtension royaltiesExtension;
+    ERC721RoyaltiesExtension royaltiesExtension;
 
     function setUp() public override {
         super.setUp();
         vm.prank(creator);
-        royaltiesExtension = new RoyaltiesExtension(address(creatorContract));
+        royaltiesExtension = new ERC721RoyaltiesExtension(
+            address(creatorContract)
+        );
         _registerExtension(address(royaltiesExtension));
     }
 

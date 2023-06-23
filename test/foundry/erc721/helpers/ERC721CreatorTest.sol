@@ -7,7 +7,7 @@ import { ERC721Creator } from "creator-core/ERC721Creator.sol";
 import {
     ICreatorExtensionTokenURI
 } from "creator-core/extensions/ICreatorExtensionTokenURI.sol";
-import { IExtension } from "./extensions/Extension.sol";
+import { IERC721Extension } from "./extensions/ERC721Extension.sol";
 import { Strings } from "openzeppelin/utils/Strings.sol";
 import {
     ERC165Checker
@@ -120,7 +120,7 @@ contract ERC721CreatorTest is Test {
     ) internal returns (uint256) {
         // Mint a token
         vm.prank(creator);
-        uint256 tokenId = IExtension(extension).mint(to);
+        uint256 tokenId = IERC721Extension(extension).mint(to);
 
         // If tokenId == 0, call reverted
         if (tokenId == 0) {
@@ -145,7 +145,7 @@ contract ERC721CreatorTest is Test {
     ) internal returns (uint256) {
         // Mint a token
         vm.prank(creator);
-        uint256 tokenId = IExtension(extension).mint(to, uri);
+        uint256 tokenId = IERC721Extension(extension).mint(to, uri);
 
         // Assert mint was successful
         assertMintWithExtension(extension, tokenId, to, uri);
@@ -160,7 +160,10 @@ contract ERC721CreatorTest is Test {
     ) internal returns (uint256[] memory) {
         // Mint a token
         vm.prank(creator);
-        uint256[] memory tokenIds = IExtension(extension).mintBatch(to, count);
+        uint256[] memory tokenIds = IERC721Extension(extension).mintBatch(
+            to,
+            count
+        );
 
         // Assert mints were successful
         for (uint256 i = 0; i < tokenIds.length; i++) {
@@ -182,7 +185,10 @@ contract ERC721CreatorTest is Test {
     ) internal returns (uint256[] memory) {
         // Mint a token
         vm.prank(creator);
-        uint256[] memory tokenIds = IExtension(extension).mintBatch(to, uris);
+        uint256[] memory tokenIds = IERC721Extension(extension).mintBatch(
+            to,
+            uris
+        );
 
         // Assert mints were successful
         for (uint256 i = 0; i < tokenIds.length; i++) {

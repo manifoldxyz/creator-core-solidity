@@ -9,12 +9,12 @@ import {
 import {
     IERC165
 } from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
-import { Extension } from "./Extension.sol";
+import { ERC721Extension } from "./ERC721Extension.sol";
 
-contract TokenURIExtension is ICreatorExtensionTokenURI, Extension {
+contract ERC721TokenURIExtension is ICreatorExtensionTokenURI, ERC721Extension {
     string _tokenURI;
 
-    constructor(address creator) Extension(creator) {}
+    constructor(address creator) ERC721Extension(creator) {}
 
     function supportsInterface(
         bytes4 interfaceId

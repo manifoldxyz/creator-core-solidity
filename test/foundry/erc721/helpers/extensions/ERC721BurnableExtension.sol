@@ -9,13 +9,16 @@ import {
 import {
     IERC165
 } from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
-import { Extension } from "./Extension.sol";
+import { ERC721Extension } from "./ERC721Extension.sol";
 
-contract BurnableExtension is IERC721CreatorExtensionBurnable, Extension {
+contract ERC721BurnableExtension is
+    IERC721CreatorExtensionBurnable,
+    ERC721Extension
+{
     uint256[] public mintedTokens;
     uint256[] public burntTokens;
 
-    constructor(address creator) Extension(creator) {}
+    constructor(address creator) ERC721Extension(creator) {}
 
     function supportsInterface(bytes4 interfaceId) public pure returns (bool) {
         return

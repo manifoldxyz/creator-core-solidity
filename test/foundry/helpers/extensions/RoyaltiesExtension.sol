@@ -2,10 +2,14 @@
 
 pragma solidity ^0.8.0;
 
-import {IERC721CreatorCore} from "creator-core/core/IERC721CreatorCore.sol";
-import {ICreatorExtensionRoyalties} from "creator-core/extensions/ICreatorExtensionRoyalties.sol";
-import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
-import {Extension} from "./Extension.sol";
+import { IERC721CreatorCore } from "creator-core/core/IERC721CreatorCore.sol";
+import {
+    ICreatorExtensionRoyalties
+} from "creator-core/extensions/ICreatorExtensionRoyalties.sol";
+import {
+    IERC165
+} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import { Extension } from "./Extension.sol";
 
 struct RoyaltyInfo {
     address payable[] recipients;

@@ -2,9 +2,11 @@
 
 pragma solidity ^0.8.0;
 
-import {IERC721CreatorCore} from "creator-core/core/IERC721CreatorCore.sol";
-import {ERC721CreatorExtensionApproveTransfer} from "creator-core/extensions/ERC721/ERC721CreatorExtensionApproveTransfer.sol";
-import {Extension} from "./Extension.sol";
+import { IERC721CreatorCore } from "creator-core/core/IERC721CreatorCore.sol";
+import {
+    ERC721CreatorExtensionApproveTransfer
+} from "creator-core/extensions/ERC721/ERC721CreatorExtensionApproveTransfer.sol";
+import { Extension } from "./Extension.sol";
 
 contract TransferApprovalExtension is
     ERC721CreatorExtensionApproveTransfer,

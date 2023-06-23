@@ -2,12 +2,16 @@
 
 pragma solidity ^0.8.0;
 
-import {Test} from "forge-std/Test.sol";
-import {ERC721Creator} from "creator-core/ERC721Creator.sol";
-import {ICreatorExtensionTokenURI} from "creator-core/extensions/ICreatorExtensionTokenURI.sol";
-import {IExtension} from "./extensions/Extension.sol";
-import {Strings} from "openzeppelin/utils/Strings.sol";
-import {ERC165Checker} from "openzeppelin/utils/introspection/ERC165Checker.sol";
+import { Test } from "forge-std/Test.sol";
+import { ERC721Creator } from "creator-core/ERC721Creator.sol";
+import {
+    ICreatorExtensionTokenURI
+} from "creator-core/extensions/ICreatorExtensionTokenURI.sol";
+import { IExtension } from "./extensions/Extension.sol";
+import { Strings } from "openzeppelin/utils/Strings.sol";
+import {
+    ERC165Checker
+} from "openzeppelin/utils/introspection/ERC165Checker.sol";
 
 contract ERC721CreatorTest is Test {
     ERC721Creator creatorContract;

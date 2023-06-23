@@ -2,10 +2,14 @@
 
 pragma solidity ^0.8.0;
 
-import {IERC721CreatorCore} from "creator-core/core/IERC721CreatorCore.sol";
-import {IERC721CreatorExtensionBurnable} from "creator-core/extensions/ERC721/IERC721CreatorExtensionBurnable.sol";
-import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
-import {Extension} from "./Extension.sol";
+import { IERC721CreatorCore } from "creator-core/core/IERC721CreatorCore.sol";
+import {
+    IERC721CreatorExtensionBurnable
+} from "creator-core/extensions/ERC721/IERC721CreatorExtensionBurnable.sol";
+import {
+    IERC165
+} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import { Extension } from "./Extension.sol";
 
 contract BurnableExtension is IERC721CreatorExtensionBurnable, Extension {
     uint256[] public mintedTokens;

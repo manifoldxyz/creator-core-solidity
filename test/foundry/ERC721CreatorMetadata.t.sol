@@ -2,8 +2,8 @@
 
 pragma solidity ^0.8.0;
 
-import {ERC721CreatorTest} from "./helpers/ERC721CreatorTest.sol";
-import {TokenURIExtension} from "./helpers/extensions/TokenURIExtension.sol";
+import { ERC721CreatorTest } from "./helpers/ERC721CreatorTest.sol";
+import { TokenURIExtension } from "./helpers/extensions/TokenURIExtension.sol";
 
 contract ERC721CreatorMetadataTest is ERC721CreatorTest {
     TokenURIExtension tokenURIExtension;

@@ -2,8 +2,10 @@
 
 pragma solidity ^0.8.0;
 
-import {ERC721CreatorTest} from "./helpers/ERC721CreatorTest.sol";
-import {RoyaltiesExtension} from "./helpers/extensions/RoyaltiesExtension.sol";
+import { ERC721CreatorTest } from "./helpers/ERC721CreatorTest.sol";
+import {
+    RoyaltiesExtension
+} from "./helpers/extensions/RoyaltiesExtension.sol";
 
 contract ERC721CreatorRoyaltiesTest is ERC721CreatorTest {
     RoyaltiesExtension royaltiesExtension;

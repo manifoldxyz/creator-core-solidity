@@ -2,9 +2,9 @@
 
 pragma solidity ^0.8.0;
 
-import {ERC721CreatorTest} from "./helpers/ERC721CreatorTest.sol";
-import {MintPermissions} from "./helpers/permissions/MintPermissions.sol";
-import {Extension} from "./helpers/extensions/Extension.sol";
+import { ERC721CreatorTest } from "./helpers/ERC721CreatorTest.sol";
+import { MintPermissions } from "./helpers/permissions/MintPermissions.sol";
+import { Extension } from "./helpers/extensions/Extension.sol";
 
 contract ERC721CreatorPermissionsTest is ERC721CreatorTest {
     function testMintPermissions() public {

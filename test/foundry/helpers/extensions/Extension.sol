@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import {IERC721CreatorCore} from "creator-core/core/IERC721CreatorCore.sol";
+import { IERC721CreatorCore } from "creator-core/core/IERC721CreatorCore.sol";
 
 interface IExtension {
     function mint(address to) external returns (uint256);

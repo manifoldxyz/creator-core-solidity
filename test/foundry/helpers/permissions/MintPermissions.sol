@@ -2,8 +2,12 @@
 
 pragma solidity ^0.8.0;
 
-import {IERC721CreatorMintPermissions} from "creator-core/permissions/ERC721/IERC721CreatorMintPermissions.sol";
-import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {
+    IERC721CreatorMintPermissions
+} from "creator-core/permissions/ERC721/IERC721CreatorMintPermissions.sol";
+import {
+    IERC165
+} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
 contract MintPermissions is IERC721CreatorMintPermissions {
     address _creator;

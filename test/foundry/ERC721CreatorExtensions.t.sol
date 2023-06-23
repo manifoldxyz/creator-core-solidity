@@ -2,8 +2,8 @@
 
 pragma solidity ^0.8.0;
 
-import {ERC721CreatorTest} from "./helpers/ERC721CreatorTest.sol";
-import {Extension} from "./helpers/extensions/Extension.sol";
+import { ERC721CreatorTest } from "./helpers/ERC721CreatorTest.sol";
+import { Extension } from "./helpers/extensions/Extension.sol";
 
 contract ERC721CreatorExtensionsTest is ERC721CreatorTest {
     function testSupportsInterface() public {

@@ -3,15 +3,19 @@
 pragma solidity ^0.8.0;
 
 import { ERC721CreatorTest } from "./helpers/ERC721CreatorTest.sol";
-import { TokenURIExtension } from "./helpers/extensions/TokenURIExtension.sol";
+import {
+    ERC721TokenURIExtension
+} from "./helpers/extensions/ERC721TokenURIExtension.sol";
 
 contract ERC721CreatorMetadataTest is ERC721CreatorTest {
-    TokenURIExtension tokenURIExtension;
+    ERC721TokenURIExtension tokenURIExtension;
 
     function setUp() public override {
         super.setUp();
         vm.prank(creator);
-        tokenURIExtension = new TokenURIExtension(address(creatorContract));
+        tokenURIExtension = new ERC721TokenURIExtension(
+            address(creatorContract)
+        );
         _registerExtension(address(tokenURIExtension));
     }
 

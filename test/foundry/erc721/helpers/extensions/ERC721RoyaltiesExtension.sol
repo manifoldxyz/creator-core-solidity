@@ -9,17 +9,20 @@ import {
 import {
     IERC165
 } from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
-import { Extension } from "./Extension.sol";
+import { ERC721Extension } from "./ERC721Extension.sol";
 
 struct RoyaltyInfo {
     address payable[] recipients;
     uint256[] values;
 }
 
-contract RoyaltiesExtension is ICreatorExtensionRoyalties, Extension {
+contract ERC721RoyaltiesExtension is
+    ICreatorExtensionRoyalties,
+    ERC721Extension
+{
     mapping(uint256 => RoyaltyInfo) _royaltyInfo;
 
-    constructor(address creator) Extension(creator) {}
+    constructor(address creator) ERC721Extension(creator) {}
 
     function supportsInterface(bytes4 interfaceId) public pure returns (bool) {
         return

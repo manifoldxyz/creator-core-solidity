@@ -9,7 +9,7 @@ import {
     IERC165
 } from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
-contract MintPermissions is IERC721CreatorMintPermissions {
+contract ERC721MintPermissions is IERC721CreatorMintPermissions {
     address _creator;
     bool _approveEnabled;
 

@@ -3,7 +3,7 @@
 pragma solidity ^0.8.0;
 
 import { ERC721CreatorTest } from "./helpers/ERC721CreatorTest.sol";
-import { Extension } from "./helpers/extensions/Extension.sol";
+import { ERC721Extension } from "./helpers/extensions/ERC721Extension.sol";
 
 contract ERC721CreatorExtensionsTest is ERC721CreatorTest {
     function testSupportsInterface() public {
@@ -36,7 +36,7 @@ contract ERC721CreatorExtensionsTest is ERC721CreatorTest {
     }
 
     function _testExtensionRegistration(address account) private {
-        // Default extension is already registered during test setUp
+        // Default ERC721Extension is already registered during test setUp
         vm.startPrank(account);
 
         // Revert on registering an EOA
@@ -47,15 +47,17 @@ contract ERC721CreatorExtensionsTest is ERC721CreatorTest {
         vm.expectRevert("Invalid");
         creatorContract.registerExtension(address(creatorContract), "");
 
-        // Deploy a new extension
-        address extension = address(new Extension(address(creatorContract)));
+        // Deploy a new ERC721Extension
+        address extension = address(
+            new ERC721Extension(address(creatorContract))
+        );
         assertEq(creatorContract.getExtensions().length, 0);
 
-        // Register the extension
+        // Register the ERC721Extension
         creatorContract.registerExtension(extension, "");
         assertEq(creatorContract.getExtensions().length, 1);
 
-        // Unregister the extension
+        // Unregister the ERC721Extension
         creatorContract.unregisterExtension(extension);
         assertEq(creatorContract.getExtensions().length, 0);
 
@@ -68,30 +70,34 @@ contract ERC721CreatorExtensionsTest is ERC721CreatorTest {
         vm.expectRevert("Cannot blacklist yourself");
         creatorContract.blacklistExtension(address(creatorContract));
 
-        // Deploy a new extension
-        address extension = address(new Extension(address(creatorContract)));
+        // Deploy a new ERC721Extension
+        address extension = address(
+            new ERC721Extension(address(creatorContract))
+        );
 
-        // Blacklist the extension
+        // Blacklist the ERC721Extension
         vm.prank(creator);
         creatorContract.blacklistExtension(extension);
 
-        // Can't register a blacklisted extension
+        // Can't register a blacklisted ERC721Extension
         vm.expectRevert("Extension blacklisted");
         _registerExtension(extension);
     }
 
     function testExtensionBlacklistRemovesRegistration() public {
-        // Deploy a new extension
-        address extension = address(new Extension(address(creatorContract)));
+        // Deploy a new ERC721Extension
+        address extension = address(
+            new ERC721Extension(address(creatorContract))
+        );
 
-        // Register the extension
+        // Register the ERC721Extension
         _registerExtension(extension);
         assertEq(creatorContract.getExtensions().length, 1);
 
         // Mint a token
         uint256 tokenId = mintWithExtension(extension, alice);
 
-        // Blacklist the extension
+        // Blacklist the ERC721Extension
         vm.prank(creator);
         creatorContract.blacklistExtension(extension);
         assertEq(creatorContract.getExtensions().length, 0);

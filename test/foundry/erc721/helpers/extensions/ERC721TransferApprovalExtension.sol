@@ -6,15 +6,15 @@ import { IERC721CreatorCore } from "creator-core/core/IERC721CreatorCore.sol";
 import {
     ERC721CreatorExtensionApproveTransfer
 } from "creator-core/extensions/ERC721/ERC721CreatorExtensionApproveTransfer.sol";
-import { Extension } from "./Extension.sol";
+import { ERC721Extension } from "./ERC721Extension.sol";
 
-contract TransferApprovalExtension is
+contract ERC721TransferApprovalExtension is
     ERC721CreatorExtensionApproveTransfer,
-    Extension
+    ERC721Extension
 {
     bool _approveEnabled;
 
-    constructor(address creator) Extension(creator) {}
+    constructor(address creator) ERC721Extension(creator) {}
 
     function setApproveEnabled(bool enabled) public {
         _approveEnabled = enabled;

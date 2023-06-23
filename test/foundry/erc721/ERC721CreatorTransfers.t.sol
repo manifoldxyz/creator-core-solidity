@@ -4,16 +4,16 @@ pragma solidity ^0.8.0;
 
 import { ERC721CreatorTest } from "./helpers/ERC721CreatorTest.sol";
 import {
-    TransferApprovalExtension
-} from "./helpers/extensions/TransferApprovalExtension.sol";
+    ERC721TransferApprovalExtension
+} from "./helpers/extensions/ERC721TransferApprovalExtension.sol";
 
 contract ERC721CreatorTransfersTest is ERC721CreatorTest {
-    TransferApprovalExtension transferApprovalExtension;
+    ERC721TransferApprovalExtension transferApprovalExtension;
 
     function setUp() public override {
         super.setUp();
         vm.prank(creator);
-        transferApprovalExtension = new TransferApprovalExtension(
+        transferApprovalExtension = new ERC721TransferApprovalExtension(
             address(creatorContract)
         );
         // Supports legacy interfaces
@@ -28,9 +28,9 @@ contract ERC721CreatorTransfersTest is ERC721CreatorTest {
 
     function testTransferApprovalBase() public {
         // Deploy new extension for the base transfer approval
-        TransferApprovalExtension baseExtension = new TransferApprovalExtension(
-            address(creatorContract)
-        );
+        ERC721TransferApprovalExtension baseExtension = new ERC721TransferApprovalExtension(
+                address(creatorContract)
+            );
 
         // Enable the extension
         vm.prank(creator);

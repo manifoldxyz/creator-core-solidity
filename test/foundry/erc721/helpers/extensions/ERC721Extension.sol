@@ -7,7 +7,7 @@ import { IERC721CreatorCore } from "creator-core/core/IERC721CreatorCore.sol";
 interface IERC721Extension {
     function mint(address to) external returns (uint256);
 
-    function mint(address to, string calldata uri) external returns (uint256);
+    function mint(address to, string memory uri) external returns (uint256);
 
     function mintBatch(
         address to,
@@ -16,7 +16,7 @@ interface IERC721Extension {
 
     function mintBatch(
         address to,
-        string[] calldata uris
+        string[] memory uris
     ) external returns (uint256[] memory);
 }
 
@@ -33,7 +33,7 @@ contract ERC721Extension is IERC721Extension {
 
     function mint(
         address to,
-        string calldata uri
+        string memory uri
     ) public virtual returns (uint256) {
         return IERC721CreatorCore(_creator).mintExtension(to, uri);
     }
@@ -47,7 +47,7 @@ contract ERC721Extension is IERC721Extension {
 
     function mintBatch(
         address to,
-        string[] calldata uris
+        string[] memory uris
     ) public virtual returns (uint256[] memory) {
         return IERC721CreatorCore(_creator).mintExtensionBatch(to, uris);
     }

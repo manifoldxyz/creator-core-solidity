@@ -20,7 +20,7 @@ contract ERC721CreatorBurnsTest is ERC721CreatorTest {
     }
 
     function testBurnableExtension() public {
-        burnableExtension.mint(alice);
+        mintWithExtension(address(burnableExtension), alice);
 
         // Only the owner can burn the token
         vm.expectRevert("Caller is not owner or approved");

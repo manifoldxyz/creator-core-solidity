@@ -2,19 +2,22 @@
 
 pragma solidity ^0.8.0;
 
-import { IERC721CreatorCore } from "creator-core/core/IERC721CreatorCore.sol";
+import { IERC1155CreatorCore } from "creator-core/core/IERC1155CreatorCore.sol";
 import {
     ICreatorExtensionTokenURI
 } from "creator-core/extensions/ICreatorExtensionTokenURI.sol";
 import {
     IERC165
 } from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
-import { ERC721Extension } from "./ERC721Extension.sol";
+import { ERC1155Extension } from "./ERC1155Extension.sol";
 
-contract ERC721TokenURIExtension is ICreatorExtensionTokenURI, ERC721Extension {
+contract ERC1155TokenURIExtension is
+    ICreatorExtensionTokenURI,
+    ERC1155Extension
+{
     string _uri;
 
-    constructor(address creator) ERC721Extension(creator) {}
+    constructor(address creator) ERC1155Extension(creator) {}
 
     function supportsInterface(
         bytes4 interfaceId

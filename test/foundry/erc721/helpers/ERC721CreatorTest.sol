@@ -59,7 +59,7 @@ contract ERC721CreatorTest is Test {
         uint256 tokenId = creatorContract.mintBase(to);
 
         // Assert mint was successful
-        assertMintWithCreator(tokenId, to, _tokenURI(baseTokenURI, tokenId));
+        assertMintWithCreator(tokenId, to, _uri(baseTokenURI, tokenId));
 
         return tokenId;
     }
@@ -91,7 +91,7 @@ contract ERC721CreatorTest is Test {
             assertMintWithCreator(
                 tokenIds[i],
                 to,
-                _tokenURI(baseTokenURI, tokenIds[i])
+                _uri(baseTokenURI, tokenIds[i])
             );
         }
 
@@ -132,7 +132,7 @@ contract ERC721CreatorTest is Test {
             extension,
             tokenId,
             to,
-            _tokenURI(extensionTokenURI, tokenId)
+            _uri(extensionTokenURI, tokenId)
         );
 
         return tokenId;
@@ -171,7 +171,7 @@ contract ERC721CreatorTest is Test {
                 extension,
                 tokenIds[i],
                 to,
-                _tokenURI(extensionTokenURI, tokenIds[i])
+                _uri(extensionTokenURI, tokenIds[i])
             );
         }
 
@@ -203,7 +203,12 @@ contract ERC721CreatorTest is Test {
         address to,
         string memory uri
     ) internal {
-        assertMintWithExtension(address(0), tokenId, to, uri);
+        // Validate mint was successful
+        assertMint(tokenId, to, uri);
+
+        // If mint via creator, validate no extension was registered
+        vm.expectRevert();
+        creatorContract.tokenExtension(tokenId);
     }
 
     function assertMintWithExtension(
@@ -212,10 +217,7 @@ contract ERC721CreatorTest is Test {
         address to,
         string memory uri
     ) internal {
-        // Check balance change
-        assertEq(creatorContract.ownerOf(tokenId), to);
-
-        // Check token URI
+        // Update token  URI if needed
         if (
             ERC165Checker.supportsInterface(
                 extension,
@@ -228,20 +230,27 @@ contract ERC721CreatorTest is Test {
                 tokenId
             );
         }
-        assertEq(creatorContract.tokenURI(tokenId), uri);
 
-        // Check extension registration
-        if (extension == address(0)) {
-            // If mint via creator, validate no extension was registered
-            vm.expectRevert();
-            creatorContract.tokenExtension(tokenId);
-        } else {
-            // Otherwise, validate extension was registered during mint
-            assertEq(creatorContract.tokenExtension(tokenId), extension);
-        }
+        // Validate mint was successful
+        assertMint(tokenId, to, uri);
+
+        // Validate extension was registered during mint
+        assertEq(creatorContract.tokenExtension(tokenId), extension);
     }
 
-    function _tokenURI(
+    function assertMint(
+        uint256 tokenId,
+        address to,
+        string memory uri
+    ) internal {
+        // Check balance change
+        assertEq(creatorContract.ownerOf(tokenId), to);
+
+        // Check token URI
+        assertEq(creatorContract.tokenURI(tokenId), uri);
+    }
+
+    function _uri(
         string memory uri,
         uint256 tokenId
     ) internal pure returns (string memory) {

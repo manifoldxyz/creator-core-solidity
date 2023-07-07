@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.0;
 
-import { ERC1155CreatorTest } from "./helpers/ERC1155CreatorTest.sol";
+import { ERC1155CreatorTest } from "../helpers/ERC1155CreatorTest.sol";
 import {
     ERC1155TransferApprovalExtension
-} from "./helpers/extensions/ERC1155TransferApprovalExtension.sol";
+} from "../helpers/erc1155/ERC1155TransferApprovalExtension.sol";
 
 contract ERC1155CreatorTransfersTest is ERC1155CreatorTest {
     ERC1155TransferApprovalExtension transferApprovalExtension;
@@ -16,7 +16,11 @@ contract ERC1155CreatorTransfersTest is ERC1155CreatorTest {
         transferApprovalExtension = new ERC1155TransferApprovalExtension(
             address(creatorContract)
         );
-        _registerExtension(address(transferApprovalExtension));
+        vm.prank(creator);
+        creatorContract.registerExtension(
+            address(transferApprovalExtension),
+            extensionTokenURI
+        );
     }
 
     function testTransferApprovalBase() public {

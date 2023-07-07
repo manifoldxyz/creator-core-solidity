@@ -2,11 +2,11 @@
 
 pragma solidity ^0.8.0;
 
-import { ERC1155CreatorTest } from "./helpers/ERC1155CreatorTest.sol";
+import { ERC1155CreatorTest } from "../helpers/ERC1155CreatorTest.sol";
 import {
     ERC1155MintPermissions
-} from "./helpers/permissions/ERC1155MintPermissions.sol";
-import { ERC1155Extension } from "./helpers/extensions/ERC1155Extension.sol";
+} from "../helpers/erc1155/ERC1155MintPermissions.sol";
+import { ERC1155Extension } from "../helpers/erc1155/ERC1155Extension.sol";
 
 contract ERC1155CreatorPermissionsTest is ERC1155CreatorTest {
     function testMintPermissions() public {
@@ -14,13 +14,15 @@ contract ERC1155CreatorPermissionsTest is ERC1155CreatorTest {
         address extension1 = address(
             new ERC1155Extension(address(creatorContract))
         );
-        _registerExtension(extension1);
+        vm.prank(creator);
+        creatorContract.registerExtension(extension1, extensionTokenURI);
 
         // Register the second ERC1155Extension
         address extension2 = address(
             new ERC1155Extension(address(creatorContract))
         );
-        _registerExtension(extension2);
+        vm.prank(creator);
+        creatorContract.registerExtension(extension2, extensionTokenURI);
 
         // Deploy mint permissions
         ERC1155MintPermissions mintPermissions = new ERC1155MintPermissions(

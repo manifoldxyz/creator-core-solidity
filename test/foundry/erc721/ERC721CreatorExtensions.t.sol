@@ -2,8 +2,8 @@
 
 pragma solidity ^0.8.0;
 
-import { ERC721CreatorTest } from "./helpers/ERC721CreatorTest.sol";
-import { ERC721Extension } from "./helpers/extensions/ERC721Extension.sol";
+import { ERC721CreatorTest } from "../helpers/ERC721CreatorTest.sol";
+import { ERC721Extension } from "../helpers/erc721/ERC721Extension.sol";
 
 contract ERC721CreatorExtensionsTest is ERC721CreatorTest {
     function testSupportsInterface() public {
@@ -81,7 +81,8 @@ contract ERC721CreatorExtensionsTest is ERC721CreatorTest {
 
         // Can't register a blacklisted ERC721Extension
         vm.expectRevert("Extension blacklisted");
-        _registerExtension(extension);
+        vm.prank(creator);
+        creatorContract.registerExtension(extension, extensionTokenURI);
     }
 
     function testExtensionBlacklistRemovesRegistration() public {
@@ -91,7 +92,8 @@ contract ERC721CreatorExtensionsTest is ERC721CreatorTest {
         );
 
         // Register the ERC721Extension
-        _registerExtension(extension);
+        vm.prank(creator);
+        creatorContract.registerExtension(extension, extensionTokenURI);
         assertEq(creatorContract.getExtensions().length, 1);
 
         // Mint a token

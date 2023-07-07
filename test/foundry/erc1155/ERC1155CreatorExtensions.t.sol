@@ -2,8 +2,8 @@
 
 pragma solidity ^0.8.0;
 
-import { ERC1155CreatorTest } from "./helpers/ERC1155CreatorTest.sol";
-import { ERC1155Extension } from "./helpers/extensions/ERC1155Extension.sol";
+import { ERC1155CreatorTest } from "../helpers/ERC1155CreatorTest.sol";
+import { ERC1155Extension } from "../helpers/erc1155/ERC1155Extension.sol";
 
 contract ERC1155CreatorExtensionsTest is ERC1155CreatorTest {
     function testSupportsInterface() public {
@@ -80,7 +80,8 @@ contract ERC1155CreatorExtensionsTest is ERC1155CreatorTest {
 
         // Can't register a blacklisted ERC1155Extension
         vm.expectRevert("Extension blacklisted");
-        _registerExtension(extension);
+        vm.prank(creator);
+        creatorContract.registerExtension(extension, extensionTokenURI);
     }
 
     function testExtensionBlacklistRemovesRegistration() public {
@@ -90,7 +91,8 @@ contract ERC1155CreatorExtensionsTest is ERC1155CreatorTest {
         );
 
         // Register the ERC1155Extension
-        _registerExtension(extension);
+        vm.prank(creator);
+        creatorContract.registerExtension(extension, extensionTokenURI);
         assertEq(creatorContract.getExtensions().length, 1);
 
         // Mint a token

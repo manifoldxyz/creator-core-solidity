@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.0;
 
-import { ERC1155CreatorTest } from "./helpers/ERC1155CreatorTest.sol";
+import { ERC1155CreatorTest } from "../helpers/ERC1155CreatorTest.sol";
 import {
     ERC1155TokenURIExtension
-} from "./helpers/extensions/ERC1155TokenURIExtension.sol";
+} from "../helpers/erc1155/ERC1155TokenURIExtension.sol";
 
 contract ERC1155CreatorMetadataTest is ERC1155CreatorTest {
     ERC1155TokenURIExtension tokenURIExtension;
@@ -16,7 +16,11 @@ contract ERC1155CreatorMetadataTest is ERC1155CreatorTest {
         tokenURIExtension = new ERC1155TokenURIExtension(
             address(creatorContract)
         );
-        _registerExtension(address(tokenURIExtension));
+        vm.prank(creator);
+        creatorContract.registerExtension(
+            address(tokenURIExtension),
+            extensionTokenURI
+        );
     }
 
     function testTokenURIInvalidInput() public {

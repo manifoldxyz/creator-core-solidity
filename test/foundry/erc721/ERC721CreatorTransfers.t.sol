@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.0;
 
-import { ERC721CreatorTest } from "./helpers/ERC721CreatorTest.sol";
+import { ERC721CreatorTest } from "../helpers/ERC721CreatorTest.sol";
 import {
     ERC721TransferApprovalExtension
-} from "./helpers/extensions/ERC721TransferApprovalExtension.sol";
+} from "../helpers/erc721/ERC721TransferApprovalExtension.sol";
 
 contract ERC721CreatorTransfersTest is ERC721CreatorTest {
     ERC721TransferApprovalExtension transferApprovalExtension;
@@ -23,7 +23,11 @@ contract ERC721CreatorTransfersTest is ERC721CreatorTest {
         assertTrue(
             transferApprovalExtension.supportsInterface(bytes4(0x45ffcdad))
         );
-        _registerExtension(address(transferApprovalExtension));
+        vm.prank(creator);
+        creatorContract.registerExtension(
+            address(transferApprovalExtension),
+            extensionTokenURI
+        );
     }
 
     function testTransferApprovalBase() public {

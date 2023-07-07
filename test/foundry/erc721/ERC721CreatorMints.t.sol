@@ -2,9 +2,9 @@
 
 pragma solidity ^0.8.0;
 
-import { ERC721CreatorTest } from "./helpers/ERC721CreatorTest.sol";
+import { ERC721CreatorTest } from "../helpers/ERC721CreatorTest.sol";
 import { Strings } from "openzeppelin/utils/Strings.sol";
-import { ERC721Extension } from "./helpers/extensions/ERC721Extension.sol";
+import { ERC721Extension } from "../helpers/erc721/ERC721Extension.sol";
 
 contract ERC721CreatorMintsTest is ERC721CreatorTest {
     ERC721Extension extension;
@@ -13,7 +13,11 @@ contract ERC721CreatorMintsTest is ERC721CreatorTest {
         super.setUp();
         vm.prank(creator);
         extension = new ERC721Extension(address(creatorContract));
-        _registerExtension(address(extension));
+        vm.prank(creator);
+        creatorContract.registerExtension(
+            address(extension),
+            extensionTokenURI
+        );
     }
 
     function testMint() public {

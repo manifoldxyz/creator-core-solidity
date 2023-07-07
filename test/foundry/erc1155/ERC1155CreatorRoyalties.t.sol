@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.0;
 
-import { ERC1155CreatorTest } from "./helpers/ERC1155CreatorTest.sol";
+import { ERC1155CreatorTest } from "../helpers/ERC1155CreatorTest.sol";
 import {
     ERC1155RoyaltiesExtension
-} from "./helpers/extensions/ERC1155RoyaltiesExtension.sol";
+} from "../helpers/erc1155/ERC1155RoyaltiesExtension.sol";
 
 contract ERC1155CreatorRoyaltiesTest is ERC1155CreatorTest {
     ERC1155RoyaltiesExtension royaltiesExtension;
@@ -16,7 +16,11 @@ contract ERC1155CreatorRoyaltiesTest is ERC1155CreatorTest {
         royaltiesExtension = new ERC1155RoyaltiesExtension(
             address(creatorContract)
         );
-        _registerExtension(address(royaltiesExtension));
+        vm.prank(creator);
+        creatorContract.registerExtension(
+            address(royaltiesExtension),
+            extensionTokenURI
+        );
     }
 
     function testRoyaltiesInvalidInput() public {

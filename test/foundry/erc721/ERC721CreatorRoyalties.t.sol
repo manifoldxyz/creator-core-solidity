@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.0;
 
-import { ERC721CreatorTest } from "./helpers/ERC721CreatorTest.sol";
+import { ERC721CreatorTest } from "../helpers/ERC721CreatorTest.sol";
 import {
     ERC721RoyaltiesExtension
-} from "./helpers/extensions/ERC721RoyaltiesExtension.sol";
+} from "../helpers/erc721/ERC721RoyaltiesExtension.sol";
 
 contract ERC721CreatorRoyaltiesTest is ERC721CreatorTest {
     ERC721RoyaltiesExtension royaltiesExtension;
@@ -16,7 +16,11 @@ contract ERC721CreatorRoyaltiesTest is ERC721CreatorTest {
         royaltiesExtension = new ERC721RoyaltiesExtension(
             address(creatorContract)
         );
-        _registerExtension(address(royaltiesExtension));
+        vm.prank(creator);
+        creatorContract.registerExtension(
+            address(royaltiesExtension),
+            extensionTokenURI
+        );
     }
 
     function testRoyaltiesNonExistentToken() public {

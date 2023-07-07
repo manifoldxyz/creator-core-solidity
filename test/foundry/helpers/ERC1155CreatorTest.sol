@@ -2,35 +2,23 @@
 
 pragma solidity ^0.8.0;
 
-import { Test } from "forge-std/Test.sol";
+import { BaseCreatorTest } from "./BaseCreatorTest.sol";
 import { ERC1155Creator } from "creator-core/ERC1155Creator.sol";
 import {
     ICreatorExtensionTokenURI
 } from "creator-core/extensions/ICreatorExtensionTokenURI.sol";
-import { IERC1155Extension } from "./extensions/ERC1155Extension.sol";
+import { IERC1155Extension } from "./erc1155/ERC1155Extension.sol";
 import { Strings } from "openzeppelin/utils/Strings.sol";
 import {
     ERC165Checker
 } from "openzeppelin/utils/introspection/ERC165Checker.sol";
 
-contract ERC1155CreatorTest is Test {
+contract ERC1155CreatorTest is BaseCreatorTest {
     ERC1155Creator creatorContract;
 
-    address alice = address(0xA11CE);
-    address bob = address(0xB0B);
-    address creator = address(0xC12EA7012);
+    function setUp() public virtual override {
+        super.setUp();
 
-    string baseTokenURI = "creator://";
-    string extensionTokenURI = "extension://";
-
-    function setUp() public virtual {
-        vm.label(alice, "alice");
-        vm.label(bob, "bob");
-        vm.label(creator, "creator");
-        _setUpCreatorContract();
-    }
-
-    function _setUpCreatorContract() private {
         // Deploy creator contract
         vm.prank(creator);
         creatorContract = new ERC1155Creator("Test", "TEST");
@@ -38,15 +26,6 @@ contract ERC1155CreatorTest is Test {
         // Set base token URI
         vm.prank(creator);
         creatorContract.setBaseTokenURI(baseTokenURI);
-    }
-
-    /**
-     * @dev Extension helpers
-     */
-
-    function _registerExtension(address extension) internal {
-        vm.prank(creator);
-        creatorContract.registerExtension(extension, extensionTokenURI);
     }
 
     /**
@@ -440,12 +419,5 @@ contract ERC1155CreatorTest is Test {
 
         // Check token URI
         assertEq(creatorContract.uri(tokenId), uri);
-    }
-
-    function _uri(
-        string memory uri,
-        uint256 tokenId
-    ) internal pure returns (string memory) {
-        return string(abi.encodePacked(uri, Strings.toString(tokenId)));
     }
 }

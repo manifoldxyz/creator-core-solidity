@@ -7,7 +7,7 @@ import { ERC1155Creator } from "creator-core/ERC1155Creator.sol";
 import {
     ICreatorExtensionTokenURI
 } from "creator-core/extensions/ICreatorExtensionTokenURI.sol";
-import { IERC1155Extension } from "./erc1155/ERC1155Extension.sol";
+import { IERC1155Extension } from "./erc1155/helpers/ERC1155Extension.sol";
 import { Strings } from "openzeppelin/utils/Strings.sol";
 import {
     ERC165Checker

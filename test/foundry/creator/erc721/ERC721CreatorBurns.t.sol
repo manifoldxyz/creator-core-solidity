@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.0;
 
-import { ERC721CreatorTest } from "../helpers/ERC721CreatorTest.sol";
+import { ERC721CreatorTest } from "../ERC721CreatorTest.sol";
 import {
     ERC721BurnableExtension
-} from "../helpers/erc721/ERC721BurnableExtension.sol";
+} from "./helpers/ERC721BurnableExtension.sol";
 
 contract ERC721CreatorBurnsTest is ERC721CreatorTest {
     ERC721BurnableExtension burnableExtension;

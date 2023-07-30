@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.0;
 
-import { ERC1155CreatorTest } from "../helpers/ERC1155CreatorTest.sol";
+import { ERC1155CreatorTest } from "../ERC1155CreatorTest.sol";
 import {
     ERC1155BurnableExtension
-} from "../helpers/erc1155/ERC1155BurnableExtension.sol";
+} from "./helpers/ERC1155BurnableExtension.sol";
 
 contract ERC1155CreatorBurnsTest is ERC1155CreatorTest {
     ERC1155BurnableExtension burnableExtension;

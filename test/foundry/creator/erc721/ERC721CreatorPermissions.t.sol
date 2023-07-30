@@ -2,30 +2,30 @@
 
 pragma solidity ^0.8.0;
 
-import { ERC1155CreatorTest } from "../helpers/ERC1155CreatorTest.sol";
+import { ERC721CreatorTest } from "../ERC721CreatorTest.sol";
 import {
-    ERC1155MintPermissions
-} from "../helpers/erc1155/ERC1155MintPermissions.sol";
-import { ERC1155Extension } from "../helpers/erc1155/ERC1155Extension.sol";
+    ERC721MintPermissions
+} from "./helpers/ERC721MintPermissions.sol";
+import { ERC721Extension } from "./helpers/ERC721Extension.sol";
 
-contract ERC1155CreatorPermissionsTest is ERC1155CreatorTest {
+contract ERC721CreatorPermissionsTest is ERC721CreatorTest {
     function testMintPermissions() public {
-        // Register the first ERC1155Extension
+        // Register the first ERC721Extension
         address extension1 = address(
-            new ERC1155Extension(address(creatorContract))
+            new ERC721Extension(address(creatorContract))
         );
         vm.prank(creator);
         creatorContract.registerExtension(extension1, extensionTokenURI);
 
-        // Register the second ERC1155Extension
+        // Register the second ERC721Extension
         address extension2 = address(
-            new ERC1155Extension(address(creatorContract))
+            new ERC721Extension(address(creatorContract))
         );
         vm.prank(creator);
         creatorContract.registerExtension(extension2, extensionTokenURI);
 
         // Deploy mint permissions
-        ERC1155MintPermissions mintPermissions = new ERC1155MintPermissions(
+        ERC721MintPermissions mintPermissions = new ERC721MintPermissions(
             address(creatorContract)
         );
 
@@ -49,7 +49,7 @@ contract ERC1155CreatorPermissionsTest is ERC1155CreatorTest {
         vm.prank(creator);
         mintPermissions.setApproveEnabled(false);
 
-        // Minting is disabled on the first ERC1155Extension, but not second ERC1155Extension
+        // Minting is disabled on the first ERC721Extension, but not second ERC721Extension
         vm.expectRevert("MintPermissions: Disabled");
         mintWithExtension(extension1, alice);
         mintWithExtension(extension2, alice);
@@ -65,10 +65,7 @@ contract ERC1155CreatorPermissionsTest is ERC1155CreatorTest {
         // Set up utilities
         bytes memory revertMessage = "AdminControl: Must be owner or admin";
 
-        address[] memory addresses = new address[](1);
-        addresses[0] = alice;
-
-        address payable[] memory payableAddresses = new address payable[](1);
+        address payable[] memory addresses = new address payable[](1);
         addresses[0] = payable(alice);
 
         string[] memory strings = new string[](1);
@@ -108,29 +105,32 @@ contract ERC1155CreatorPermissionsTest is ERC1155CreatorTest {
         creatorContract.setMintPermissions(alice, alice);
 
         vm.expectRevert(revertMessage);
-        creatorContract.mintBaseNew(addresses, uints, strings);
+        creatorContract.mintBase(alice);
 
         vm.expectRevert(revertMessage);
-        creatorContract.mintBaseExisting(addresses, uints, uints);
+        creatorContract.mintBase(alice, baseTokenURI);
 
         vm.expectRevert(revertMessage);
-        creatorContract.setRoyalties(payableAddresses, uints);
+        creatorContract.mintBaseBatch(alice, 1);
 
         vm.expectRevert(revertMessage);
-        creatorContract.setRoyalties(1, payableAddresses, uints);
+        creatorContract.mintBaseBatch(alice, strings);
 
         vm.expectRevert(revertMessage);
-        creatorContract.setRoyaltiesExtension(alice, payableAddresses, uints);
+        creatorContract.setRoyalties(addresses, uints);
+
+        vm.expectRevert(revertMessage);
+        creatorContract.setRoyalties(1, addresses, uints);
+
+        vm.expectRevert(revertMessage);
+        creatorContract.setRoyaltiesExtension(alice, addresses, uints);
 
         vm.stopPrank();
     }
 
     function textExtensionPermissions() private {
         // Set up utilities
-        bytes memory revertMessage = "Must be registered ERC1155Extension";
-
-        address[] memory addresses = new address[](1);
-        addresses[0] = alice;
+        bytes memory revertMessage = "Must be registered ERC721Extension";
 
         string[] memory strings = new string[](1);
         strings[0] = "test";
@@ -156,10 +156,16 @@ contract ERC1155CreatorPermissionsTest is ERC1155CreatorTest {
         creatorContract.setTokenURIExtension(uints, strings);
 
         vm.expectRevert(revertMessage);
-        creatorContract.mintExtensionNew(addresses, uints, strings);
+        creatorContract.mintExtension(alice);
 
         vm.expectRevert(revertMessage);
-        creatorContract.mintExtensionExisting(addresses, uints, uints);
+        creatorContract.mintExtension(alice, baseTokenURI);
+
+        vm.expectRevert(revertMessage);
+        creatorContract.mintExtensionBatch(alice, 1);
+
+        vm.expectRevert(revertMessage);
+        creatorContract.mintExtensionBatch(alice, strings);
 
         vm.expectRevert(revertMessage);
         creatorContract.setApproveTransferExtension(true);

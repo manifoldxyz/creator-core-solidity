@@ -2,24 +2,37 @@
 
 pragma solidity ^0.8.0;
 
-import { ERC1155CreatorTest } from "../helpers/ERC1155CreatorTest.sol";
+import { ERC721CreatorTest } from "../ERC721CreatorTest.sol";
 import {
-    ERC1155RoyaltiesExtension
-} from "../helpers/erc1155/ERC1155RoyaltiesExtension.sol";
+    ERC721RoyaltiesExtension
+} from "./helpers/ERC721RoyaltiesExtension.sol";
 
-contract ERC1155CreatorRoyaltiesTest is ERC1155CreatorTest {
-    ERC1155RoyaltiesExtension royaltiesExtension;
+contract ERC721CreatorRoyaltiesTest is ERC721CreatorTest {
+    ERC721RoyaltiesExtension royaltiesExtension;
 
     function setUp() public override {
         super.setUp();
         vm.prank(creator);
-        royaltiesExtension = new ERC1155RoyaltiesExtension(
+        royaltiesExtension = new ERC721RoyaltiesExtension(
             address(creatorContract)
         );
         vm.prank(creator);
         creatorContract.registerExtension(
             address(royaltiesExtension),
             extensionTokenURI
+        );
+    }
+
+    function testRoyaltiesNonExistentToken() public {
+        vm.expectRevert("Nonexistent token");
+        creatorContract.getRoyalties(1);
+
+        vm.prank(creator);
+        vm.expectRevert("Nonexistent token");
+        creatorContract.setRoyalties(
+            1,
+            new address payable[](0),
+            new uint256[](0)
         );
     }
 

@@ -2,15 +2,16 @@
 
 pragma solidity ^0.8.0;
 
-import { ERC1155CreatorTest } from "../helpers/ERC1155CreatorTest.sol";
-import { ERC1155Extension } from "../helpers/erc1155/ERC1155Extension.sol";
+import { ERC721CreatorTest } from "../ERC721CreatorTest.sol";
+import { ERC721Extension } from "./helpers/ERC721Extension.sol";
 
-contract ERC1155CreatorExtensionsTest is ERC1155CreatorTest {
+contract ERC721CreatorExtensionsTest is ERC721CreatorTest {
     function testSupportsInterface() public {
-        uint32[7] memory interfaceIds = [
+        uint32[8] memory interfaceIds = [
             0x28f10a21, // ICreatorCoreV1
             0x5365e65c, // ICreatorCoreV2
-            0x7d248440, // IERC1155CreatorCoreV1
+            0x9088c207, // IERC721CreatorCoreV1
+            0xb5d2729f, // IERC721CreatorCoreV2
             0xbb3bafd6, // Creator Core Royalties
             0x2a55205a, // EIP-2981 Royalties
             0xb7799584, // RaribleV1 Royalties
@@ -35,7 +36,7 @@ contract ERC1155CreatorExtensionsTest is ERC1155CreatorTest {
     }
 
     function _testExtensionRegistration(address account) private {
-        // Default ERC1155Extension is already registered during test setUp
+        // Default ERC721Extension is already registered during test setUp
         vm.startPrank(account);
 
         // Revert on registering an EOA
@@ -46,17 +47,17 @@ contract ERC1155CreatorExtensionsTest is ERC1155CreatorTest {
         vm.expectRevert("Invalid");
         creatorContract.registerExtension(address(creatorContract), "");
 
-        // Deploy a new ERC1155Extension
+        // Deploy a new ERC721Extension
         address extension = address(
-            new ERC1155Extension(address(creatorContract))
+            new ERC721Extension(address(creatorContract))
         );
         assertEq(creatorContract.getExtensions().length, 0);
 
-        // Register the ERC1155Extension
+        // Register the ERC721Extension
         creatorContract.registerExtension(extension, "");
         assertEq(creatorContract.getExtensions().length, 1);
 
-        // Unregister the ERC1155Extension
+        // Unregister the ERC721Extension
         creatorContract.unregisterExtension(extension);
         assertEq(creatorContract.getExtensions().length, 0);
 
@@ -69,28 +70,28 @@ contract ERC1155CreatorExtensionsTest is ERC1155CreatorTest {
         vm.expectRevert("Cannot blacklist yourself");
         creatorContract.blacklistExtension(address(creatorContract));
 
-        // Deploy a new ERC1155Extension
+        // Deploy a new ERC721Extension
         address extension = address(
-            new ERC1155Extension(address(creatorContract))
+            new ERC721Extension(address(creatorContract))
         );
 
-        // Blacklist the ERC1155Extension
+        // Blacklist the ERC721Extension
         vm.prank(creator);
         creatorContract.blacklistExtension(extension);
 
-        // Can't register a blacklisted ERC1155Extension
+        // Can't register a blacklisted ERC721Extension
         vm.expectRevert("Extension blacklisted");
         vm.prank(creator);
         creatorContract.registerExtension(extension, extensionTokenURI);
     }
 
     function testExtensionBlacklistRemovesRegistration() public {
-        // Deploy a new ERC1155Extension
+        // Deploy a new ERC721Extension
         address extension = address(
-            new ERC1155Extension(address(creatorContract))
+            new ERC721Extension(address(creatorContract))
         );
 
-        // Register the ERC1155Extension
+        // Register the ERC721Extension
         vm.prank(creator);
         creatorContract.registerExtension(extension, extensionTokenURI);
         assertEq(creatorContract.getExtensions().length, 1);
@@ -98,14 +99,14 @@ contract ERC1155CreatorExtensionsTest is ERC1155CreatorTest {
         // Mint a token
         uint256 tokenId = mintWithExtension(extension, alice);
 
-        // Blacklist the ERC1155Extension
+        // Blacklist the ERC721Extension
         vm.prank(creator);
         creatorContract.blacklistExtension(extension);
         assertEq(creatorContract.getExtensions().length, 0);
 
         // Check token is no longer valid
         vm.expectRevert("Extension blacklisted");
-        creatorContract.uri(tokenId);
+        creatorContract.tokenURI(tokenId);
 
         vm.expectRevert("Extension blacklisted");
         creatorContract.tokenExtension(tokenId);

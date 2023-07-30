@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.0;
 
-import { ERC721CreatorTest } from "../helpers/ERC721CreatorTest.sol";
+import { ERC721CreatorTest } from "../ERC721CreatorTest.sol";
 import {
     ERC721TransferApprovalExtension
-} from "../helpers/erc721/ERC721TransferApprovalExtension.sol";
+} from "./helpers/ERC721TransferApprovalExtension.sol";
 
 contract ERC721CreatorTransfersTest is ERC721CreatorTest {
     ERC721TransferApprovalExtension transferApprovalExtension;

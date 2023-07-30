@@ -2,18 +2,18 @@
 
 pragma solidity ^0.8.0;
 
-import { ERC1155CreatorTest } from "../helpers/ERC1155CreatorTest.sol";
+import { ERC721CreatorTest } from "../ERC721CreatorTest.sol";
 import {
-    ERC1155TokenURIExtension
-} from "../helpers/erc1155/ERC1155TokenURIExtension.sol";
+    ERC721TokenURIExtension
+} from "./helpers/ERC721TokenURIExtension.sol";
 
-contract ERC1155CreatorMetadataTest is ERC1155CreatorTest {
-    ERC1155TokenURIExtension tokenURIExtension;
+contract ERC721CreatorMetadataTest is ERC721CreatorTest {
+    ERC721TokenURIExtension tokenURIExtension;
 
     function setUp() public override {
         super.setUp();
         vm.prank(creator);
-        tokenURIExtension = new ERC1155TokenURIExtension(
+        tokenURIExtension = new ERC721TokenURIExtension(
             address(creatorContract)
         );
         vm.prank(creator);
@@ -49,20 +49,20 @@ contract ERC1155CreatorMetadataTest is ERC1155CreatorTest {
         mintWithCreator(alice);
         vm.prank(creator);
         creatorContract.setTokenURI(tokenIds, uris);
-        assertEq(creatorContract.uri(1), uris[0]);
+        assertEq(creatorContract.tokenURI(1), uris[0]);
     }
 
     function testTokenURINotRemovedWhenExtensionUnregistered() public {
         // Mint a token
         uint256 tokenId = mintWithExtension(address(tokenURIExtension), alice);
-        string memory tokenURI = creatorContract.uri(tokenId);
+        string memory tokenURI = creatorContract.tokenURI(tokenId);
 
         // Unregister extension
         vm.prank(creator);
         creatorContract.unregisterExtension(address(tokenURIExtension));
 
         // Validate token URI is still set
-        assertEq(creatorContract.uri(tokenId), tokenURI);
+        assertEq(creatorContract.tokenURI(tokenId), tokenURI);
     }
 
     function testTokenURIExtensionUnique() public {
@@ -75,7 +75,7 @@ contract ERC1155CreatorMetadataTest is ERC1155CreatorTest {
         uint256 tokenId2 = mintWithCreator(alice);
 
         // Mint batch of tokens via extension
-        uint256 tokenId3 = mintWithExtension(
+        uint256[] memory tokenIds = mintBatchWithExtension(
             address(tokenURIExtension),
             alice,
             10
@@ -86,11 +86,16 @@ contract ERC1155CreatorMetadataTest is ERC1155CreatorTest {
         tokenURIExtension.setTokenURI(tokenURI);
 
         // Validate extension tokens have updated URI
-        assertEq(creatorContract.uri(tokenId), tokenURI);
-        assertEq(creatorContract.uri(tokenId3), tokenURI);
+        assertEq(creatorContract.tokenURI(tokenId), tokenURI);
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            assertEq(creatorContract.tokenURI(tokenIds[i]), tokenURI);
+        }
 
         // Validate normal token has correct URI
-        assertEq(creatorContract.uri(tokenId2), _uri(baseTokenURI, tokenId2));
+        assertEq(
+            creatorContract.tokenURI(tokenId2),
+            _uri(baseTokenURI, tokenId2)
+        );
     }
 
     function testTokenURIExtension() public {
@@ -100,13 +105,13 @@ contract ERC1155CreatorMetadataTest is ERC1155CreatorTest {
         uint256 tokenId = mintWithExtension(address(tokenURIExtension), alice);
 
         // Returns no tokenURI
-        assertEq(creatorContract.uri(tokenId), "");
+        assertEq(creatorContract.tokenURI(tokenId), "");
 
         // Set token URI
         vm.prank(creator);
         tokenURIExtension.setTokenURI(tokenURI);
 
         // Returns correct token URI
-        assertEq(creatorContract.uri(tokenId), tokenURI);
+        assertEq(creatorContract.tokenURI(tokenId), tokenURI);
     }
 }

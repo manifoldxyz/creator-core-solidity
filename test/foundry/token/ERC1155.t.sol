@@ -6,7 +6,7 @@ pragma solidity ^0.8.0;
 // https://github.com/transmissions11/solmate/blob/main/src/test/ERC721.t.sol
 
 import {Test} from "forge-std/Test.sol";
-import {MockERC1155} from "../helpers/erc1155/ERC1155.sol";
+import {MockERC1155} from "./helpers/ERC1155.sol";
 
 abstract contract ERC1155TokenReceiver {
     function onERC1155Received(

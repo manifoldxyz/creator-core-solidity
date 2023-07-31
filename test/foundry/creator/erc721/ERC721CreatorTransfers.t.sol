@@ -8,10 +8,9 @@ import {
 } from "./helpers/ERC721TransferApprovalExtension.sol";
 
 contract ERC721CreatorTransfersTest is ERC721CreatorTest {
-    ERC721TransferApprovalExtension transferApprovalExtension;
+    ERC721TransferApprovalExtension public transferApprovalExtension;
 
-    function setUp() public override {
-        super.setUp();
+    modifier withTransferApprovalExtension() {
         vm.prank(creator);
         transferApprovalExtension = new ERC721TransferApprovalExtension(
             address(creatorContract)
@@ -28,9 +27,10 @@ contract ERC721CreatorTransfersTest is ERC721CreatorTest {
             address(transferApprovalExtension),
             extensionTokenURI
         );
+        _;
     }
 
-    function testTransferApprovalBase() public {
+    function testTransferApprovalBase() public withTransferApprovalExtension {
         // Deploy new extension for the base transfer approval
         ERC721TransferApprovalExtension baseExtension = new ERC721TransferApprovalExtension(
                 address(creatorContract)
@@ -86,7 +86,7 @@ contract ERC721CreatorTransfersTest is ERC721CreatorTest {
         }
     }
 
-    function testTransferApprovalExtension() public {
+    function testTransferApprovalExtension() public withTransferApprovalExtension {
         // Enable the extension
         vm.prank(creator);
         transferApprovalExtension.setApproveEnabled(true);

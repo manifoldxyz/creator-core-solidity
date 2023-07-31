@@ -9,4 +9,4 @@ import { ERC721CreatorPermissionsTest } from "./erc721/mixins/ERC721CreatorPermi
 import { ERC721CreatorRoyaltiesTest } from "./erc721/mixins/ERC721CreatorRoyalties.sol";
 import { ERC721CreatorTransfersTest } from "./erc721/mixins/ERC721CreatorTransfers.sol";
 
-contract BaseERC721CreatorTest is ERC721CreatorBurnsTest, ERC721CreatorExtensionsTest, ERC721CreatorMetadataTest, ERC721CreatorPermissionsTest, ERC721CreatorRoyaltiesTest, ERC721CreatorTransfersTest {}
+contract ERC721CreatorTest is ERC721CreatorBurnsTest, ERC721CreatorExtensionsTest, ERC721CreatorMetadataTest, ERC721CreatorPermissionsTest, ERC721CreatorRoyaltiesTest, ERC721CreatorTransfersTest {}

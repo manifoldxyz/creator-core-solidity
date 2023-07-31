@@ -8,10 +8,9 @@ import {
 } from "./helpers/ERC721TokenURIExtension.sol";
 
 contract ERC721CreatorMetadataTest is ERC721CreatorTest {
-    ERC721TokenURIExtension tokenURIExtension;
+    ERC721TokenURIExtension public tokenURIExtension;
 
-    function setUp() public override {
-        super.setUp();
+    modifier withTokenURIExtension() {
         vm.prank(creator);
         tokenURIExtension = new ERC721TokenURIExtension(
             address(creatorContract)
@@ -21,9 +20,10 @@ contract ERC721CreatorMetadataTest is ERC721CreatorTest {
             address(tokenURIExtension),
             extensionTokenURI
         );
+        _;
     }
 
-    function testTokenURIInvalidInput() public {
+    function testTokenURIInvalidInput() public withTokenURIExtension {
         uint256[] memory tokenIds = new uint256[](1);
         tokenIds[0] = 1;
 
@@ -52,7 +52,7 @@ contract ERC721CreatorMetadataTest is ERC721CreatorTest {
         assertEq(creatorContract.tokenURI(1), uris[0]);
     }
 
-    function testTokenURINotRemovedWhenExtensionUnregistered() public {
+    function testTokenURINotRemovedWhenExtensionUnregistered() public withTokenURIExtension {
         // Mint a token
         uint256 tokenId = mintWithExtension(address(tokenURIExtension), alice);
         string memory tokenURI = creatorContract.tokenURI(tokenId);
@@ -65,7 +65,7 @@ contract ERC721CreatorMetadataTest is ERC721CreatorTest {
         assertEq(creatorContract.tokenURI(tokenId), tokenURI);
     }
 
-    function testTokenURIExtensionUnique() public {
+    function testTokenURIExtensionUnique() public withTokenURIExtension {
         string memory tokenURI = "override://";
 
         // Mint a token via extension
@@ -98,7 +98,7 @@ contract ERC721CreatorMetadataTest is ERC721CreatorTest {
         );
     }
 
-    function testTokenURIExtension() public {
+    function testTokenURIExtension() public withTokenURIExtension {
         string memory tokenURI = "override://";
 
         // Mint a token

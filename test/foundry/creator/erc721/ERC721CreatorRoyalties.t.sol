@@ -8,10 +8,9 @@ import {
 } from "./helpers/ERC721RoyaltiesExtension.sol";
 
 contract ERC721CreatorRoyaltiesTest is ERC721CreatorTest {
-    ERC721RoyaltiesExtension royaltiesExtension;
+    ERC721RoyaltiesExtension public royaltiesExtension;
 
-    function setUp() public override {
-        super.setUp();
+    modifier withRoyaltiesExtension() {
         vm.prank(creator);
         royaltiesExtension = new ERC721RoyaltiesExtension(
             address(creatorContract)
@@ -21,9 +20,10 @@ contract ERC721CreatorRoyaltiesTest is ERC721CreatorTest {
             address(royaltiesExtension),
             extensionTokenURI
         );
+        _;
     }
 
-    function testRoyaltiesNonExistentToken() public {
+    function testRoyaltiesNonExistentToken() public withRoyaltiesExtension {
         vm.expectRevert("Nonexistent token");
         creatorContract.getRoyalties(1);
 
@@ -36,7 +36,7 @@ contract ERC721CreatorRoyaltiesTest is ERC721CreatorTest {
         );
     }
 
-    function testRoyaltiesInvalidInput() public {
+    function testRoyaltiesInvalidInput() public withRoyaltiesExtension {
         uint256 tokenId = mintWithCreator(alice);
 
         // No royalties currently set
@@ -71,7 +71,7 @@ contract ERC721CreatorRoyaltiesTest is ERC721CreatorTest {
         creatorContract.setRoyalties(tokenId, recipients, invalidValues);
     }
 
-    function testRoyaltiesSetViaCreator() public {
+    function testRoyaltiesSetViaCreator() public withRoyaltiesExtension {
         // Mint a token
         uint256 tokenId = mintWithCreator(alice);
 
@@ -116,7 +116,7 @@ contract ERC721CreatorRoyaltiesTest is ERC721CreatorTest {
         );
     }
 
-    function testRoyaltiesSetViaExtension() public {
+    function testRoyaltiesSetViaExtension() public withRoyaltiesExtension {
         // Mint a token
         uint256 tokenId = mintWithExtension(address(royaltiesExtension), alice);
 
@@ -166,7 +166,7 @@ contract ERC721CreatorRoyaltiesTest is ERC721CreatorTest {
         );
     }
 
-    function testRoyaltiesExtensionPriority() public {
+    function testRoyaltiesExtensionPriority() public withRoyaltiesExtension {
         // This test enforces the royalty priority (highest to lowest)
         // 1. token
         // 2. extension override
@@ -228,15 +228,15 @@ contract ERC721CreatorRoyaltiesTest is ERC721CreatorTest {
         uint256 tokenId,
         address payable[] memory expectedRecipients,
         uint256[] memory expectedValues
-    ) private {
+    ) public {
         (
-            address payable[] memory getRoyalties_recipients,
-            uint256[] memory getRoyalties_values
+            address payable[] memory getRoyaltiesRecipients,
+            uint256[] memory getRoyaltiesValues
         ) = creatorContract.getRoyalties(tokenId);
 
         (
-            address payable[] memory getFees_recipients,
-            uint256[] memory getFees_values
+            address payable[] memory getFeesRecipients,
+            uint256[] memory getFeesValues
         ) = creatorContract.getFees(tokenId);
 
         address payable[] memory feeRecipients = creatorContract
@@ -245,10 +245,10 @@ contract ERC721CreatorRoyaltiesTest is ERC721CreatorTest {
         uint256[] memory feeBps = creatorContract.getFeeBps(tokenId);
 
         if (
-            expectedRecipients.length != getRoyalties_recipients.length ||
-            expectedValues.length != getRoyalties_values.length ||
-            expectedRecipients.length != getFees_recipients.length ||
-            expectedValues.length != getFees_values.length ||
+            expectedRecipients.length != getRoyaltiesRecipients.length ||
+            expectedValues.length != getRoyaltiesValues.length ||
+            expectedRecipients.length != getFeesRecipients.length ||
+            expectedValues.length != getFeesValues.length ||
             expectedRecipients.length != feeRecipients.length ||
             expectedValues.length != feeBps.length
         ) {
@@ -256,10 +256,10 @@ contract ERC721CreatorRoyaltiesTest is ERC721CreatorTest {
         }
 
         for (uint256 i = 0; i < expectedRecipients.length; i++) {
-            assertEq(getRoyalties_recipients[i], expectedRecipients[i]);
-            assertEq(getRoyalties_values[i], expectedValues[i]);
-            assertEq(getFees_recipients[i], expectedRecipients[i]);
-            assertEq(getFees_values[i], expectedValues[i]);
+            assertEq(getRoyaltiesRecipients[i], expectedRecipients[i]);
+            assertEq(getRoyaltiesValues[i], expectedValues[i]);
+            assertEq(getFeesRecipients[i], expectedRecipients[i]);
+            assertEq(getFeesValues[i], expectedValues[i]);
             assertEq(feeRecipients[i], expectedRecipients[i]);
             assertEq(feeBps[i], expectedValues[i]);
         }

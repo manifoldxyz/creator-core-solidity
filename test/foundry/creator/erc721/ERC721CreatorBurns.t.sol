@@ -8,10 +8,9 @@ import {
 } from "./helpers/ERC721BurnableExtension.sol";
 
 contract ERC721CreatorBurnsTest is ERC721CreatorTest {
-    ERC721BurnableExtension burnableExtension;
+    ERC721BurnableExtension public burnableExtension;
 
-    function setUp() public override {
-        super.setUp();
+    modifier withBurnableExtension() {
         vm.prank(creator);
         burnableExtension = new ERC721BurnableExtension(
             address(creatorContract)
@@ -21,9 +20,10 @@ contract ERC721CreatorBurnsTest is ERC721CreatorTest {
             address(burnableExtension),
             extensionTokenURI
         );
+        _;
     }
 
-    function testBurnableExtension() public {
+    function testBurnableExtension() public withBurnableExtension {
         mintWithExtension(address(burnableExtension), alice);
 
         // Only the owner can burn the token

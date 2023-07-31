@@ -2,41 +2,41 @@
 
 pragma solidity ^0.8.0;
 
-import { ERC721CreatorTest } from "../ERC721CreatorTest.sol";
+import { BaseERC1155CreatorTest } from "../BaseERC1155CreatorTest.sol";
 import {
-    ERC721MintPermissions
-} from "./helpers/ERC721MintPermissions.sol";
-import { ERC721Extension } from "./helpers/ERC721Extension.sol";
+    ERC1155MintPermissions
+} from "../extensions/ERC1155MintPermissions.sol";
+import { ERC1155Extension } from "../extensions/ERC1155Extension.sol";
 
-contract ERC721CreatorPermissionsTest is ERC721CreatorTest {
+contract ERC1155CreatorPermissionsTest is BaseERC1155CreatorTest {
     function testMintPermissions() public {
-        // Register the first ERC721Extension
+        // Register the first ERC1155Extension
         address extension1 = address(
-            new ERC721Extension(address(creatorContract))
+            new ERC1155Extension(creatorContractAddress)
         );
         vm.prank(creator);
-        creatorContract.registerExtension(extension1, extensionTokenURI);
+        creatorContract().registerExtension(extension1, extensionTokenURI);
 
-        // Register the second ERC721Extension
+        // Register the second ERC1155Extension
         address extension2 = address(
-            new ERC721Extension(address(creatorContract))
+            new ERC1155Extension(creatorContractAddress)
         );
         vm.prank(creator);
-        creatorContract.registerExtension(extension2, extensionTokenURI);
+        creatorContract().registerExtension(extension2, extensionTokenURI);
 
         // Deploy mint permissions
-        ERC721MintPermissions mintPermissions = new ERC721MintPermissions(
-            address(creatorContract)
+        ERC1155MintPermissions mintPermissions = new ERC1155MintPermissions(
+            creatorContractAddress
         );
 
         // Mint permissions must be a valid contract
         vm.prank(creator);
         vm.expectRevert("Invalid address");
-        creatorContract.setMintPermissions(extension1, alice);
+        creatorContract().setMintPermissions(extension1, alice);
 
         // Set mint permissions
         vm.prank(creator);
-        creatorContract.setMintPermissions(
+        creatorContract().setMintPermissions(
             extension1,
             address(mintPermissions)
         );
@@ -49,14 +49,14 @@ contract ERC721CreatorPermissionsTest is ERC721CreatorTest {
         vm.prank(creator);
         mintPermissions.setApproveEnabled(false);
 
-        // Minting is disabled on the first ERC721Extension, but not second ERC721Extension
+        // Minting is disabled on the first ERC1155Extension, but not second ERC1155Extension
         vm.expectRevert("MintPermissions: Disabled");
         mintWithExtension(extension1, alice);
         mintWithExtension(extension2, alice);
 
         // Mint permissions can be removed
         vm.prank(creator);
-        creatorContract.setMintPermissions(extension1, address(0));
+        creatorContract().setMintPermissions(extension1, address(0));
         mintWithExtension(extension1, alice);
         mintWithExtension(extension2, alice);
     }
@@ -65,7 +65,10 @@ contract ERC721CreatorPermissionsTest is ERC721CreatorTest {
         // Set up utilities
         bytes memory revertMessage = "AdminControl: Must be owner or admin";
 
-        address payable[] memory addresses = new address payable[](1);
+        address[] memory addresses = new address[](1);
+        addresses[0] = alice;
+
+        address payable[] memory payableAddresses = new address payable[](1);
         addresses[0] = payable(alice);
 
         string[] memory strings = new string[](1);
@@ -78,59 +81,56 @@ contract ERC721CreatorPermissionsTest is ERC721CreatorTest {
         vm.startPrank(alice);
 
         vm.expectRevert(revertMessage);
-        creatorContract.registerExtension(alice, extensionTokenURI);
+        creatorContract().registerExtension(alice, extensionTokenURI);
 
         vm.expectRevert(revertMessage);
-        creatorContract.registerExtension(alice, extensionTokenURI, true);
+        creatorContract().registerExtension(alice, extensionTokenURI, true);
 
         vm.expectRevert(revertMessage);
-        creatorContract.unregisterExtension(alice);
+        creatorContract().unregisterExtension(alice);
 
         vm.expectRevert(revertMessage);
-        creatorContract.blacklistExtension(alice);
+        creatorContract().blacklistExtension(alice);
 
         vm.expectRevert(revertMessage);
-        creatorContract.setBaseTokenURI(baseTokenURI);
+        creatorContract().setBaseTokenURI(baseTokenURI);
 
         vm.expectRevert(revertMessage);
-        creatorContract.setTokenURIPrefix(baseTokenURI);
+        creatorContract().setTokenURIPrefix(baseTokenURI);
 
         vm.expectRevert(revertMessage);
-        creatorContract.setTokenURI(1, baseTokenURI);
+        creatorContract().setTokenURI(1, baseTokenURI);
 
         vm.expectRevert(revertMessage);
-        creatorContract.setTokenURI(uints, strings);
+        creatorContract().setTokenURI(uints, strings);
 
         vm.expectRevert(revertMessage);
-        creatorContract.setMintPermissions(alice, alice);
+        creatorContract().setMintPermissions(alice, alice);
 
         vm.expectRevert(revertMessage);
-        creatorContract.mintBase(alice);
+        creatorContract().mintBaseNew(addresses, uints, strings);
 
         vm.expectRevert(revertMessage);
-        creatorContract.mintBase(alice, baseTokenURI);
+        creatorContract().mintBaseExisting(addresses, uints, uints);
 
         vm.expectRevert(revertMessage);
-        creatorContract.mintBaseBatch(alice, 1);
+        creatorContract().setRoyalties(payableAddresses, uints);
 
         vm.expectRevert(revertMessage);
-        creatorContract.mintBaseBatch(alice, strings);
+        creatorContract().setRoyalties(1, payableAddresses, uints);
 
         vm.expectRevert(revertMessage);
-        creatorContract.setRoyalties(addresses, uints);
-
-        vm.expectRevert(revertMessage);
-        creatorContract.setRoyalties(1, addresses, uints);
-
-        vm.expectRevert(revertMessage);
-        creatorContract.setRoyaltiesExtension(alice, addresses, uints);
+        creatorContract().setRoyaltiesExtension(alice, payableAddresses, uints);
 
         vm.stopPrank();
     }
 
     function textExtensionPermissions() private {
         // Set up utilities
-        bytes memory revertMessage = "Must be registered ERC721Extension";
+        bytes memory revertMessage = "Must be registered ERC1155Extension";
+
+        address[] memory addresses = new address[](1);
+        addresses[0] = alice;
 
         string[] memory strings = new string[](1);
         strings[0] = "test";
@@ -141,34 +141,28 @@ contract ERC721CreatorPermissionsTest is ERC721CreatorTest {
         vm.startPrank(alice);
 
         vm.expectRevert(revertMessage);
-        creatorContract.setBaseTokenURIExtension(baseTokenURI);
+        creatorContract().setBaseTokenURIExtension(baseTokenURI);
 
         vm.expectRevert(revertMessage);
-        creatorContract.setBaseTokenURIExtension(baseTokenURI, true);
+        creatorContract().setBaseTokenURIExtension(baseTokenURI, true);
 
         vm.expectRevert(revertMessage);
-        creatorContract.setTokenURIPrefixExtension(baseTokenURI);
+        creatorContract().setTokenURIPrefixExtension(baseTokenURI);
 
         vm.expectRevert(revertMessage);
-        creatorContract.setTokenURIExtension(1, baseTokenURI);
+        creatorContract().setTokenURIExtension(1, baseTokenURI);
 
         vm.expectRevert(revertMessage);
-        creatorContract.setTokenURIExtension(uints, strings);
+        creatorContract().setTokenURIExtension(uints, strings);
 
         vm.expectRevert(revertMessage);
-        creatorContract.mintExtension(alice);
+        creatorContract().mintExtensionNew(addresses, uints, strings);
 
         vm.expectRevert(revertMessage);
-        creatorContract.mintExtension(alice, baseTokenURI);
+        creatorContract().mintExtensionExisting(addresses, uints, uints);
 
         vm.expectRevert(revertMessage);
-        creatorContract.mintExtensionBatch(alice, 1);
-
-        vm.expectRevert(revertMessage);
-        creatorContract.mintExtensionBatch(alice, strings);
-
-        vm.expectRevert(revertMessage);
-        creatorContract.setApproveTransferExtension(true);
+        creatorContract().setApproveTransferExtension(true);
 
         vm.stopPrank();
     }

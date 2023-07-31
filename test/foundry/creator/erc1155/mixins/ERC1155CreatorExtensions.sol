@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.0;
 
-import { ERC1155CreatorTest } from "../ERC1155CreatorTest.sol";
-import { ERC1155Extension } from "./helpers/ERC1155Extension.sol";
+import { BaseERC1155CreatorTest } from "../BaseERC1155CreatorTest.sol";
+import { ERC1155Extension } from "../extensions/ERC1155Extension.sol";
 
-contract ERC1155CreatorExtensionsTest is ERC1155CreatorTest {
+contract ERC1155CreatorExtensionsTest is BaseERC1155CreatorTest {
     function testSupportsInterface() public {
         uint32[7] memory interfaceIds = [
             0x28f10a21, // ICreatorCoreV1
@@ -18,7 +18,7 @@ contract ERC1155CreatorExtensionsTest is ERC1155CreatorTest {
         ];
         for (uint256 i = 0; i < interfaceIds.length; i++) {
             assertTrue(
-                creatorContract.supportsInterface(bytes4(interfaceIds[i]))
+                creatorContract().supportsInterface(bytes4(interfaceIds[i]))
             );
         }
     }
@@ -30,7 +30,7 @@ contract ERC1155CreatorExtensionsTest is ERC1155CreatorTest {
     function testExtensionRegistrationByAdmin() public {
         // Approve an admin on the creator contract
         vm.prank(creator);
-        creatorContract.approveAdmin(alice);
+        creatorContract().approveAdmin(alice);
         _testExtensionRegistration(alice);
     }
 
@@ -40,25 +40,25 @@ contract ERC1155CreatorExtensionsTest is ERC1155CreatorTest {
 
         // Revert on registering an EOA
         vm.expectRevert("Invalid");
-        creatorContract.registerExtension(alice, "");
+        creatorContract().registerExtension(alice, "");
 
         // Revert on registering the creator contract
         vm.expectRevert("Invalid");
-        creatorContract.registerExtension(address(creatorContract), "");
+        creatorContract().registerExtension(creatorContractAddress, "");
 
         // Deploy a new ERC1155Extension
         address extension = address(
-            new ERC1155Extension(address(creatorContract))
+            new ERC1155Extension(creatorContractAddress)
         );
-        assertEq(creatorContract.getExtensions().length, 0);
+        assertEq(creatorContract().getExtensions().length, 0);
 
         // Register the ERC1155Extension
-        creatorContract.registerExtension(extension, "");
-        assertEq(creatorContract.getExtensions().length, 1);
+        creatorContract().registerExtension(extension, "");
+        assertEq(creatorContract().getExtensions().length, 1);
 
         // Unregister the ERC1155Extension
-        creatorContract.unregisterExtension(extension);
-        assertEq(creatorContract.getExtensions().length, 0);
+        creatorContract().unregisterExtension(extension);
+        assertEq(creatorContract().getExtensions().length, 0);
 
         vm.stopPrank();
     }
@@ -67,47 +67,47 @@ contract ERC1155CreatorExtensionsTest is ERC1155CreatorTest {
         // Revert on blacklisting self
         vm.prank(creator);
         vm.expectRevert("Cannot blacklist yourself");
-        creatorContract.blacklistExtension(address(creatorContract));
+        creatorContract().blacklistExtension(creatorContractAddress);
 
         // Deploy a new ERC1155Extension
         address extension = address(
-            new ERC1155Extension(address(creatorContract))
+            new ERC1155Extension(creatorContractAddress)
         );
 
         // Blacklist the ERC1155Extension
         vm.prank(creator);
-        creatorContract.blacklistExtension(extension);
+        creatorContract().blacklistExtension(extension);
 
         // Can't register a blacklisted ERC1155Extension
         vm.expectRevert("Extension blacklisted");
         vm.prank(creator);
-        creatorContract.registerExtension(extension, extensionTokenURI);
+        creatorContract().registerExtension(extension, extensionTokenURI);
     }
 
     function testExtensionBlacklistRemovesRegistration() public {
         // Deploy a new ERC1155Extension
         address extension = address(
-            new ERC1155Extension(address(creatorContract))
+            new ERC1155Extension(creatorContractAddress)
         );
 
         // Register the ERC1155Extension
         vm.prank(creator);
-        creatorContract.registerExtension(extension, extensionTokenURI);
-        assertEq(creatorContract.getExtensions().length, 1);
+        creatorContract().registerExtension(extension, extensionTokenURI);
+        assertEq(creatorContract().getExtensions().length, 1);
 
         // Mint a token
         uint256 tokenId = mintWithExtension(extension, alice);
 
         // Blacklist the ERC1155Extension
         vm.prank(creator);
-        creatorContract.blacklistExtension(extension);
-        assertEq(creatorContract.getExtensions().length, 0);
+        creatorContract().blacklistExtension(extension);
+        assertEq(creatorContract().getExtensions().length, 0);
 
         // Check token is no longer valid
         vm.expectRevert("Extension blacklisted");
-        creatorContract.uri(tokenId);
+        creatorContract().uri(tokenId);
 
         vm.expectRevert("Extension blacklisted");
-        creatorContract.tokenExtension(tokenId);
+        creatorContract().tokenExtension(tokenId);
     }
 }

@@ -73,26 +73,6 @@ Example applications can be found [here](https://github.com/manifoldxyz/creator-
 
 ## Running the package unit tests
 
-Visit the [github repo](https://github.com/manifoldxyz/creator-core-solidity) and clone the repo.  It uses the truffle framework and ganache-cli.
-
-Install both:
 ```
-npm install -g truffle
-npm install -g ganache-cli
+forge test
 ```
-
-### install dependencies
-npm install
-
-### Compile
-truffle compile
-
-### Start development server
-ganache-cli
-
-### Deploy migrations
-truffle migrate
-
-### Run tests
-truffle test
-

@@ -2,21 +2,21 @@
 
 pragma solidity ^0.8.0;
 
-import { ERC721CreatorTest } from "../ERC721CreatorTest.sol";
+import { BaseERC721CreatorTest } from "../BaseERC721CreatorTest.sol";
 import {
     ERC721BurnableExtension
-} from "./helpers/ERC721BurnableExtension.sol";
+} from "../extensions/ERC721BurnableExtension.sol";
 
-contract ERC721CreatorBurnsTest is ERC721CreatorTest {
+contract ERC721CreatorBurnsTest is BaseERC721CreatorTest {
     ERC721BurnableExtension public burnableExtension;
 
     modifier withBurnableExtension() {
         vm.prank(creator);
         burnableExtension = new ERC721BurnableExtension(
-            address(creatorContract)
+            creatorContractAddress
         );
         vm.prank(creator);
-        creatorContract.registerExtension(
+        creatorContract().registerExtension(
             address(burnableExtension),
             extensionTokenURI
         );
@@ -28,15 +28,15 @@ contract ERC721CreatorBurnsTest is ERC721CreatorTest {
 
         // Only the owner can burn the token
         vm.expectRevert("Caller is not owner or approved");
-        creatorContract.burn(1);
+        creatorContract().burn(1);
 
         // Non-existent token can't be burned
         vm.expectRevert("ERC721: invalid token ID");
-        creatorContract.burn(2);
+        creatorContract().burn(2);
 
         // Burning a token executes onBurn callback
         vm.prank(alice);
-        creatorContract.burn(1);
+        creatorContract().burn(1);
         assertEq(burnableExtension.burntTokens(0), 1);
     }
 }

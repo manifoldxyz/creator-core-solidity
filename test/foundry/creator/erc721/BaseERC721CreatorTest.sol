@@ -2,29 +2,39 @@
 
 pragma solidity ^0.8.0;
 
-import { BaseCreatorTest } from "./BaseCreatorTest.sol";
 import { ERC721Creator } from "creator-core/ERC721Creator.sol";
 import {
     ICreatorExtensionTokenURI
 } from "creator-core/extensions/ICreatorExtensionTokenURI.sol";
-import { IERC721Extension } from "./erc721/helpers/ERC721Extension.sol";
+import { IERC721Extension } from "./extensions/ERC721Extension.sol";
 import {
     ERC165Checker
 } from "openzeppelin/utils/introspection/ERC165Checker.sol";
+import { Strings } from "openzeppelin/utils/Strings.sol";
+import { Test } from "forge-std/Test.sol";
 
-contract ERC721CreatorTest is BaseCreatorTest {
-    ERC721Creator creatorContract;
+contract BaseERC721CreatorTest is Test {
+    address alice = address(0xA11CE);
+    address bob = address(0xB0B);
+    address creator = address(0xC12EA7012);
 
-    function setUp() public virtual override {
-        super.setUp();
+    string baseTokenURI = "creator://";
+    string extensionTokenURI = "extension://";
 
+    address creatorContractAddress;
+
+    function setUp() public virtual {
         // Deploy creator contract
         vm.prank(creator);
-        creatorContract = new ERC721Creator("Test", "TEST");
+        creatorContractAddress = address(new ERC721Creator("Test", "TEST"));
 
         // Set base token URI
         vm.prank(creator);
-        creatorContract.setBaseTokenURI(baseTokenURI);
+        creatorContract().setBaseTokenURI(baseTokenURI);
+    }
+
+    function creatorContract() public view returns (ERC721Creator) {
+        return ERC721Creator(creatorContractAddress);
     }
 
     /**
@@ -34,7 +44,7 @@ contract ERC721CreatorTest is BaseCreatorTest {
     function mintWithCreator(address to) internal returns (uint256) {
         // Mint a token
         vm.prank(creator);
-        uint256 tokenId = creatorContract.mintBase(to);
+        uint256 tokenId = creatorContract().mintBase(to);
 
         // Assert mint was successful
         assertMintWithCreator(tokenId, to, _uri(baseTokenURI, tokenId));
@@ -48,7 +58,7 @@ contract ERC721CreatorTest is BaseCreatorTest {
     ) internal returns (uint256) {
         // Mint a token
         vm.prank(creator);
-        uint256 tokenId = creatorContract.mintBase(to, uri);
+        uint256 tokenId = creatorContract().mintBase(to, uri);
 
         // Assert mint was successful
         assertMintWithCreator(tokenId, to, uri);
@@ -62,7 +72,7 @@ contract ERC721CreatorTest is BaseCreatorTest {
     ) internal returns (uint256[] memory) {
         // Mint a token
         vm.prank(creator);
-        uint256[] memory tokenIds = creatorContract.mintBaseBatch(to, count);
+        uint256[] memory tokenIds = creatorContract().mintBaseBatch(to, count);
 
         // Assert mints were successful
         for (uint256 i = 0; i < tokenIds.length; i++) {
@@ -82,7 +92,7 @@ contract ERC721CreatorTest is BaseCreatorTest {
     ) internal returns (uint256[] memory) {
         // Mint a token
         vm.prank(creator);
-        uint256[] memory tokenIds = creatorContract.mintBaseBatch(to, uris);
+        uint256[] memory tokenIds = creatorContract().mintBaseBatch(to, uris);
 
         // Assert mints were successful
         for (uint256 i = 0; i < tokenIds.length; i++) {
@@ -186,7 +196,7 @@ contract ERC721CreatorTest is BaseCreatorTest {
 
         // If mint via creator, validate no extension was registered
         vm.expectRevert();
-        creatorContract.tokenExtension(tokenId);
+        creatorContract().tokenExtension(tokenId);
     }
 
     function assertMintWithExtension(
@@ -204,7 +214,7 @@ contract ERC721CreatorTest is BaseCreatorTest {
         ) {
             // If extension overrides token URI, set that as expected
             uri = ICreatorExtensionTokenURI(extension).tokenURI(
-                address(creatorContract),
+                creatorContractAddress,
                 tokenId
             );
         }
@@ -213,7 +223,7 @@ contract ERC721CreatorTest is BaseCreatorTest {
         assertMint(tokenId, to, uri);
 
         // Validate extension was registered during mint
-        assertEq(creatorContract.tokenExtension(tokenId), extension);
+        assertEq(creatorContract().tokenExtension(tokenId), extension);
     }
 
     function assertMint(
@@ -222,9 +232,16 @@ contract ERC721CreatorTest is BaseCreatorTest {
         string memory uri
     ) internal {
         // Check balance change
-        assertEq(creatorContract.ownerOf(tokenId), to);
+        assertEq(creatorContract().ownerOf(tokenId), to);
 
         // Check token URI
-        assertEq(creatorContract.tokenURI(tokenId), uri);
+        assertEq(creatorContract().tokenURI(tokenId), uri);
+    }
+
+    function _uri(
+        string memory uri,
+        uint256 tokenId
+    ) internal pure returns (string memory) {
+        return string(abi.encodePacked(uri, Strings.toString(tokenId)));
     }
 }

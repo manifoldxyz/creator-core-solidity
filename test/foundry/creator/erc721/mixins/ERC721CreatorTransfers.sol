@@ -2,18 +2,18 @@
 
 pragma solidity ^0.8.0;
 
-import { ERC721CreatorTest } from "../ERC721CreatorTest.sol";
+import { BaseERC721CreatorTest } from "../BaseERC721CreatorTest.sol";
 import {
     ERC721TransferApprovalExtension
-} from "./helpers/ERC721TransferApprovalExtension.sol";
+} from "../extensions/ERC721TransferApprovalExtension.sol";
 
-contract ERC721CreatorTransfersTest is ERC721CreatorTest {
+contract ERC721CreatorTransfersTest is BaseERC721CreatorTest {
     ERC721TransferApprovalExtension public transferApprovalExtension;
 
     modifier withTransferApprovalExtension() {
         vm.prank(creator);
         transferApprovalExtension = new ERC721TransferApprovalExtension(
-            address(creatorContract)
+            creatorContractAddress
         );
         // Supports legacy interfaces
         assertTrue(
@@ -23,7 +23,7 @@ contract ERC721CreatorTransfersTest is ERC721CreatorTest {
             transferApprovalExtension.supportsInterface(bytes4(0x45ffcdad))
         );
         vm.prank(creator);
-        creatorContract.registerExtension(
+        creatorContract().registerExtension(
             address(transferApprovalExtension),
             extensionTokenURI
         );
@@ -33,7 +33,7 @@ contract ERC721CreatorTransfersTest is ERC721CreatorTest {
     function testTransferApprovalBase() public withTransferApprovalExtension {
         // Deploy new extension for the base transfer approval
         ERC721TransferApprovalExtension baseExtension = new ERC721TransferApprovalExtension(
-                address(creatorContract)
+                creatorContractAddress
             );
 
         // Enable the extension
@@ -43,14 +43,14 @@ contract ERC721CreatorTransfersTest is ERC721CreatorTest {
         // Only creator can set the base transfer approval extension
         vm.prank(alice);
         vm.expectRevert("AdminControl: Must be owner or admin");
-        creatorContract.setApproveTransfer(address(baseExtension));
+        creatorContract().setApproveTransfer(address(baseExtension));
 
         // Set the base transfer approval extension
         vm.prank(creator);
-        creatorContract.setApproveTransfer(address(baseExtension));
+        creatorContract().setApproveTransfer(address(baseExtension));
 
         // Validate the base transfer approval extension
-        assertEq(address(baseExtension), creatorContract.getApproveTransfer());
+        assertEq(address(baseExtension), creatorContract().getApproveTransfer());
 
         // Mint tokens
         uint256[] memory tokenIds = mintBatchWithCreator(alice, 3);
@@ -58,7 +58,7 @@ contract ERC721CreatorTransfersTest is ERC721CreatorTest {
         // Transfer tokens
         for (uint256 i = 0; i < tokenIds.length; i++) {
             vm.prank(alice);
-            creatorContract.safeTransferFrom(alice, bob, tokenIds[i]);
+            creatorContract().safeTransferFrom(alice, bob, tokenIds[i]);
         }
 
         // Disable the base transfer approval extension
@@ -69,20 +69,20 @@ contract ERC721CreatorTransfersTest is ERC721CreatorTest {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             vm.prank(bob);
             vm.expectRevert("Extension approval failure");
-            creatorContract.safeTransferFrom(bob, alice, tokenIds[i]);
+            creatorContract().safeTransferFrom(bob, alice, tokenIds[i]);
         }
 
         // Disable the base transfer approval extension
         vm.prank(creator);
-        creatorContract.setApproveTransfer(address(0));
+        creatorContract().setApproveTransfer(address(0));
 
         // Validate the base transfer approval extension
-        assertEq(address(0), creatorContract.getApproveTransfer());
+        assertEq(address(0), creatorContract().getApproveTransfer());
 
         // Validate tokens can be transferred
         for (uint256 i = 0; i < tokenIds.length; i++) {
             vm.prank(bob);
-            creatorContract.safeTransferFrom(bob, alice, tokenIds[i]);
+            creatorContract().safeTransferFrom(bob, alice, tokenIds[i]);
         }
     }
 
@@ -101,7 +101,7 @@ contract ERC721CreatorTransfersTest is ERC721CreatorTest {
         // Transfer tokens
         for (uint256 i = 0; i < tokenIds.length; i++) {
             vm.prank(alice);
-            creatorContract.safeTransferFrom(alice, bob, tokenIds[i]);
+            creatorContract().safeTransferFrom(alice, bob, tokenIds[i]);
         }
 
         // Disable the base transfer approval extension
@@ -112,18 +112,18 @@ contract ERC721CreatorTransfersTest is ERC721CreatorTest {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             vm.prank(bob);
             vm.expectRevert("Extension approval failure");
-            creatorContract.safeTransferFrom(bob, alice, tokenIds[i]);
+            creatorContract().safeTransferFrom(bob, alice, tokenIds[i]);
         }
 
         // Unregister the extension
         vm.prank(creator);
-        creatorContract.unregisterExtension(address(transferApprovalExtension));
+        creatorContract().unregisterExtension(address(transferApprovalExtension));
 
         // Validate tokens can't be transferred without extension
         for (uint256 i = 0; i < tokenIds.length; i++) {
             vm.prank(bob);
             vm.expectRevert("Extension approval failure");
-            creatorContract.safeTransferFrom(bob, alice, tokenIds[i]);
+            creatorContract().safeTransferFrom(bob, alice, tokenIds[i]);
         }
     }
 }

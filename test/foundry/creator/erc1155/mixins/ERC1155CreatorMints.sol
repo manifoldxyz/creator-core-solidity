@@ -2,35 +2,35 @@
 
 pragma solidity ^0.8.0;
 
-import { ERC1155CreatorTest } from "../ERC1155CreatorTest.sol";
+import { BaseERC1155CreatorTest } from "../BaseERC1155CreatorTest.sol";
 import { Strings } from "openzeppelin/utils/Strings.sol";
-import { ERC1155Extension } from "./helpers/ERC1155Extension.sol";
+import { ERC1155Extension } from "../extensions/ERC1155Extension.sol";
 
-contract ERC1155CreatorMintsTest is ERC1155CreatorTest {
+contract ERC1155CreatorMintsTest is BaseERC1155CreatorTest {
     ERC1155Extension extension;
 
-    function setUp() public override {
-        super.setUp();
+    modifier withExtension() {
         vm.prank(creator);
-        extension = new ERC1155Extension(address(creatorContract));
+        extension = new ERC1155Extension(creatorContractAddress);
         vm.prank(creator);
-        creatorContract.registerExtension(
+        creatorContract().registerExtension(
             address(extension),
             extensionTokenURI
         );
+        _;
     }
 
-    function testMint() public {
+    function testMint() public withExtension {
         // Mint a token without an override URI
         mintWithCreator(alice);
     }
 
-    function testMintWithOverrideURI() public {
+    function testMintWithOverrideURI() public withExtension {
         // Mint a token with an override URI
         mintWithCreator(alice, "override://");
     }
 
-    function testMintBatch() public {
+    function testMintBatch() public withExtension {
         mintWithCreator(
             _addresses(alice),
             _uint256s(100, 200),
@@ -64,7 +64,7 @@ contract ERC1155CreatorMintsTest is ERC1155CreatorTest {
         );
     }
 
-    function testMintBatchWithOverrideURI() public {
+    function testMintBatchWithOverrideURI() public withExtension {
         // Mint a batch of tokens with an override URI
         string[] memory overrideURIs = new string[](5);
         for (uint256 i = 0; i < 5; i++) {
@@ -75,17 +75,17 @@ contract ERC1155CreatorMintsTest is ERC1155CreatorTest {
         mintBatchWithCreator(alice, overrideURIs);
     }
 
-    function testMintWithExtension() public {
+    function testMintWithExtension() public withExtension {
         // Mint a token without an override URI
         mintWithExtension(address(extension), alice);
     }
 
-    function testMintWithExtensionAndOverrideURI() public {
+    function testMintWithExtensionAndOverrideURI() public withExtension {
         // Mint a token with an override URI
         mintWithExtension(address(extension), alice, "override://");
     }
 
-    function testMintBatchWithExtension() public {
+    function testMintBatchWithExtension() public withExtension {
         mintWithExtension(
             address(extension),
             _addresses(alice),
@@ -124,7 +124,7 @@ contract ERC1155CreatorMintsTest is ERC1155CreatorTest {
         );
     }
 
-    function testMintBatchWithExtensionAndOverrideURI() public {
+    function testMintBatchWithExtensionAndOverrideURI() public withExtension {
         // Mint a batch of tokens with an override URI
         string[] memory overrideURIs = new string[](5);
         for (uint256 i = 0; i < 5; i++) {
@@ -135,7 +135,7 @@ contract ERC1155CreatorMintsTest is ERC1155CreatorTest {
         mintBatchWithExtension(address(extension), alice, overrideURIs);
     }
 
-    function testMintExisting() public {
+    function testMintExisting() public withExtension {
         // Mint some tokens
         uint256 tokenId1 = mintWithCreator(alice, 1);
         uint256 tokenId2 = mintWithCreator(alice, 10);
@@ -151,55 +151,55 @@ contract ERC1155CreatorMintsTest is ERC1155CreatorTest {
 
         // Mint additional tokenId1
         vm.prank(creator);
-        creatorContract.mintBaseExisting(
+        creatorContract().mintBaseExisting(
             _addresses(alice),
             _uint256s(tokenId1),
             _uint256s(1)
         );
-        assertEq(creatorContract.balanceOf(alice, tokenId1), 2);
+        assertEq(creatorContract().balanceOf(alice, tokenId1), 2);
 
         // Mint additional tokenId1 and tokenId2 at the same time
         vm.prank(creator);
-        creatorContract.mintBaseExisting(
+        creatorContract().mintBaseExisting(
             _addresses(alice),
             _uint256s(tokenId1, tokenId2),
             _uint256s(1, 10)
         );
-        assertEq(creatorContract.balanceOf(alice, tokenId1), 3);
-        assertEq(creatorContract.balanceOf(alice, tokenId2), 20);
+        assertEq(creatorContract().balanceOf(alice, tokenId1), 3);
+        assertEq(creatorContract().balanceOf(alice, tokenId2), 20);
 
         // Mint additional same amount of tokenId1 to two recipients
         vm.prank(creator);
-        creatorContract.mintBaseExisting(
+        creatorContract().mintBaseExisting(
             _addresses(alice, bob),
             _uint256s(tokenId1),
             _uint256s(1)
         );
-        assertEq(creatorContract.balanceOf(alice, tokenId1), 4);
-        assertEq(creatorContract.balanceOf(bob, tokenId1), 1);
+        assertEq(creatorContract().balanceOf(alice, tokenId1), 4);
+        assertEq(creatorContract().balanceOf(bob, tokenId1), 1);
 
         // Mint additional different amount of tokenId1 to two recipients
         vm.prank(creator);
-        creatorContract.mintBaseExisting(
+        creatorContract().mintBaseExisting(
             _addresses(alice, bob),
             _uint256s(tokenId1),
             _uint256s(1, 2)
         );
-        assertEq(creatorContract.balanceOf(alice, tokenId1), 5);
-        assertEq(creatorContract.balanceOf(bob, tokenId1), 3);
+        assertEq(creatorContract().balanceOf(alice, tokenId1), 5);
+        assertEq(creatorContract().balanceOf(bob, tokenId1), 3);
 
         // Mint additional different amount of tokenId1 and tokenId2 to two recipients
         vm.prank(creator);
-        creatorContract.mintBaseExisting(
+        creatorContract().mintBaseExisting(
             _addresses(alice, bob),
             _uint256s(tokenId1, tokenId2),
             _uint256s(1, 20)
         );
-        assertEq(creatorContract.balanceOf(alice, tokenId1), 6);
-        assertEq(creatorContract.balanceOf(bob, tokenId2), 20);
+        assertEq(creatorContract().balanceOf(alice, tokenId1), 6);
+        assertEq(creatorContract().balanceOf(bob, tokenId2), 20);
     }
 
-    function testMintExistingWithExtension() public {
+    function testMintExistingWithExtension() public withExtension {
         // Mint some tokens
         uint256 tokenId1 = mintWithExtension(address(extension), alice, 1);
         uint256 tokenId2 = mintWithExtension(address(extension), alice, 10);
@@ -207,7 +207,7 @@ contract ERC1155CreatorMintsTest is ERC1155CreatorTest {
         // Verify can't mint extension tokens directly
         vm.prank(creator);
         vm.expectRevert("Token created by extension");
-        creatorContract.mintBaseExisting(
+        creatorContract().mintBaseExisting(
             _addresses(alice),
             _uint256s(tokenId1),
             _uint256s(1)
@@ -220,7 +220,7 @@ contract ERC1155CreatorMintsTest is ERC1155CreatorTest {
             _uint256s(tokenId1),
             _uint256s(1)
         );
-        assertEq(creatorContract.balanceOf(alice, tokenId1), 2);
+        assertEq(creatorContract().balanceOf(alice, tokenId1), 2);
 
         // Mint additional tokenId1 and tokenId2 at the same time
         vm.prank(creator);
@@ -229,8 +229,8 @@ contract ERC1155CreatorMintsTest is ERC1155CreatorTest {
             _uint256s(tokenId1, tokenId2),
             _uint256s(1, 10)
         );
-        assertEq(creatorContract.balanceOf(alice, tokenId1), 3);
-        assertEq(creatorContract.balanceOf(alice, tokenId2), 20);
+        assertEq(creatorContract().balanceOf(alice, tokenId1), 3);
+        assertEq(creatorContract().balanceOf(alice, tokenId2), 20);
 
         // Mint additional same amount of tokenId1 to two recipients
         vm.prank(creator);
@@ -239,8 +239,8 @@ contract ERC1155CreatorMintsTest is ERC1155CreatorTest {
             _uint256s(tokenId1),
             _uint256s(1)
         );
-        assertEq(creatorContract.balanceOf(alice, tokenId1), 4);
-        assertEq(creatorContract.balanceOf(bob, tokenId1), 1);
+        assertEq(creatorContract().balanceOf(alice, tokenId1), 4);
+        assertEq(creatorContract().balanceOf(bob, tokenId1), 1);
 
         // Mint additional different amount of tokenId1 to two recipients
         vm.prank(creator);
@@ -249,8 +249,8 @@ contract ERC1155CreatorMintsTest is ERC1155CreatorTest {
             _uint256s(tokenId1),
             _uint256s(1, 2)
         );
-        assertEq(creatorContract.balanceOf(alice, tokenId1), 5);
-        assertEq(creatorContract.balanceOf(bob, tokenId1), 3);
+        assertEq(creatorContract().balanceOf(alice, tokenId1), 5);
+        assertEq(creatorContract().balanceOf(bob, tokenId1), 3);
 
         // Mint additional different amount of tokenId1 and tokenId2 to two recipients
         vm.prank(creator);
@@ -259,8 +259,8 @@ contract ERC1155CreatorMintsTest is ERC1155CreatorTest {
             _uint256s(tokenId1, tokenId2),
             _uint256s(1, 20)
         );
-        assertEq(creatorContract.balanceOf(alice, tokenId1), 6);
-        assertEq(creatorContract.balanceOf(bob, tokenId2), 20);
+        assertEq(creatorContract().balanceOf(alice, tokenId1), 6);
+        assertEq(creatorContract().balanceOf(bob, tokenId2), 20);
     }
 
     function _addresses(address a1) internal pure returns (address[] memory) {

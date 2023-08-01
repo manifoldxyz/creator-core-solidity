@@ -1,10 +1,6 @@
 [profile.default]
 src = 'contracts'
 out = 'out'
-libs = ["node_modules", "lib"]
-remappings = [
-    '@manifoldxyz/=node_modules/@manifoldxyz/',
-    '@openzeppelin/=node_modules/@openzeppelin/',
-]
+libs = ["lib"]
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config

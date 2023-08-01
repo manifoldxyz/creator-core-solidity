@@ -9,8 +9,8 @@ import {
 import { IERC721Extension } from "./extensions/ERC721Extension.sol";
 import {
     ERC165Checker
-} from "openzeppelin/utils/introspection/ERC165Checker.sol";
-import { Strings } from "openzeppelin/utils/Strings.sol";
+} from "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
+import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
 import { Test } from "forge-std/Test.sol";
 
 contract BaseERC721CreatorTest is Test {

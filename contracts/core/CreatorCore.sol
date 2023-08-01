@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
+import "@openzeppelin-contracts-upgradeable/contracts/utils/AddressUpgradeable.sol";
 
 import "../extensions/ICreatorExtensionTokenURI.sol";
 import "../extensions/ICreatorExtensionRoyalties.sol";

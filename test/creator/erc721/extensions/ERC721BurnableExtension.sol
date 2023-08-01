@@ -8,7 +8,7 @@ import {
 } from "creator-core/extensions/ERC721/IERC721CreatorExtensionBurnable.sol";
 import {
     IERC165
-} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+} from "openzeppelin/utils/introspection/IERC165.sol";
 import { ERC721Extension } from "./ERC721Extension.sol";
 
 contract ERC721BurnableExtension is

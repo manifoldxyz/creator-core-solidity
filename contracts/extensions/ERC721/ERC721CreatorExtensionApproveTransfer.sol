@@ -4,8 +4,8 @@ pragma solidity ^0.8.0;
 
 /// @author: manifold.xyz
 
-import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
-import "@manifoldxyz/libraries-solidity/contracts/access/AdminControl.sol";
+import "openzeppelin/utils/introspection/ERC165Checker.sol";
+import "manifoldxyz/libraries-solidity/access/AdminControl.sol";
 
 import "../../core/IERC721CreatorCore.sol";
 import "./ERC721CreatorExtension.sol";

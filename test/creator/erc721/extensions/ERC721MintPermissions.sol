@@ -7,7 +7,7 @@ import {
 } from "creator-core/permissions/ERC721/IERC721CreatorMintPermissions.sol";
 import {
     IERC165
-} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+} from "openzeppelin/utils/introspection/IERC165.sol";
 
 contract ERC721MintPermissions is IERC721CreatorMintPermissions {
     address _creator;

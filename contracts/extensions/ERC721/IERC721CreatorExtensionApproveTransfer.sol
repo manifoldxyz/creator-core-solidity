@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 /// @author: manifold.xyz
 
-import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import "openzeppelin/utils/introspection/IERC165.sol";
 
 /**
  * Implement this if you want your extension to approve a transfer

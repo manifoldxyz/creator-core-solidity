@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 /// @author: manifold.xyz
 
-import "@manifoldxyz/libraries-solidity/contracts/access/AdminControlUpgradeable.sol";
+import "manifoldxyz/libraries-solidity/access/AdminControlUpgradeable.sol";
 
 import "./core/ERC1155CreatorCore.sol";
 import "./token/ERC1155/ERC1155Upgradeable.sol";

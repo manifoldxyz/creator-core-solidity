@@ -8,7 +8,7 @@ import {
 } from "creator-core/extensions/ICreatorExtensionTokenURI.sol";
 import {
     IERC165
-} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+} from "openzeppelin/utils/introspection/IERC165.sol";
 import { ERC1155Extension } from "./ERC1155Extension.sol";
 
 contract ERC1155TokenURIExtension is

@@ -7,10 +7,10 @@ import {
     ICreatorExtensionTokenURI
 } from "creator-core/extensions/ICreatorExtensionTokenURI.sol";
 import { IERC1155Extension } from "./extensions/ERC1155Extension.sol";
-import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
+import { Strings } from "openzeppelin/utils/Strings.sol";
 import {
     ERC165Checker
-} from "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
+} from "openzeppelin/utils/introspection/ERC165Checker.sol";
 import { Test } from "forge-std/Test.sol";
 
 contract BaseERC1155CreatorTest is Test {

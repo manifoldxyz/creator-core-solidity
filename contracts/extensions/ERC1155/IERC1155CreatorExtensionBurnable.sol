@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 /// @author: manifold.xyz
 
-import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import "openzeppelin/utils/introspection/IERC165.sol";
 
 /**
  * @dev Your extension is required to implement this interface if it wishes

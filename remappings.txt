@@ -1,5 +1,6 @@
 creator-core/=contracts/
 forge-std/=lib/forge-std/src/
 @openzeppelin/=lib/openzeppelin-contracts/
-@openzeppelin-contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/
-@manifoldxyz/libraries-solidity=lib/libraries-solidity/
+openzeppelin/=lib/openzeppelin-contracts/contracts/
+openzeppelin-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/
+manifoldxyz/libraries-solidity=lib/libraries-solidity/contracts/

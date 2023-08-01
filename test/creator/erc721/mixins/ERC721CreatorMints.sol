@@ -3,7 +3,7 @@
 pragma solidity ^0.8.0;
 
 import { BaseERC721CreatorTest } from "../BaseERC721CreatorTest.sol";
-import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
+import { Strings } from "openzeppelin/utils/Strings.sol";
 import { ERC721Extension } from "../extensions/ERC721Extension.sol";
 
 contract ERC721CreatorMintsTest is BaseERC721CreatorTest {

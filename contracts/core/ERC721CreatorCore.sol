@@ -16,27 +16,27 @@ import "./CreatorCore.sol";
  * @dev Core ERC721 creator implementation
  */
 abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
-
-    uint256 constant public VERSION = 3;
+    uint256 public constant VERSION = 3;
 
     bytes4 private constant _ERC721_CREATOR_CORE_V1 = 0x9088c207;
 
     using EnumerableSet for EnumerableSet.AddressSet;
 
     // Track registered extensions data
-    mapping (address => bool) internal _extensionApproveTransfers;
-    mapping (address => address) internal _extensionPermissions;
+    mapping(address => bool) internal _extensionApproveTransfers;
+    mapping(address => address) internal _extensionPermissions;
 
     // For tracking extension indices
     uint16 private _extensionCounter;
-    mapping (address => uint16) internal _extensionToIndex;    
-    mapping (uint16 => address) internal _indexToExtension;
+    mapping(address => uint16) internal _extensionToIndex;
+    mapping(uint16 => address) internal _indexToExtension;
 
     /**
      * @dev See {IERC165-supportsInterface}.
      */
     function supportsInterface(bytes4 interfaceId) public view virtual override(CreatorCore, IERC165) returns (bool) {
-        return interfaceId == type(IERC721CreatorCore).interfaceId || interfaceId == _ERC721_CREATOR_CORE_V1 || super.supportsInterface(interfaceId);
+        return interfaceId == type(IERC721CreatorCore).interfaceId || interfaceId == _ERC721_CREATOR_CORE_V1
+            || super.supportsInterface(interfaceId);
     }
 
     /**
@@ -54,7 +54,11 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
      */
     function _setMintPermissions(address extension, address permissions) internal {
         require(_extensions.contains(extension), "CreatorCore: Invalid extension");
-        require(permissions == address(0) || ERC165Checker.supportsInterface(permissions, type(IERC721CreatorMintPermissions).interfaceId), "Invalid address");
+        require(
+            permissions == address(0)
+                || ERC165Checker.supportsInterface(permissions, type(IERC721CreatorMintPermissions).interfaceId),
+            "Invalid address"
+        );
         if (_extensionPermissions[extension] != permissions) {
             _extensionPermissions[extension] = permissions;
             emit MintPermissionsUpdated(extension, permissions, msg.sender);
@@ -76,7 +80,6 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
      */
     function _preMintBase(address, uint256) internal virtual {}
 
-    
     /**
      * Override for pre mint actions for _mintExtension
      */
@@ -88,14 +91,14 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
     function _postBurn(address owner, uint256 tokenId, address extension) internal virtual {
         // Callback to originating extension if needed
         if (extension != address(0)) {
-           if (ERC165Checker.supportsInterface(extension, type(IERC721CreatorExtensionBurnable).interfaceId)) {
-               IERC721CreatorExtensionBurnable(extension).onBurn(owner, tokenId);
-           }
+            if (ERC165Checker.supportsInterface(extension, type(IERC721CreatorExtensionBurnable).interfaceId)) {
+                IERC721CreatorExtensionBurnable(extension).onBurn(owner, tokenId);
+            }
         }
         // Clear metadata (if any)
         if (bytes(_tokenURIs[tokenId]).length != 0) {
             delete _tokenURIs[tokenId];
-        } 
+        }
     }
 
     /**
@@ -120,9 +123,17 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
         if (from == address(0)) return;
 
         if (extension != address(0) && _extensionApproveTransfers[extension]) {
-            require(IERC721CreatorExtensionApproveTransfer(extension).approveTransfer(msg.sender, from, to, tokenId), "Extension approval failure");
+            require(
+                IERC721CreatorExtensionApproveTransfer(extension).approveTransfer(msg.sender, from, to, tokenId),
+                "Extension approval failure"
+            );
         } else if (_approveTransferBase != address(0)) {
-           require(IERC721CreatorExtensionApproveTransfer(_approveTransferBase).approveTransfer(msg.sender, from, to, tokenId), "Extension approval failure");
+            require(
+                IERC721CreatorExtensionApproveTransfer(_approveTransferBase).approveTransfer(
+                    msg.sender, from, to, tokenId
+                ),
+                "Extension approval failure"
+            );
         }
     }
 

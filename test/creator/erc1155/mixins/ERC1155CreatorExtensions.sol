@@ -2,8 +2,8 @@
 
 pragma solidity ^0.8.0;
 
-import { BaseERC1155CreatorTest } from "../BaseERC1155CreatorTest.sol";
-import { ERC1155Extension } from "../extensions/ERC1155Extension.sol";
+import {BaseERC1155CreatorTest} from "../BaseERC1155CreatorTest.sol";
+import {ERC1155Extension} from "../extensions/ERC1155Extension.sol";
 
 contract ERC1155CreatorExtensionsTest is BaseERC1155CreatorTest {
     function testSupportsInterface() public {
@@ -17,9 +17,7 @@ contract ERC1155CreatorExtensionsTest is BaseERC1155CreatorTest {
             0xd5a06d4c // Foundation Royalties
         ];
         for (uint256 i = 0; i < interfaceIds.length; i++) {
-            assertTrue(
-                creatorContract().supportsInterface(bytes4(interfaceIds[i]))
-            );
+            assertTrue(creatorContract().supportsInterface(bytes4(interfaceIds[i])));
         }
     }
 
@@ -47,9 +45,7 @@ contract ERC1155CreatorExtensionsTest is BaseERC1155CreatorTest {
         creatorContract().registerExtension(creatorContractAddress, "");
 
         // Deploy a new ERC1155Extension
-        address extension = address(
-            new ERC1155Extension(creatorContractAddress)
-        );
+        address extension = address(new ERC1155Extension(creatorContractAddress));
         assertEq(creatorContract().getExtensions().length, 0);
 
         // Register the ERC1155Extension
@@ -70,9 +66,7 @@ contract ERC1155CreatorExtensionsTest is BaseERC1155CreatorTest {
         creatorContract().blacklistExtension(creatorContractAddress);
 
         // Deploy a new ERC1155Extension
-        address extension = address(
-            new ERC1155Extension(creatorContractAddress)
-        );
+        address extension = address(new ERC1155Extension(creatorContractAddress));
 
         // Blacklist the ERC1155Extension
         vm.prank(creator);
@@ -86,9 +80,7 @@ contract ERC1155CreatorExtensionsTest is BaseERC1155CreatorTest {
 
     function testExtensionBlacklistRemovesRegistration() public {
         // Deploy a new ERC1155Extension
-        address extension = address(
-            new ERC1155Extension(creatorContractAddress)
-        );
+        address extension = address(new ERC1155Extension(creatorContractAddress));
 
         // Register the ERC1155Extension
         vm.prank(creator);

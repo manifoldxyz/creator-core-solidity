@@ -15,19 +15,27 @@ import "./IERC721CreatorMintPermissions.sol";
  * approveMint requires the sender to be the configured creator.
  */
 abstract contract ERC721CreatorMintPermissions is ERC165, AdminControl, IERC721CreatorMintPermissions {
-     address internal immutable _creator;
+    address internal immutable _creator;
 
-     constructor(address creator_) {
-         require(ERC165Checker.supportsInterface(creator_, type(IERC721CreatorCore).interfaceId), "Must implement IERC721CreatorCore");
-         _creator = creator_;
-     }
+    constructor(address creator_) {
+        require(
+            ERC165Checker.supportsInterface(creator_, type(IERC721CreatorCore).interfaceId),
+            "Must implement IERC721CreatorCore"
+        );
+        _creator = creator_;
+    }
 
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165, AdminControl) returns (bool) {
-        return interfaceId == type(IERC721CreatorMintPermissions).interfaceId
-            || super.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(ERC165, IERC165, AdminControl)
+        returns (bool)
+    {
+        return interfaceId == type(IERC721CreatorMintPermissions).interfaceId || super.supportsInterface(interfaceId);
     }
 
     /**

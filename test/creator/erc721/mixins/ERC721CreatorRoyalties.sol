@@ -2,10 +2,8 @@
 
 pragma solidity ^0.8.0;
 
-import { BaseERC721CreatorTest } from "../BaseERC721CreatorTest.sol";
-import {
-    ERC721RoyaltiesExtension
-} from "../extensions/ERC721RoyaltiesExtension.sol";
+import {BaseERC721CreatorTest} from "../BaseERC721CreatorTest.sol";
+import {ERC721RoyaltiesExtension} from "../extensions/ERC721RoyaltiesExtension.sol";
 
 contract ERC721CreatorRoyaltiesTest is BaseERC721CreatorTest {
     ERC721RoyaltiesExtension public royaltiesExtension;
@@ -16,10 +14,7 @@ contract ERC721CreatorRoyaltiesTest is BaseERC721CreatorTest {
             creatorContractAddress
         );
         vm.prank(creator);
-        creatorContract().registerExtension(
-            address(royaltiesExtension),
-            extensionTokenURI
-        );
+        creatorContract().registerExtension(address(royaltiesExtension), extensionTokenURI);
         _;
     }
 
@@ -29,11 +24,7 @@ contract ERC721CreatorRoyaltiesTest is BaseERC721CreatorTest {
 
         vm.prank(creator);
         vm.expectRevert("Nonexistent token");
-        creatorContract().setRoyalties(
-            1,
-            new address payable[](0),
-            new uint256[](0)
-        );
+        creatorContract().setRoyalties(1, new address payable[](0), new uint256[](0));
     }
 
     function testRoyaltiesInvalidInput() public withRoyaltiesExtension {
@@ -102,18 +93,11 @@ contract ERC721CreatorRoyaltiesTest is BaseERC721CreatorTest {
 
         // Default royalties can be removed
         vm.prank(creator);
-        creatorContract().setRoyalties(
-            new address payable[](0),
-            new uint256[](0)
-        );
+        creatorContract().setRoyalties(new address payable[](0), new uint256[](0));
         assertRoyalties(tokenId, new address payable[](0), new uint256[](0));
 
         // New tokens have no royalties if there is no default
-        assertRoyalties(
-            mintWithCreator(alice),
-            new address payable[](0),
-            new uint256[](0)
-        );
+        assertRoyalties(mintWithCreator(alice), new address payable[](0), new uint256[](0));
     }
 
     function testRoyaltiesSetViaExtension() public withRoyaltiesExtension {
@@ -128,41 +112,23 @@ contract ERC721CreatorRoyaltiesTest is BaseERC721CreatorTest {
 
         // Update royalty info for extension
         vm.prank(creator);
-        creatorContract().setRoyaltiesExtension(
-            address(royaltiesExtension),
-            recipients,
-            values
-        );
+        creatorContract().setRoyaltiesExtension(address(royaltiesExtension), recipients, values);
         assertRoyalties(tokenId, recipients, values);
 
         // Contract mints don't use extension royalties
-        assertRoyalties(
-            mintWithCreator(alice),
-            new address payable[](0),
-            new uint256[](0)
-        );
+        assertRoyalties(mintWithCreator(alice), new address payable[](0), new uint256[](0));
 
         // Minting another extension token uses the extension royalties
-        assertRoyalties(
-            mintWithExtension(address(royaltiesExtension), alice),
-            recipients,
-            values
-        );
+        assertRoyalties(mintWithExtension(address(royaltiesExtension), alice), recipients, values);
 
         // Extension royalties can be removed
         vm.prank(creator);
-        creatorContract().setRoyaltiesExtension(
-            address(royaltiesExtension),
-            new address payable[](0),
-            new uint256[](0)
-        );
+        creatorContract().setRoyaltiesExtension(address(royaltiesExtension), new address payable[](0), new uint256[](0));
         assertRoyalties(tokenId, new address payable[](0), new uint256[](0));
 
         // New tokens have no royalties if there is no default
         assertRoyalties(
-            mintWithExtension(address(royaltiesExtension), alice),
-            new address payable[](0),
-            new uint256[](0)
+            mintWithExtension(address(royaltiesExtension), alice), new address payable[](0), new uint256[](0)
         );
     }
 
@@ -199,11 +165,7 @@ contract ERC721CreatorRoyaltiesTest is BaseERC721CreatorTest {
         overrideValues[0] = 2000;
 
         vm.prank(creator);
-        creatorContract().setRoyaltiesExtension(
-            address(royaltiesExtension),
-            recipients,
-            overrideValues
-        );
+        creatorContract().setRoyaltiesExtension(address(royaltiesExtension), recipients, overrideValues);
         assertRoyalties(1, recipients, overrideValues);
         assertRoyalties(2, recipients, values);
 
@@ -229,28 +191,21 @@ contract ERC721CreatorRoyaltiesTest is BaseERC721CreatorTest {
         address payable[] memory expectedRecipients,
         uint256[] memory expectedValues
     ) public {
-        (
-            address payable[] memory getRoyaltiesRecipients,
-            uint256[] memory getRoyaltiesValues
-        ) = creatorContract().getRoyalties(tokenId);
+        (address payable[] memory getRoyaltiesRecipients, uint256[] memory getRoyaltiesValues) =
+            creatorContract().getRoyalties(tokenId);
 
-        (
-            address payable[] memory getFeesRecipients,
-            uint256[] memory getFeesValues
-        ) = creatorContract().getFees(tokenId);
+        (address payable[] memory getFeesRecipients, uint256[] memory getFeesValues) =
+            creatorContract().getFees(tokenId);
 
-        address payable[] memory feeRecipients = creatorContract()
-            .getFeeRecipients(tokenId);
+        address payable[] memory feeRecipients = creatorContract().getFeeRecipients(tokenId);
 
         uint256[] memory feeBps = creatorContract().getFeeBps(tokenId);
 
         if (
-            expectedRecipients.length != getRoyaltiesRecipients.length ||
-            expectedValues.length != getRoyaltiesValues.length ||
-            expectedRecipients.length != getFeesRecipients.length ||
-            expectedValues.length != getFeesValues.length ||
-            expectedRecipients.length != feeRecipients.length ||
-            expectedValues.length != feeBps.length
+            expectedRecipients.length != getRoyaltiesRecipients.length
+                || expectedValues.length != getRoyaltiesValues.length
+                || expectedRecipients.length != getFeesRecipients.length || expectedValues.length != getFeesValues.length
+                || expectedRecipients.length != feeRecipients.length || expectedValues.length != feeBps.length
         ) {
             fail();
         }
@@ -267,10 +222,7 @@ contract ERC721CreatorRoyaltiesTest is BaseERC721CreatorTest {
         // Reverts if more than one recipient when using EIP-2981
         uint256 value = 10000000000;
         if (expectedRecipients.length == 1) {
-            (, uint256 royaltyValue) = creatorContract().royaltyInfo(
-                tokenId,
-                value
-            );
+            (, uint256 royaltyValue) = creatorContract().royaltyInfo(tokenId, value);
             assertEq(royaltyValue, (value * expectedValues[0]) / 10000);
         } else if (expectedRecipients.length > 1) {
             vm.expectRevert("More than 1 royalty receiver");

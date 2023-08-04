@@ -16,17 +16,26 @@ import "./ICreatorExtensionRoyalties.sol";
  * check with it for token based royalties
  */
 abstract contract CreatorExtensionRoyalties is AdminControl, CreatorExtension, ICreatorExtensionRoyalties {
-
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(AdminControl, CreatorExtension, IERC165) returns (bool) {
-        return interfaceId == type(ICreatorExtensionRoyalties).interfaceId
-            || super.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(AdminControl, CreatorExtension, IERC165)
+        returns (bool)
+    {
+        return interfaceId == type(ICreatorExtensionRoyalties).interfaceId || super.supportsInterface(interfaceId);
     }
 
     /**
      * @dev See {ICreatorExtensionRoyalties-getRoyalties}
      */
-    function getRoyalties(address creator, uint256 tokenId) external virtual view override returns (address payable[] memory, uint256[] memory);
+    function getRoyalties(address creator, uint256 tokenId)
+        external
+        view
+        virtual
+        override
+        returns (address payable[] memory, uint256[] memory);
 }

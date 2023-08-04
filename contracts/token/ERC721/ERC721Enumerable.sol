@@ -67,12 +67,11 @@ abstract contract ERC721Enumerable is ERC721Base, IERC721Enumerable {
      *
      * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
      */
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 tokenId,
-        uint96 tokenData
-    ) internal virtual override {
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint96 tokenData)
+        internal
+        virtual
+        override
+    {
         super._beforeTokenTransfer(from, to, tokenId, tokenData);
 
         if (from == address(0)) {

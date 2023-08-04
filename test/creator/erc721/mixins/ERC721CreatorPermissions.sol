@@ -2,25 +2,19 @@
 
 pragma solidity ^0.8.0;
 
-import { BaseERC721CreatorTest } from "../BaseERC721CreatorTest.sol";
-import {
-    ERC721MintPermissions
-} from "../extensions/ERC721MintPermissions.sol";
-import { ERC721Extension } from "../extensions/ERC721Extension.sol";
+import {BaseERC721CreatorTest} from "../BaseERC721CreatorTest.sol";
+import {ERC721MintPermissions} from "../extensions/ERC721MintPermissions.sol";
+import {ERC721Extension} from "../extensions/ERC721Extension.sol";
 
 contract ERC721CreatorPermissionsTest is BaseERC721CreatorTest {
     function testMintPermissions() public {
         // Register the first ERC721Extension
-        address extension1 = address(
-            new ERC721Extension(creatorContractAddress)
-        );
+        address extension1 = address(new ERC721Extension(creatorContractAddress));
         vm.prank(creator);
         creatorContract().registerExtension(extension1, extensionTokenURI);
 
         // Register the second ERC721Extension
-        address extension2 = address(
-            new ERC721Extension(creatorContractAddress)
-        );
+        address extension2 = address(new ERC721Extension(creatorContractAddress));
         vm.prank(creator);
         creatorContract().registerExtension(extension2, extensionTokenURI);
 
@@ -36,10 +30,7 @@ contract ERC721CreatorPermissionsTest is BaseERC721CreatorTest {
 
         // Set mint permissions
         vm.prank(creator);
-        creatorContract().setMintPermissions(
-            extension1,
-            address(mintPermissions)
-        );
+        creatorContract().setMintPermissions(extension1, address(mintPermissions));
 
         // Mint tokens while permissions are enabled
         mintWithExtension(extension1, alice);

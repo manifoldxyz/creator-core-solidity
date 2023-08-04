@@ -10,7 +10,6 @@ import "openzeppelin/utils/introspection/IERC165.sol";
  * @dev Required interface of an ERC721Creator compliant extension contracts.
  */
 interface IERC721CreatorMintPermissions is IERC165 {
-
     /**
      * @dev get approval to mint
      */

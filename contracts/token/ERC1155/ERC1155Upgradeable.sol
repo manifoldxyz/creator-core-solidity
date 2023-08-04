@@ -9,7 +9,6 @@ import "openzeppelin-upgradeable/proxy/utils/Initializable.sol";
  * @dev Implementation of https://eips.ethereum.org/EIPS/eip-1155[ERC1155] Non-Fungible Token Standard,
  */
 abstract contract ERC1155Upgradeable is Initializable, ERC1155Core {
-
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();

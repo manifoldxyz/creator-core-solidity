@@ -13,24 +13,28 @@ import "./IERC721CreatorCoreEnumerable.sol";
  * @dev Core ERC721 creator implementation (with enumerable api's)
  */
 abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721CreatorCoreEnumerable {
-
     // For enumerating tokens for a given extension
-    mapping (address => uint256) private _extensionBalances;
-    mapping (address => mapping(uint256 => uint256)) private _extensionTokens;
-    mapping (uint256 => uint256) private _extensionTokensIndex;
+    mapping(address => uint256) private _extensionBalances;
+    mapping(address => mapping(uint256 => uint256)) private _extensionTokens;
+    mapping(uint256 => uint256) private _extensionTokensIndex;
 
     // For enumerating an extension's tokens for an owner
-    mapping (address => mapping(address => uint256)) private _extensionBalancesByOwner;
-    mapping (address => mapping(address => mapping(uint256 => uint256))) private _extensionTokensByOwner;
-    mapping (uint256 => uint256) private _extensionTokensIndexByOwner;
+    mapping(address => mapping(address => uint256)) private _extensionBalancesByOwner;
+    mapping(address => mapping(address => mapping(uint256 => uint256))) private _extensionTokensByOwner;
+    mapping(uint256 => uint256) private _extensionTokensIndexByOwner;
 
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721CreatorCore, IERC165) returns (bool) {
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(ERC721CreatorCore, IERC165)
+        returns (bool)
+    {
         return interfaceId == type(IERC721CreatorCoreEnumerable).interfaceId || super.supportsInterface(interfaceId);
     }
-
 
     /**
      * @dev See {IERC721CreatorCoreEnumerable-totalSupplyExtension}.
@@ -60,7 +64,13 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
     /*
      * @dev See {IERC721CreatorCoreEnumerable-tokenOfOwnerByIndexExtension}.
      */
-    function tokenOfOwnerByIndexExtension(address extension, address owner, uint256 index) external view virtual override returns (uint256) {
+    function tokenOfOwnerByIndexExtension(address extension, address owner, uint256 index)
+        external
+        view
+        virtual
+        override
+        returns (uint256)
+    {
         requireNonBlacklist(extension);
         require(index < balanceOfExtension(extension, owner), "ERC721Creator: Index out of bounds");
         return _extensionTokensByOwner[extension][owner][index];
@@ -101,7 +111,7 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
         uint256 lengthByOwner = balanceOfExtension(tokenExtension_, to);
         _extensionTokensByOwner[tokenExtension_][to][lengthByOwner] = tokenId;
         _extensionTokensIndexByOwner[tokenId] = lengthByOwner;
-        _extensionBalancesByOwner[tokenExtension_][to] += 1;        
+        _extensionBalancesByOwner[tokenExtension_][to] += 1;
     }
 
     function _removeTokenFromOwnerEnumeration(address from, uint256 tokenId, address tokenExtension_) private {
@@ -123,7 +133,7 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
         delete _extensionTokensIndexByOwner[tokenId];
         delete _extensionTokensByOwner[tokenExtension_][from][lastTokenIndexByOwner];
     }
-    
+
     function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint96 data) internal virtual {
         if (from != address(0) && to != address(0) && from != to) {
             address tokenExtension_ = _indexToExtension[uint16(data)];
@@ -151,11 +161,17 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
 
         _addTokenToOwnerEnumeration(to, tokenId, msg.sender);
     }
-    
-    function _postBurn(address owner, uint256 tokenId, address extension) internal override(ERC721CreatorCore) virtual {
-        /*************************************************
+
+    function _postBurn(address owner, uint256 tokenId, address extension)
+        internal
+        virtual
+        override(ERC721CreatorCore)
+    {
+        /**
+         *
          *  START: Remove from extension token tracking
-         *************************************************/
+         *
+         */
 
         uint256 lastTokenIndex = totalSupplyExtension(extension) - 1;
         uint256 tokenIndex = _extensionTokensIndex[tokenId];
@@ -173,21 +189,25 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
         delete _extensionTokensIndex[tokenId];
         delete _extensionTokens[extension][lastTokenIndex];
 
-        /*************************************************
+        /**
+         *
          * END
-         *************************************************/
+         *
+         */
 
-
-        /********************************************************
+        /**
+         *
          *  START: Remove from extension token tracking by owner
-         ********************************************************/
-         _removeTokenFromOwnerEnumeration(owner, tokenId, extension);
+         *
+         */
+        _removeTokenFromOwnerEnumeration(owner, tokenId, extension);
 
-        /********************************************************
+        /**
+         *
          *  END
-         ********************************************************/
-         
-         ERC721CreatorCore._postBurn(owner, tokenId, extension);
-    }
+         *
+         */
 
+        ERC721CreatorCore._postBurn(owner, tokenId, extension);
+    }
 }

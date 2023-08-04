@@ -16,17 +16,16 @@ import "./CreatorCore.sol";
  * @dev Core ERC1155 creator implementation
  */
 abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
-
-    uint256 constant public VERSION = 3;
+    uint256 public constant VERSION = 3;
 
     using EnumerableSet for EnumerableSet.AddressSet;
 
     // Track registered extensions data
-    mapping (address => bool) internal _extensionApproveTransfers;
-    mapping (address => address) internal _extensionPermissions;
+    mapping(address => bool) internal _extensionApproveTransfers;
+    mapping(address => address) internal _extensionPermissions;
 
     // For tracking which extension a token was minted by
-    mapping (uint256 => address) internal _tokensExtension;
+    mapping(uint256 => address) internal _tokensExtension;
 
     /**
      * @dev See {IERC165-supportsInterface}.
@@ -50,7 +49,11 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
      */
     function _setMintPermissions(address extension, address permissions) internal {
         require(_extensions.contains(extension), "Invalid extension");
-        require(permissions == address(0) || ERC165Checker.supportsInterface(permissions, type(IERC1155CreatorMintPermissions).interfaceId), "Invalid address");
+        require(
+            permissions == address(0)
+                || ERC165Checker.supportsInterface(permissions, type(IERC1155CreatorMintPermissions).interfaceId),
+            "Invalid address"
+        );
         if (_extensionPermissions[extension] != permissions) {
             _extensionPermissions[extension] = permissions;
             emit MintPermissionsUpdated(extension, permissions, msg.sender);
@@ -63,7 +66,9 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
      */
     function _checkMintPermissions(address[] memory to, uint256[] memory tokenIds, uint256[] memory amounts) internal {
         if (_extensionPermissions[msg.sender] != address(0)) {
-            IERC1155CreatorMintPermissions(_extensionPermissions[msg.sender]).approveMint(msg.sender, to, tokenIds, amounts);
+            IERC1155CreatorMintPermissions(_extensionPermissions[msg.sender]).approveMint(
+                msg.sender, to, tokenIds, amounts
+            );
         }
     }
 
@@ -73,15 +78,17 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
     function _postBurn(address owner, uint256[] calldata tokenIds, uint256[] calldata amounts) internal virtual {
         require(tokenIds.length > 0, "Invalid input");
         address extension = _tokensExtension[tokenIds[0]];
-        for (uint i; i < tokenIds.length;) {
+        for (uint256 i; i < tokenIds.length;) {
             require(_tokensExtension[tokenIds[i]] == extension, "Mismatched token originators");
-            unchecked { ++i; }
+            unchecked {
+                ++i;
+            }
         }
         // Callback to originating extension if needed
         if (extension != address(0)) {
-           if (ERC165Checker.supportsInterface(extension, type(IERC1155CreatorExtensionBurnable).interfaceId)) {
-               IERC1155CreatorExtensionBurnable(extension).onBurn(owner, tokenIds, amounts);
-           }
+            if (ERC165Checker.supportsInterface(extension, type(IERC1155CreatorExtensionBurnable).interfaceId)) {
+                IERC1155CreatorExtensionBurnable(extension).onBurn(owner, tokenIds, amounts);
+            }
         }
     }
 
@@ -94,18 +101,30 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
 
         address extension = _tokensExtension[tokenIds[0]];
 
-        for (uint i; i < tokenIds.length;) {
+        for (uint256 i; i < tokenIds.length;) {
             require(_tokensExtension[tokenIds[i]] == extension, "Mismatched token originators");
-            unchecked { ++i; }
+            unchecked {
+                ++i;
+            }
         }
         if (extension != address(0) && _extensionApproveTransfers[extension]) {
-            require(IERC1155CreatorExtensionApproveTransfer(extension).approveTransfer(msg.sender, from, to, tokenIds, amounts), "Extension approval failure");
+            require(
+                IERC1155CreatorExtensionApproveTransfer(extension).approveTransfer(
+                    msg.sender, from, to, tokenIds, amounts
+                ),
+                "Extension approval failure"
+            );
         } else if (_approveTransferBase != address(0)) {
-            require(IERC1155CreatorExtensionApproveTransfer(_approveTransferBase).approveTransfer(msg.sender, from, to, tokenIds, amounts), "Extension approval failure");
+            require(
+                IERC1155CreatorExtensionApproveTransfer(_approveTransferBase).approveTransfer(
+                    msg.sender, from, to, tokenIds, amounts
+                ),
+                "Extension approval failure"
+            );
         }
     }
 
-    function _tokenExtension(uint256 tokenId) internal view override returns(address) {
+    function _tokenExtension(uint256 tokenId) internal view override returns (address) {
         return _tokensExtension[tokenId];
     }
 }

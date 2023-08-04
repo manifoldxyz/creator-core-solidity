@@ -15,25 +15,33 @@ import "./IERC1155CreatorMintPermissions.sol";
  * approveMint requires the sender to be the configured creator.
  */
 abstract contract ERC1155CreatorMintPermissions is ERC165, AdminControl, IERC1155CreatorMintPermissions {
-     address internal immutable _creator;
+    address internal immutable _creator;
 
-     constructor(address creator_) {
-         require(ERC165Checker.supportsInterface(creator_, type(IERC1155CreatorCore).interfaceId), "Must implement IERC1155CreatorCore");
-         _creator = creator_;
-     }
+    constructor(address creator_) {
+        require(
+            ERC165Checker.supportsInterface(creator_, type(IERC1155CreatorCore).interfaceId),
+            "Must implement IERC1155CreatorCore"
+        );
+        _creator = creator_;
+    }
 
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165, AdminControl) returns (bool) {
-        return interfaceId == type(IERC1155CreatorMintPermissions).interfaceId
-            || super.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(ERC165, IERC165, AdminControl)
+        returns (bool)
+    {
+        return interfaceId == type(IERC1155CreatorMintPermissions).interfaceId || super.supportsInterface(interfaceId);
     }
 
     /**
      * @dev See {IERC1155CreatorMintPermissions-approveMint}.
      */
-    function approveMint(address, address[] calldata, uint256[] calldata, uint256[] calldata)  public virtual override {
+    function approveMint(address, address[] calldata, uint256[] calldata, uint256[] calldata) public virtual override {
         require(msg.sender == _creator, "Can only be called by token creator");
     }
 }

@@ -2,10 +2,8 @@
 
 pragma solidity ^0.8.0;
 
-import { BaseERC1155CreatorTest } from "../BaseERC1155CreatorTest.sol";
-import {
-    ERC1155RoyaltiesExtension
-} from "../extensions/ERC1155RoyaltiesExtension.sol";
+import {BaseERC1155CreatorTest} from "../BaseERC1155CreatorTest.sol";
+import {ERC1155RoyaltiesExtension} from "../extensions/ERC1155RoyaltiesExtension.sol";
 
 contract ERC1155CreatorRoyaltiesTest is BaseERC1155CreatorTest {
     ERC1155RoyaltiesExtension public royaltiesExtension;
@@ -16,10 +14,7 @@ contract ERC1155CreatorRoyaltiesTest is BaseERC1155CreatorTest {
             creatorContractAddress
         );
         vm.prank(creator);
-        creatorContract().registerExtension(
-            address(royaltiesExtension),
-            extensionTokenURI
-        );
+        creatorContract().registerExtension(address(royaltiesExtension), extensionTokenURI);
         _;
     }
 
@@ -89,18 +84,11 @@ contract ERC1155CreatorRoyaltiesTest is BaseERC1155CreatorTest {
 
         // Default royalties can be removed
         vm.prank(creator);
-        creatorContract().setRoyalties(
-            new address payable[](0),
-            new uint256[](0)
-        );
+        creatorContract().setRoyalties(new address payable[](0), new uint256[](0));
         assertRoyalties(tokenId, new address payable[](0), new uint256[](0));
 
         // New tokens have no royalties if there is no default
-        assertRoyalties(
-            mintWithCreator(alice),
-            new address payable[](0),
-            new uint256[](0)
-        );
+        assertRoyalties(mintWithCreator(alice), new address payable[](0), new uint256[](0));
     }
 
     function testRoyaltiesSetViaExtension() public withRoyaltiesExtension {
@@ -115,41 +103,23 @@ contract ERC1155CreatorRoyaltiesTest is BaseERC1155CreatorTest {
 
         // Update royalty info for extension
         vm.prank(creator);
-        creatorContract().setRoyaltiesExtension(
-            address(royaltiesExtension),
-            recipients,
-            values
-        );
+        creatorContract().setRoyaltiesExtension(address(royaltiesExtension), recipients, values);
         assertRoyalties(tokenId, recipients, values);
 
         // Contract mints don't use extension royalties
-        assertRoyalties(
-            mintWithCreator(alice),
-            new address payable[](0),
-            new uint256[](0)
-        );
+        assertRoyalties(mintWithCreator(alice), new address payable[](0), new uint256[](0));
 
         // Minting another extension token uses the extension royalties
-        assertRoyalties(
-            mintWithExtension(address(royaltiesExtension), alice),
-            recipients,
-            values
-        );
+        assertRoyalties(mintWithExtension(address(royaltiesExtension), alice), recipients, values);
 
         // Extension royalties can be removed
         vm.prank(creator);
-        creatorContract().setRoyaltiesExtension(
-            address(royaltiesExtension),
-            new address payable[](0),
-            new uint256[](0)
-        );
+        creatorContract().setRoyaltiesExtension(address(royaltiesExtension), new address payable[](0), new uint256[](0));
         assertRoyalties(tokenId, new address payable[](0), new uint256[](0));
 
         // New tokens have no royalties if there is no default
         assertRoyalties(
-            mintWithExtension(address(royaltiesExtension), alice),
-            new address payable[](0),
-            new uint256[](0)
+            mintWithExtension(address(royaltiesExtension), alice), new address payable[](0), new uint256[](0)
         );
     }
 
@@ -186,11 +156,7 @@ contract ERC1155CreatorRoyaltiesTest is BaseERC1155CreatorTest {
         overrideValues[0] = 2000;
 
         vm.prank(creator);
-        creatorContract().setRoyaltiesExtension(
-            address(royaltiesExtension),
-            recipients,
-            overrideValues
-        );
+        creatorContract().setRoyaltiesExtension(address(royaltiesExtension), recipients, overrideValues);
         assertRoyalties(1, recipients, overrideValues);
         assertRoyalties(2, recipients, values);
 
@@ -216,28 +182,21 @@ contract ERC1155CreatorRoyaltiesTest is BaseERC1155CreatorTest {
         address payable[] memory expectedRecipients,
         uint256[] memory expectedValues
     ) private {
-        (
-            address payable[] memory getRoyalties_recipients,
-            uint256[] memory getRoyalties_values
-        ) = creatorContract().getRoyalties(tokenId);
+        (address payable[] memory getRoyalties_recipients, uint256[] memory getRoyalties_values) =
+            creatorContract().getRoyalties(tokenId);
 
-        (
-            address payable[] memory getFees_recipients,
-            uint256[] memory getFees_values
-        ) = creatorContract().getFees(tokenId);
+        (address payable[] memory getFees_recipients, uint256[] memory getFees_values) =
+            creatorContract().getFees(tokenId);
 
-        address payable[] memory feeRecipients = creatorContract()
-            .getFeeRecipients(tokenId);
+        address payable[] memory feeRecipients = creatorContract().getFeeRecipients(tokenId);
 
         uint256[] memory feeBps = creatorContract().getFeeBps(tokenId);
 
         if (
-            expectedRecipients.length != getRoyalties_recipients.length ||
-            expectedValues.length != getRoyalties_values.length ||
-            expectedRecipients.length != getFees_recipients.length ||
-            expectedValues.length != getFees_values.length ||
-            expectedRecipients.length != feeRecipients.length ||
-            expectedValues.length != feeBps.length
+            expectedRecipients.length != getRoyalties_recipients.length
+                || expectedValues.length != getRoyalties_values.length
+                || expectedRecipients.length != getFees_recipients.length || expectedValues.length != getFees_values.length
+                || expectedRecipients.length != feeRecipients.length || expectedValues.length != feeBps.length
         ) {
             fail();
         }
@@ -254,10 +213,7 @@ contract ERC1155CreatorRoyaltiesTest is BaseERC1155CreatorTest {
         // Reverts if more than one recipient when using EIP-2981
         uint256 value = 10000000000;
         if (expectedRecipients.length == 1) {
-            (, uint256 royaltyValue) = creatorContract().royaltyInfo(
-                tokenId,
-                value
-            );
+            (, uint256 royaltyValue) = creatorContract().royaltyInfo(tokenId, value);
             assertEq(royaltyValue, (value * expectedValues[0]) / 10000);
         } else if (expectedRecipients.length > 1) {
             vm.expectRevert("More than 1 royalty receiver");

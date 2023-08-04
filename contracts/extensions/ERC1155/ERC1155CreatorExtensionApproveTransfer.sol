@@ -15,7 +15,6 @@ import "./IERC1155CreatorExtensionApproveTransfer.sol";
  * check with it before a transfer occurs
  */
 abstract contract ERC1155CreatorExtensionApproveTransfer is AdminControl, IERC1155CreatorExtensionApproveTransfer {
-
     /**
      * @dev See {IERC165-supportsInterface}.
      */
@@ -28,8 +27,10 @@ abstract contract ERC1155CreatorExtensionApproveTransfer is AdminControl, IERC11
      * @dev See {IERC1155CreatorExtensionApproveTransfer-setApproveTransfer}
      */
     function setApproveTransfer(address creator, bool enabled) external override adminRequired {
-        require(ERC165Checker.supportsInterface(creator, type(IERC1155CreatorCore).interfaceId), "creator must implement IERC1155CreatorCore");
+        require(
+            ERC165Checker.supportsInterface(creator, type(IERC1155CreatorCore).interfaceId),
+            "creator must implement IERC1155CreatorCore"
+        );
         IERC1155CreatorCore(creator).setApproveTransferExtension(enabled);
     }
-
 }

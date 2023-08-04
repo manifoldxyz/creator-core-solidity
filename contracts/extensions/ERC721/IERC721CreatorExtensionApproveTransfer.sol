@@ -10,7 +10,6 @@ import "openzeppelin/utils/introspection/IERC165.sol";
  * Implement this if you want your extension to approve a transfer
  */
 interface IERC721CreatorExtensionApproveTransfer is IERC165 {
-
     /**
      * @dev Set whether or not the creator will check the extension for approval of token transfer
      */

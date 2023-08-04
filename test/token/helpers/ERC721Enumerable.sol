@@ -8,9 +8,7 @@ import {ERC721Base} from "creator-core/token/ERC721/ERC721Base.sol";
 import {ERC721Enumerable} from "creator-core/token/ERC721/ERC721Enumerable.sol";
 
 contract MockERC721Enumerable is ERC721Enumerable {
-
-    constructor (string memory _name, string memory _symbol) ERC721Base(_name, _symbol) {
-    }
+    constructor(string memory _name, string memory _symbol) ERC721Base(_name, _symbol) {}
 
     function mint(address to, uint256 tokenId) external {
         _safeMint(to, tokenId, 0);

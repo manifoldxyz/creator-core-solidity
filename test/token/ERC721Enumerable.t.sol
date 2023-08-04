@@ -35,7 +35,7 @@ contract ERC721EnumerableFunctionalityTest is Test, ERC721Recipient {
         token.mint(address(this), 2);
         assertEq(token.totalSupply(), 2);
     }
-    
+
     function testTokenOfOwnerByIndex() public {
         token.mint(address(this), 1);
         token.mint(address(this), 2);
@@ -43,17 +43,17 @@ contract ERC721EnumerableFunctionalityTest is Test, ERC721Recipient {
         assertEq(token.tokenOfOwnerByIndex(address(this), 0), 1);
         assertEq(token.tokenOfOwnerByIndex(address(this), 1), 2);
     }
-    
+
     function testTokenOfOwnerByIndexRevertsOutOfBounds() public {
         vm.expectRevert("ERC721Enumerable: owner index out of bounds");
         token.tokenOfOwnerByIndex(address(this), 0);
 
         token.mint(address(this), 1);
-        
+
         vm.expectRevert("ERC721Enumerable: owner index out of bounds");
         token.tokenOfOwnerByIndex(address(this), 1);
     }
-    
+
     function testTokenOfOwnerByIndexUpdatesAfterTransfer() public {
         token.mint(address(this), 1);
         token.mint(address(this), 2);
@@ -87,7 +87,7 @@ contract ERC721EnumerableFunctionalityTest is Test, ERC721Recipient {
         token.tokenByIndex(0);
 
         token.mint(address(this), 1);
-        
+
         vm.expectRevert("ERC721Enumerable: global index out of bounds");
         token.tokenByIndex(1);
     }

@@ -9,7 +9,6 @@ import "openzeppelin-upgradeable/proxy/utils/Initializable.sol";
  * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard,
  */
 abstract contract ERC721Upgradeable is Initializable, ERC721Core {
-
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();

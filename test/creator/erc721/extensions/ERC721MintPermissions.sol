@@ -2,12 +2,8 @@
 
 pragma solidity ^0.8.0;
 
-import {
-    IERC721CreatorMintPermissions
-} from "creator-core/permissions/ERC721/IERC721CreatorMintPermissions.sol";
-import {
-    IERC165
-} from "openzeppelin/utils/introspection/IERC165.sol";
+import {IERC721CreatorMintPermissions} from "creator-core/permissions/ERC721/IERC721CreatorMintPermissions.sol";
+import {IERC165} from "openzeppelin/utils/introspection/IERC165.sol";
 
 contract ERC721MintPermissions is IERC721CreatorMintPermissions {
     address _creator;
@@ -20,8 +16,7 @@ contract ERC721MintPermissions is IERC721CreatorMintPermissions {
 
     function supportsInterface(bytes4 interfaceId) public pure returns (bool) {
         return
-            interfaceId == type(IERC721CreatorMintPermissions).interfaceId ||
-            interfaceId == type(IERC165).interfaceId;
+            interfaceId == type(IERC721CreatorMintPermissions).interfaceId || interfaceId == type(IERC165).interfaceId;
     }
 
     function setApproveEnabled(bool enabled) external {

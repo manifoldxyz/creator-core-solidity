@@ -2,10 +2,8 @@
 
 pragma solidity ^0.8.0;
 
-import { BaseERC721CreatorTest } from "../BaseERC721CreatorTest.sol";
-import {
-    ERC721TokenURIExtension
-} from "../extensions/ERC721TokenURIExtension.sol";
+import {BaseERC721CreatorTest} from "../BaseERC721CreatorTest.sol";
+import {ERC721TokenURIExtension} from "../extensions/ERC721TokenURIExtension.sol";
 
 contract ERC721CreatorMetadataTest is BaseERC721CreatorTest {
     ERC721TokenURIExtension public tokenURIExtension;
@@ -16,10 +14,7 @@ contract ERC721CreatorMetadataTest is BaseERC721CreatorTest {
             creatorContractAddress
         );
         vm.prank(creator);
-        creatorContract().registerExtension(
-            address(tokenURIExtension),
-            extensionTokenURI
-        );
+        creatorContract().registerExtension(address(tokenURIExtension), extensionTokenURI);
         _;
     }
 
@@ -75,11 +70,7 @@ contract ERC721CreatorMetadataTest is BaseERC721CreatorTest {
         uint256 tokenId2 = mintWithCreator(alice);
 
         // Mint batch of tokens via extension
-        uint256[] memory tokenIds = mintBatchWithExtension(
-            address(tokenURIExtension),
-            alice,
-            10
-        );
+        uint256[] memory tokenIds = mintBatchWithExtension(address(tokenURIExtension), alice, 10);
 
         // Update tokenURI to an override
         vm.prank(creator);
@@ -92,10 +83,7 @@ contract ERC721CreatorMetadataTest is BaseERC721CreatorTest {
         }
 
         // Validate normal token has correct URI
-        assertEq(
-            creatorContract().tokenURI(tokenId2),
-            _uri(baseTokenURI, tokenId2)
-        );
+        assertEq(creatorContract().tokenURI(tokenId2), _uri(baseTokenURI, tokenId2));
     }
 
     function testTokenURIExtension() public withTokenURIExtension {

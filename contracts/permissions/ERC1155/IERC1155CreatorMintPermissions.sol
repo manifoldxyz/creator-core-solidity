@@ -10,9 +10,13 @@ import "openzeppelin/utils/introspection/IERC165.sol";
  * @dev Required interface of an ERC1155Creator compliant extension contracts.
  */
 interface IERC1155CreatorMintPermissions is IERC165 {
-
     /**
      * @dev get approval to mint
      */
-    function approveMint(address extension, address[] calldata to, uint256[] calldata tokenIds, uint256[] calldata amounts) external;
+    function approveMint(
+        address extension,
+        address[] calldata to,
+        uint256[] calldata tokenIds,
+        uint256[] calldata amounts
+    ) external;
 }

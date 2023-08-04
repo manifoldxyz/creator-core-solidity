@@ -2,16 +2,12 @@
 
 pragma solidity ^0.8.0;
 
-import { ERC721Creator } from "creator-core/ERC721Creator.sol";
-import {
-    ICreatorExtensionTokenURI
-} from "creator-core/extensions/ICreatorExtensionTokenURI.sol";
-import { IERC721Extension } from "./extensions/ERC721Extension.sol";
-import {
-    ERC165Checker
-} from "openzeppelin/utils/introspection/ERC165Checker.sol";
-import { Strings } from "openzeppelin/utils/Strings.sol";
-import { Test } from "forge-std/Test.sol";
+import {ERC721Creator} from "creator-core/ERC721Creator.sol";
+import {ICreatorExtensionTokenURI} from "creator-core/extensions/ICreatorExtensionTokenURI.sol";
+import {IERC721Extension} from "./extensions/ERC721Extension.sol";
+import {ERC165Checker} from "openzeppelin/utils/introspection/ERC165Checker.sol";
+import {Strings} from "openzeppelin/utils/Strings.sol";
+import {Test} from "forge-std/Test.sol";
 
 contract BaseERC721CreatorTest is Test {
     address alice = address(0xA11CE);
@@ -52,10 +48,7 @@ contract BaseERC721CreatorTest is Test {
         return tokenId;
     }
 
-    function mintWithCreator(
-        address to,
-        string memory uri
-    ) internal returns (uint256) {
+    function mintWithCreator(address to, string memory uri) internal returns (uint256) {
         // Mint a token
         vm.prank(creator);
         uint256 tokenId = creatorContract().mintBase(to, uri);
@@ -66,30 +59,20 @@ contract BaseERC721CreatorTest is Test {
         return tokenId;
     }
 
-    function mintBatchWithCreator(
-        address to,
-        uint16 count
-    ) internal returns (uint256[] memory) {
+    function mintBatchWithCreator(address to, uint16 count) internal returns (uint256[] memory) {
         // Mint a token
         vm.prank(creator);
         uint256[] memory tokenIds = creatorContract().mintBaseBatch(to, count);
 
         // Assert mints were successful
         for (uint256 i = 0; i < tokenIds.length; i++) {
-            assertMintWithCreator(
-                tokenIds[i],
-                to,
-                _uri(baseTokenURI, tokenIds[i])
-            );
+            assertMintWithCreator(tokenIds[i], to, _uri(baseTokenURI, tokenIds[i]));
         }
 
         return tokenIds;
     }
 
-    function mintBatchWithCreator(
-        address to,
-        string[] memory uris
-    ) internal returns (uint256[] memory) {
+    function mintBatchWithCreator(address to, string[] memory uris) internal returns (uint256[] memory) {
         // Mint a token
         vm.prank(creator);
         uint256[] memory tokenIds = creatorContract().mintBaseBatch(to, uris);
@@ -102,10 +85,7 @@ contract BaseERC721CreatorTest is Test {
         return tokenIds;
     }
 
-    function mintWithExtension(
-        address extension,
-        address to
-    ) internal returns (uint256) {
+    function mintWithExtension(address extension, address to) internal returns (uint256) {
         // Mint a token
         vm.prank(creator);
         uint256 tokenId = IERC721Extension(extension).mint(to);
@@ -116,21 +96,12 @@ contract BaseERC721CreatorTest is Test {
         }
 
         // Assert mint was successful
-        assertMintWithExtension(
-            extension,
-            tokenId,
-            to,
-            _uri(extensionTokenURI, tokenId)
-        );
+        assertMintWithExtension(extension, tokenId, to, _uri(extensionTokenURI, tokenId));
 
         return tokenId;
     }
 
-    function mintWithExtension(
-        address extension,
-        address to,
-        string memory uri
-    ) internal returns (uint256) {
+    function mintWithExtension(address extension, address to, string memory uri) internal returns (uint256) {
         // Mint a token
         vm.prank(creator);
         uint256 tokenId = IERC721Extension(extension).mint(to, uri);
@@ -141,42 +112,26 @@ contract BaseERC721CreatorTest is Test {
         return tokenId;
     }
 
-    function mintBatchWithExtension(
-        address extension,
-        address to,
-        uint16 count
-    ) internal returns (uint256[] memory) {
+    function mintBatchWithExtension(address extension, address to, uint16 count) internal returns (uint256[] memory) {
         // Mint a token
         vm.prank(creator);
-        uint256[] memory tokenIds = IERC721Extension(extension).mintBatch(
-            to,
-            count
-        );
+        uint256[] memory tokenIds = IERC721Extension(extension).mintBatch(to, count);
 
         // Assert mints were successful
         for (uint256 i = 0; i < tokenIds.length; i++) {
-            assertMintWithExtension(
-                extension,
-                tokenIds[i],
-                to,
-                _uri(extensionTokenURI, tokenIds[i])
-            );
+            assertMintWithExtension(extension, tokenIds[i], to, _uri(extensionTokenURI, tokenIds[i]));
         }
 
         return tokenIds;
     }
 
-    function mintBatchWithExtension(
-        address extension,
-        address to,
-        string[] memory uris
-    ) internal returns (uint256[] memory) {
+    function mintBatchWithExtension(address extension, address to, string[] memory uris)
+        internal
+        returns (uint256[] memory)
+    {
         // Mint a token
         vm.prank(creator);
-        uint256[] memory tokenIds = IERC721Extension(extension).mintBatch(
-            to,
-            uris
-        );
+        uint256[] memory tokenIds = IERC721Extension(extension).mintBatch(to, uris);
 
         // Assert mints were successful
         for (uint256 i = 0; i < tokenIds.length; i++) {
@@ -186,11 +141,7 @@ contract BaseERC721CreatorTest is Test {
         return tokenIds;
     }
 
-    function assertMintWithCreator(
-        uint256 tokenId,
-        address to,
-        string memory uri
-    ) internal {
+    function assertMintWithCreator(uint256 tokenId, address to, string memory uri) internal {
         // Validate mint was successful
         assertMint(tokenId, to, uri);
 
@@ -199,24 +150,11 @@ contract BaseERC721CreatorTest is Test {
         creatorContract().tokenExtension(tokenId);
     }
 
-    function assertMintWithExtension(
-        address extension,
-        uint256 tokenId,
-        address to,
-        string memory uri
-    ) internal {
+    function assertMintWithExtension(address extension, uint256 tokenId, address to, string memory uri) internal {
         // Update token  URI if needed
-        if (
-            ERC165Checker.supportsInterface(
-                extension,
-                type(ICreatorExtensionTokenURI).interfaceId
-            )
-        ) {
+        if (ERC165Checker.supportsInterface(extension, type(ICreatorExtensionTokenURI).interfaceId)) {
             // If extension overrides token URI, set that as expected
-            uri = ICreatorExtensionTokenURI(extension).tokenURI(
-                creatorContractAddress,
-                tokenId
-            );
+            uri = ICreatorExtensionTokenURI(extension).tokenURI(creatorContractAddress, tokenId);
         }
 
         // Validate mint was successful
@@ -226,11 +164,7 @@ contract BaseERC721CreatorTest is Test {
         assertEq(creatorContract().tokenExtension(tokenId), extension);
     }
 
-    function assertMint(
-        uint256 tokenId,
-        address to,
-        string memory uri
-    ) internal {
+    function assertMint(uint256 tokenId, address to, string memory uri) internal {
         // Check balance change
         assertEq(creatorContract().ownerOf(tokenId), to);
 
@@ -238,10 +172,7 @@ contract BaseERC721CreatorTest is Test {
         assertEq(creatorContract().tokenURI(tokenId), uri);
     }
 
-    function _uri(
-        string memory uri,
-        uint256 tokenId
-    ) internal pure returns (string memory) {
+    function _uri(string memory uri, uint256 tokenId) internal pure returns (string memory) {
         return string(abi.encodePacked(uri, Strings.toString(tokenId)));
     }
 }

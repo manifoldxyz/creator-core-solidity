@@ -2,46 +2,30 @@
 
 pragma solidity ^0.8.0;
 
-import { IERC721CreatorCore } from "creator-core/core/IERC721CreatorCore.sol";
-import {
-    ICreatorExtensionRoyalties
-} from "creator-core/extensions/ICreatorExtensionRoyalties.sol";
-import {
-    IERC165
-} from "openzeppelin/utils/introspection/IERC165.sol";
-import { ERC721Extension } from "./ERC721Extension.sol";
+import {IERC721CreatorCore} from "creator-core/core/IERC721CreatorCore.sol";
+import {ICreatorExtensionRoyalties} from "creator-core/extensions/ICreatorExtensionRoyalties.sol";
+import {IERC165} from "openzeppelin/utils/introspection/IERC165.sol";
+import {ERC721Extension} from "./ERC721Extension.sol";
 
 struct RoyaltyInfo {
     address payable[] recipients;
     uint256[] values;
 }
 
-contract ERC721RoyaltiesExtension is
-    ICreatorExtensionRoyalties,
-    ERC721Extension
-{
+contract ERC721RoyaltiesExtension is ICreatorExtensionRoyalties, ERC721Extension {
     mapping(uint256 => RoyaltyInfo) _royaltyInfo;
 
     constructor(address creator) ERC721Extension(creator) {}
 
     function supportsInterface(bytes4 interfaceId) public pure returns (bool) {
-        return
-            interfaceId == type(ICreatorExtensionRoyalties).interfaceId ||
-            interfaceId == type(IERC165).interfaceId;
+        return interfaceId == type(ICreatorExtensionRoyalties).interfaceId || interfaceId == type(IERC165).interfaceId;
     }
 
-    function setRoyaltyOverrides(
-        uint256 tokenId,
-        address payable[] memory receivers,
-        uint256[] memory values
-    ) public {
+    function setRoyaltyOverrides(uint256 tokenId, address payable[] memory receivers, uint256[] memory values) public {
         _royaltyInfo[tokenId] = RoyaltyInfo(receivers, values);
     }
 
-    function getRoyalties(
-        address creator,
-        uint256 tokenId
-    )
+    function getRoyalties(address creator, uint256 tokenId)
         external
         view
         override

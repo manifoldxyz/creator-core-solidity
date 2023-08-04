@@ -10,7 +10,6 @@ import "./IERC721CreatorCore.sol";
  * @dev Core ERC721 creator interface (with enumerable api's)
  */
 interface IERC721CreatorCoreEnumerable is IERC721CreatorCore {
-
     /*
      * @dev gets the total number of tokens created by the extension (unburned)
      */
@@ -25,12 +24,15 @@ interface IERC721CreatorCoreEnumerable is IERC721CreatorCore {
     /*
      * @dev get balance of owner for an extension
      */
-   function balanceOfExtension(address extension, address owner) external view returns (uint256 balance);
+    function balanceOfExtension(address extension, address owner) external view returns (uint256 balance);
 
-   /*
+    /*
     * @dev Returns a token ID owned by `owner` at a given `index` of its token list for a given extension
     */
-   function tokenOfOwnerByIndexExtension(address extension, address owner, uint256 index) external view returns (uint256 tokenId);
+    function tokenOfOwnerByIndexExtension(address extension, address owner, uint256 index)
+        external
+        view
+        returns (uint256 tokenId);
 
     /*
      * @dev gets the total number of tokens created with no extension
@@ -52,5 +54,4 @@ interface IERC721CreatorCoreEnumerable is IERC721CreatorCore {
      * @dev Returns a token ID owned by `owner` at a given `index` of its token list for tokens with no extension
      */
     function tokenOfOwnerByIndexBase(address owner, uint256 index) external view returns (uint256 tokenId);
-
 }

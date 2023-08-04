@@ -2,10 +2,8 @@
 
 pragma solidity ^0.8.0;
 
-import { BaseERC721CreatorTest } from "../BaseERC721CreatorTest.sol";
-import {
-    ERC721BurnableExtension
-} from "../extensions/ERC721BurnableExtension.sol";
+import {BaseERC721CreatorTest} from "../BaseERC721CreatorTest.sol";
+import {ERC721BurnableExtension} from "../extensions/ERC721BurnableExtension.sol";
 
 contract ERC721CreatorBurnsTest is BaseERC721CreatorTest {
     ERC721BurnableExtension public burnableExtension;
@@ -16,10 +14,7 @@ contract ERC721CreatorBurnsTest is BaseERC721CreatorTest {
             creatorContractAddress
         );
         vm.prank(creator);
-        creatorContract().registerExtension(
-            address(burnableExtension),
-            extensionTokenURI
-        );
+        creatorContract().registerExtension(address(burnableExtension), extensionTokenURI);
         _;
     }
 

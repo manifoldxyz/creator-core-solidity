@@ -34,22 +34,23 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     EnumerableSet.AddressSet internal _blacklistedExtensions;
 
     // The baseURI for a given extension
-    mapping (address => string) private _extensionBaseURI;
-    mapping (address => bool) private _extensionBaseURIIdentical;
+    mapping(address => string) private _extensionBaseURI;
+    mapping(address => bool) private _extensionBaseURIIdentical;
 
     // The prefix for any tokens with a uri configured
-    mapping (address => string) private _extensionURIPrefix;
+    mapping(address => string) private _extensionURIPrefix;
 
     // Mapping for individual token URIs
-    mapping (uint256 => string) internal _tokenURIs;
+    mapping(uint256 => string) internal _tokenURIs;
 
     // Royalty configurations
     struct RoyaltyConfig {
         address payable receiver;
         uint16 bps;
     }
-    mapping (address => RoyaltyConfig[]) internal _extensionRoyalty;
-    mapping (uint256 => RoyaltyConfig[]) internal _tokenRoyalty;
+
+    mapping(address => RoyaltyConfig[]) internal _extensionRoyalty;
+    mapping(uint256 => RoyaltyConfig[]) internal _tokenRoyalty;
 
     bytes4 private constant _CREATOR_CORE_V1 = 0x28f10a21;
 
@@ -98,9 +99,10 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
      * @dev See {IERC165-supportsInterface}.
      */
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
-        return interfaceId == type(ICreatorCore).interfaceId || interfaceId == _CREATOR_CORE_V1 || super.supportsInterface(interfaceId)
-            || interfaceId == _INTERFACE_ID_ROYALTIES_CREATORCORE || interfaceId == _INTERFACE_ID_ROYALTIES_RARIBLE
-            || interfaceId == _INTERFACE_ID_ROYALTIES_FOUNDATION || interfaceId == _INTERFACE_ID_ROYALTIES_EIP2981;
+        return interfaceId == type(ICreatorCore).interfaceId || interfaceId == _CREATOR_CORE_V1
+            || super.supportsInterface(interfaceId) || interfaceId == _INTERFACE_ID_ROYALTIES_CREATORCORE
+            || interfaceId == _INTERFACE_ID_ROYALTIES_RARIBLE || interfaceId == _INTERFACE_ID_ROYALTIES_FOUNDATION
+            || interfaceId == _INTERFACE_ID_ROYALTIES_EIP2981;
     }
 
     /**
@@ -115,16 +117,18 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
      */
     function requireNonBlacklist(address extension) internal view {
         require(!_blacklistedExtensions.contains(extension), "Extension blacklisted");
-    }   
+    }
 
     /**
      * @dev See {ICreatorCore-getExtensions}.
      */
     function getExtensions() external view override returns (address[] memory extensions) {
         extensions = new address[](_extensions.length());
-        for (uint i; i < _extensions.length();) {
+        for (uint256 i; i < _extensions.length();) {
             extensions[i] = _extensions.at(i);
-            unchecked { ++i; }
+            unchecked {
+                ++i;
+            }
         }
         return extensions;
     }
@@ -166,15 +170,15 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
      * @dev Blacklist an extension
      */
     function _blacklistExtension(address extension) internal {
-       require(extension != address(0) && extension != address(this), "Cannot blacklist yourself");
-       if (_extensions.contains(extension)) {
-           emit ExtensionUnregistered(extension, msg.sender);
-           _extensions.remove(extension);
-       }
-       if (!_blacklistedExtensions.contains(extension)) {
-           emit ExtensionBlacklisted(extension, msg.sender);
-           _blacklistedExtensions.add(extension);
-       }
+        require(extension != address(0) && extension != address(this), "Cannot blacklist yourself");
+        if (_extensions.contains(extension)) {
+            emit ExtensionUnregistered(extension, msg.sender);
+            _extensions.remove(extension);
+        }
+        if (!_blacklistedExtensions.contains(extension)) {
+            emit ExtensionBlacklisted(extension, msg.sender);
+            _blacklistedExtensions.add(extension);
+        }
     }
 
     /**
@@ -214,7 +218,6 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
         _extensionURIPrefix[address(0)] = prefix;
     }
 
-
     /**
      * @dev Set token uri for a token with no extension
      */
@@ -253,8 +256,11 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     /**
      * Helper to get royalties for a token
      */
-    function _getRoyalties(uint256 tokenId) view internal returns (address payable[] memory receivers, uint256[] memory bps) {
-
+    function _getRoyalties(uint256 tokenId)
+        internal
+        view
+        returns (address payable[] memory receivers, uint256[] memory bps)
+    {
         // Get token level royalties
         RoyaltyConfig[] memory royalties = _tokenRoyalty[tokenId];
         if (royalties.length == 0) {
@@ -273,14 +279,16 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
             // Get the default royalty
             royalties = _extensionRoyalty[address(0)];
         }
-        
+
         if (royalties.length > 0) {
             receivers = new address payable[](royalties.length);
             bps = new uint256[](royalties.length);
-            for (uint i; i < royalties.length;) {
+            for (uint256 i; i < royalties.length;) {
                 receivers[i] = royalties[i].receiver;
                 bps[i] = royalties[i].bps;
-                unchecked { ++i; }
+                unchecked {
+                    ++i;
+                }
             }
         }
     }
@@ -288,32 +296,34 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     /**
      * Helper to get royalty receivers for a token
      */
-    function _getRoyaltyReceivers(uint256 tokenId) view internal returns (address payable[] memory recievers) {
-        (recievers, ) = _getRoyalties(tokenId);
+    function _getRoyaltyReceivers(uint256 tokenId) internal view returns (address payable[] memory recievers) {
+        (recievers,) = _getRoyalties(tokenId);
     }
 
     /**
      * Helper to get royalty basis points for a token
      */
-    function _getRoyaltyBPS(uint256 tokenId) view internal returns (uint256[] memory bps) {
+    function _getRoyaltyBPS(uint256 tokenId) internal view returns (uint256[] memory bps) {
         (, bps) = _getRoyalties(tokenId);
     }
 
-    function _getRoyaltyInfo(uint256 tokenId, uint256 value) view internal returns (address receiver, uint256 amount){
+    function _getRoyaltyInfo(uint256 tokenId, uint256 value) internal view returns (address receiver, uint256 amount) {
         (address payable[] memory receivers, uint256[] memory bps) = _getRoyalties(tokenId);
         require(receivers.length <= 1, "More than 1 royalty receiver");
-        
+
         if (receivers.length == 0) {
             return (address(this), 0);
         }
-        return (receivers[0], bps[0]*value/10000);
+        return (receivers[0], bps[0] * value / 10000);
     }
 
     /**
      * Set royalties for a token
      */
-    function _setRoyalties(uint256 tokenId, address payable[] calldata receivers, uint256[] calldata basisPoints) internal {
-       _checkRoyalties(receivers, basisPoints);
+    function _setRoyalties(uint256 tokenId, address payable[] calldata receivers, uint256[] calldata basisPoints)
+        internal
+    {
+        _checkRoyalties(receivers, basisPoints);
         delete _tokenRoyalty[tokenId];
         _setRoyalties(receivers, basisPoints, _tokenRoyalty[tokenId]);
         emit RoyaltiesUpdated(tokenId, receivers, basisPoints);
@@ -322,7 +332,11 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     /**
      * Set royalties for all tokens of an extension
      */
-    function _setRoyaltiesExtension(address extension, address payable[] calldata receivers, uint256[] calldata basisPoints) internal {
+    function _setRoyaltiesExtension(
+        address extension,
+        address payable[] calldata receivers,
+        uint256[] calldata basisPoints
+    ) internal {
         _checkRoyalties(receivers, basisPoints);
         delete _extensionRoyalty[extension];
         _setRoyalties(receivers, basisPoints, _extensionRoyalty[extension]);
@@ -339,9 +353,11 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     function _checkRoyalties(address payable[] calldata receivers, uint256[] calldata basisPoints) private pure {
         require(receivers.length == basisPoints.length, "Invalid input");
         uint256 totalBasisPoints;
-        for (uint i; i < basisPoints.length;) {
+        for (uint256 i; i < basisPoints.length;) {
             totalBasisPoints += basisPoints[i];
-            unchecked { ++i; }
+            unchecked {
+                ++i;
+            }
         }
         require(totalBasisPoints < 10000, "Invalid total royalties");
     }
@@ -349,17 +365,16 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     /**
      * Helper function to set royalties
      */
-    function _setRoyalties(address payable[] calldata receivers, uint256[] calldata basisPoints, RoyaltyConfig[] storage royalties) private {
-        for (uint i; i < basisPoints.length;) {
-            royalties.push(
-                RoyaltyConfig(
-                    {
-                        receiver: receivers[i],
-                        bps: uint16(basisPoints[i])
-                    }
-                )
-            );
-            unchecked { ++i; }
+    function _setRoyalties(
+        address payable[] calldata receivers,
+        uint256[] calldata basisPoints,
+        RoyaltyConfig[] storage royalties
+    ) private {
+        for (uint256 i; i < basisPoints.length;) {
+            royalties.push(RoyaltyConfig({receiver: receivers[i], bps: uint16(basisPoints[i])}));
+            unchecked {
+                ++i;
+            }
         }
     }
 
@@ -381,5 +396,5 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     /**
      * @dev Get the extension for the given token
      */
-    function _tokenExtension(uint256 tokenId) internal virtual view returns(address);
+    function _tokenExtension(uint256 tokenId) internal view virtual returns (address);
 }

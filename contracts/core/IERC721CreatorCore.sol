@@ -10,7 +10,6 @@ import "./ICreatorCore.sol";
  * @dev Core ERC721 creator interface
  */
 interface IERC721CreatorCore is ICreatorCore {
-
     /**
      * @dev mint a token with no extension. Can only be called by an admin.
      * Returns tokenId minted
@@ -81,5 +80,4 @@ interface IERC721CreatorCore is ICreatorCore {
      * @dev get token data
      */
     function tokenData(uint256 tokenId) external view returns (uint80);
-
 }

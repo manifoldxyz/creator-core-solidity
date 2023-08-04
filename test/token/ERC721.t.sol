@@ -9,12 +9,7 @@ import {Test} from "forge-std/Test.sol";
 import {MockERC721} from "./helpers/ERC721.sol";
 
 abstract contract ERC721TokenReceiver {
-    function onERC721Received(
-        address,
-        address,
-        uint256,
-        bytes calldata
-    ) external virtual returns (bytes4) {
+    function onERC721Received(address, address, uint256, bytes calldata) external virtual returns (bytes4) {
         return ERC721TokenReceiver.onERC721Received.selector;
     }
 }
@@ -25,12 +20,12 @@ contract ERC721Recipient is ERC721TokenReceiver {
     uint256 public id;
     bytes public data;
 
-    function onERC721Received(
-        address _operator,
-        address _from,
-        uint256 _id,
-        bytes calldata _data
-    ) public virtual override returns (bytes4) {
+    function onERC721Received(address _operator, address _from, uint256 _id, bytes calldata _data)
+        public
+        virtual
+        override
+        returns (bytes4)
+    {
         operator = _operator;
         from = _from;
         id = _id;
@@ -41,23 +36,13 @@ contract ERC721Recipient is ERC721TokenReceiver {
 }
 
 contract RevertingERC721Recipient is ERC721TokenReceiver {
-    function onERC721Received(
-        address,
-        address,
-        uint256,
-        bytes calldata
-    ) public virtual override returns (bytes4) {
+    function onERC721Received(address, address, uint256, bytes calldata) public virtual override returns (bytes4) {
         revert(string(abi.encodePacked(ERC721TokenReceiver.onERC721Received.selector)));
     }
 }
 
 contract WrongReturnDataERC721Recipient is ERC721TokenReceiver {
-    function onERC721Received(
-        address,
-        address,
-        uint256,
-        bytes calldata
-    ) public virtual override returns (bytes4) {
+    function onERC721Received(address, address, uint256, bytes calldata) public virtual override returns (bytes4) {
         return 0xCAFEBEEF;
     }
 }
@@ -399,7 +384,7 @@ contract ERC721Test is Test, ERC721Recipient {
 
     function testMint(address to, uint256 id) public {
         if (to == address(0)) to = address(0xBEEF);
-        
+
         uint256 size;
         assembly {
             size := extcodesize(to)
@@ -414,7 +399,7 @@ contract ERC721Test is Test, ERC721Recipient {
 
     function testBurn(address to, uint256 id) public {
         if (to == address(0)) to = address(0xBEEF);
-        
+
         uint256 size;
         assembly {
             size := extcodesize(to)
@@ -432,7 +417,7 @@ contract ERC721Test is Test, ERC721Recipient {
 
     function testApprove(address to, uint256 id) public {
         if (to == address(0)) to = address(0xBEEF);
-        
+
         uint256 size;
         assembly {
             size := extcodesize(to)
@@ -655,11 +640,7 @@ contract ERC721Test is Test, ERC721Recipient {
         _token().approve(to, id);
     }
 
-    function testFailApproveUnAuthorized(
-        address owner,
-        uint256 id,
-        address to
-    ) public {
+    function testFailApproveUnAuthorized(address owner, uint256 id, address to) public {
         if (owner == address(0) || owner == address(this)) owner = address(0xBEEF);
 
         _token().mint(owner, id);
@@ -667,20 +648,11 @@ contract ERC721Test is Test, ERC721Recipient {
         _token().approve(to, id);
     }
 
-    function testFailTransferFromUnOwned(
-        address from,
-        address to,
-        uint256 id
-    ) public {
+    function testFailTransferFromUnOwned(address from, address to, uint256 id) public {
         _token().transferFrom(from, to, id);
     }
 
-    function testFailTransferFromWrongFrom(
-        address owner,
-        address from,
-        address to,
-        uint256 id
-    ) public {
+    function testFailTransferFromWrongFrom(address owner, address from, address to, uint256 id) public {
         if (owner == address(0)) to = address(0xBEEF);
         if (from == owner) revert();
 
@@ -695,11 +667,7 @@ contract ERC721Test is Test, ERC721Recipient {
         _token().transferFrom(address(this), address(0), id);
     }
 
-    function testFailTransferFromNotOwner(
-        address from,
-        address to,
-        uint256 id
-    ) public {
+    function testFailTransferFromNotOwner(address from, address to, uint256 id) public {
         if (from == address(this)) from = address(0xBEEF);
 
         _token().mint(from, id);

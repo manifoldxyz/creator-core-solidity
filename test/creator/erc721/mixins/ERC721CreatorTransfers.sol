@@ -2,10 +2,8 @@
 
 pragma solidity ^0.8.0;
 
-import { BaseERC721CreatorTest } from "../BaseERC721CreatorTest.sol";
-import {
-    ERC721TransferApprovalExtension
-} from "../extensions/ERC721TransferApprovalExtension.sol";
+import {BaseERC721CreatorTest} from "../BaseERC721CreatorTest.sol";
+import {ERC721TransferApprovalExtension} from "../extensions/ERC721TransferApprovalExtension.sol";
 
 contract ERC721CreatorTransfersTest is BaseERC721CreatorTest {
     ERC721TransferApprovalExtension public transferApprovalExtension;
@@ -16,17 +14,10 @@ contract ERC721CreatorTransfersTest is BaseERC721CreatorTest {
             creatorContractAddress
         );
         // Supports legacy interfaces
-        assertTrue(
-            transferApprovalExtension.supportsInterface(bytes4(0x7005caad))
-        );
-        assertTrue(
-            transferApprovalExtension.supportsInterface(bytes4(0x45ffcdad))
-        );
+        assertTrue(transferApprovalExtension.supportsInterface(bytes4(0x7005caad)));
+        assertTrue(transferApprovalExtension.supportsInterface(bytes4(0x45ffcdad)));
         vm.prank(creator);
-        creatorContract().registerExtension(
-            address(transferApprovalExtension),
-            extensionTokenURI
-        );
+        creatorContract().registerExtension(address(transferApprovalExtension), extensionTokenURI);
         _;
     }
 
@@ -92,11 +83,7 @@ contract ERC721CreatorTransfersTest is BaseERC721CreatorTest {
         transferApprovalExtension.setApproveEnabled(true);
 
         // Mint tokens
-        uint256[] memory tokenIds = mintBatchWithExtension(
-            address(transferApprovalExtension),
-            alice,
-            3
-        );
+        uint256[] memory tokenIds = mintBatchWithExtension(address(transferApprovalExtension), alice, 3);
 
         // Transfer tokens
         for (uint256 i = 0; i < tokenIds.length; i++) {

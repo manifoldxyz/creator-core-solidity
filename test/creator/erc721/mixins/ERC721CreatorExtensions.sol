@@ -2,8 +2,8 @@
 
 pragma solidity ^0.8.0;
 
-import { BaseERC721CreatorTest } from "../BaseERC721CreatorTest.sol";
-import { ERC721Extension } from "../extensions/ERC721Extension.sol";
+import {BaseERC721CreatorTest} from "../BaseERC721CreatorTest.sol";
+import {ERC721Extension} from "../extensions/ERC721Extension.sol";
 
 contract ERC721CreatorExtensionsTest is BaseERC721CreatorTest {
     function testSupportsInterface() public {
@@ -18,9 +18,7 @@ contract ERC721CreatorExtensionsTest is BaseERC721CreatorTest {
             0xd5a06d4c // Foundation Royalties
         ];
         for (uint256 i = 0; i < interfaceIds.length; i++) {
-            assertTrue(
-                creatorContract().supportsInterface(bytes4(interfaceIds[i]))
-            );
+            assertTrue(creatorContract().supportsInterface(bytes4(interfaceIds[i])));
         }
     }
 
@@ -48,9 +46,7 @@ contract ERC721CreatorExtensionsTest is BaseERC721CreatorTest {
         creatorContract().registerExtension(creatorContractAddress, "");
 
         // Deploy a new ERC721Extension
-        address extension = address(
-            new ERC721Extension(creatorContractAddress)
-        );
+        address extension = address(new ERC721Extension(creatorContractAddress));
         assertEq(creatorContract().getExtensions().length, 0);
 
         // Register the ERC721Extension
@@ -71,9 +67,7 @@ contract ERC721CreatorExtensionsTest is BaseERC721CreatorTest {
         creatorContract().blacklistExtension(creatorContractAddress);
 
         // Deploy a new ERC721Extension
-        address extension = address(
-            new ERC721Extension(creatorContractAddress)
-        );
+        address extension = address(new ERC721Extension(creatorContractAddress));
 
         // Blacklist the ERC721Extension
         vm.prank(creator);
@@ -87,9 +81,7 @@ contract ERC721CreatorExtensionsTest is BaseERC721CreatorTest {
 
     function testExtensionBlacklistRemovesRegistration() public {
         // Deploy a new ERC721Extension
-        address extension = address(
-            new ERC721Extension(creatorContractAddress)
-        );
+        address extension = address(new ERC721Extension(creatorContractAddress));
 
         // Register the ERC721Extension
         vm.prank(creator);

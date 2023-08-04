@@ -2,10 +2,8 @@
 
 pragma solidity ^0.8.0;
 
-import { BaseERC1155CreatorTest } from "../BaseERC1155CreatorTest.sol";
-import {
-    ERC1155TransferApprovalExtension
-} from "../extensions/ERC1155TransferApprovalExtension.sol";
+import {BaseERC1155CreatorTest} from "../BaseERC1155CreatorTest.sol";
+import {ERC1155TransferApprovalExtension} from "../extensions/ERC1155TransferApprovalExtension.sol";
 
 contract ERC1155CreatorTransfersTest is BaseERC1155CreatorTest {
     ERC1155TransferApprovalExtension public transferApprovalExtension;
@@ -16,10 +14,7 @@ contract ERC1155CreatorTransfersTest is BaseERC1155CreatorTest {
             creatorContractAddress
         );
         vm.prank(creator);
-        creatorContract().registerExtension(
-            address(transferApprovalExtension),
-            extensionTokenURI
-        );
+        creatorContract().registerExtension(address(transferApprovalExtension), extensionTokenURI);
         _;
     }
 
@@ -85,11 +80,7 @@ contract ERC1155CreatorTransfersTest is BaseERC1155CreatorTest {
         transferApprovalExtension.setApproveEnabled(true);
 
         // Mint tokens
-        uint256[] memory tokenIds = mintBatchWithExtension(
-            address(transferApprovalExtension),
-            alice,
-            3
-        );
+        uint256[] memory tokenIds = mintBatchWithExtension(address(transferApprovalExtension), alice, 3);
 
         // Transfer tokens
         for (uint256 i = 0; i < tokenIds.length; i++) {

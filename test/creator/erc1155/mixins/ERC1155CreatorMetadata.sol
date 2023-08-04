@@ -2,10 +2,8 @@
 
 pragma solidity ^0.8.0;
 
-import { BaseERC1155CreatorTest } from "../BaseERC1155CreatorTest.sol";
-import {
-    ERC1155TokenURIExtension
-} from "../extensions/ERC1155TokenURIExtension.sol";
+import {BaseERC1155CreatorTest} from "../BaseERC1155CreatorTest.sol";
+import {ERC1155TokenURIExtension} from "../extensions/ERC1155TokenURIExtension.sol";
 
 contract ERC1155CreatorMetadataTest is BaseERC1155CreatorTest {
     ERC1155TokenURIExtension public tokenURIExtension;
@@ -16,10 +14,7 @@ contract ERC1155CreatorMetadataTest is BaseERC1155CreatorTest {
             creatorContractAddress
         );
         vm.prank(creator);
-        creatorContract().registerExtension(
-            address(tokenURIExtension),
-            extensionTokenURI
-        );
+        creatorContract().registerExtension(address(tokenURIExtension), extensionTokenURI);
         _;
     }
 
@@ -75,11 +70,7 @@ contract ERC1155CreatorMetadataTest is BaseERC1155CreatorTest {
         uint256 tokenId2 = mintWithCreator(alice);
 
         // Mint batch of tokens via extension
-        uint256 tokenId3 = mintWithExtension(
-            address(tokenURIExtension),
-            alice,
-            10
-        );
+        uint256 tokenId3 = mintWithExtension(address(tokenURIExtension), alice, 10);
 
         // Update tokenURI to an override
         vm.prank(creator);

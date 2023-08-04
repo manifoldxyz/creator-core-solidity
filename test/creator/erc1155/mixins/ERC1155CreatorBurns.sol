@@ -2,10 +2,8 @@
 
 pragma solidity ^0.8.0;
 
-import { BaseERC1155CreatorTest } from "../BaseERC1155CreatorTest.sol";
-import {
-    ERC1155BurnableExtension
-} from "../extensions/ERC1155BurnableExtension.sol";
+import {BaseERC1155CreatorTest} from "../BaseERC1155CreatorTest.sol";
+import {ERC1155BurnableExtension} from "../extensions/ERC1155BurnableExtension.sol";
 
 contract ERC1155CreatorBurnsTest is BaseERC1155CreatorTest {
     ERC1155BurnableExtension burnableExtension;
@@ -16,10 +14,7 @@ contract ERC1155CreatorBurnsTest is BaseERC1155CreatorTest {
             creatorContractAddress
         );
         vm.prank(creator);
-        creatorContract().registerExtension(
-            address(burnableExtension),
-            extensionTokenURI
-        );
+        creatorContract().registerExtension(address(burnableExtension), extensionTokenURI);
         _;
     }
 

@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 
 /// @author: manifold.xyz
 
-
 /**
  * @dev Royalty interface for creator core classes
  */

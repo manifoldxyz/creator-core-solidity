@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.17;
 
 import "./ERC721Core.sol";
 import "openzeppelin-upgradeable/proxy/utils/Initializable.sol";

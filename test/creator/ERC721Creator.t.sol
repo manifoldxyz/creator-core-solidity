@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.17;
 
 import {ERC721CreatorBurnsTest} from "./erc721/mixins/ERC721CreatorBurns.sol";
 import {ERC721CreatorExtensionsTest} from "./erc721/mixins/ERC721CreatorExtensions.sol";

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.17;
 
 // @dev The majority of this test file was taken from Solmate with some modifications
 // https://github.com/transmissions11/solmate/blob/main/src/test/ERC721.t.sol

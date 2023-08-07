@@ -4,13 +4,14 @@ pragma solidity ^0.8.17;
 
 /// @author: manifold.xyz
 
-import "openzeppelin/utils/structs/EnumerableSet.sol";
-
-import "../extensions/ERC721/IERC721CreatorExtensionApproveTransfer.sol";
-import "../extensions/ERC721/IERC721CreatorExtensionBurnable.sol";
-import "../permissions/ERC721/IERC721CreatorMintPermissions.sol";
-import "./IERC721CreatorCore.sol";
-import "./CreatorCore.sol";
+import {EnumerableSet} from "openzeppelin/utils/structs/EnumerableSet.sol";
+import {IERC165} from "openzeppelin/utils/introspection/ERC165.sol";
+import {ERC165Checker} from "openzeppelin/utils/introspection/ERC165Checker.sol";
+import {IERC721CreatorExtensionApproveTransfer} from "../extensions/ERC721/IERC721CreatorExtensionApproveTransfer.sol";
+import {IERC721CreatorExtensionBurnable} from "../extensions/ERC721/IERC721CreatorExtensionBurnable.sol";
+import {IERC721CreatorMintPermissions} from "../permissions/ERC721/IERC721CreatorMintPermissions.sol";
+import {IERC721CreatorCore} from "./IERC721CreatorCore.sol";
+import {CreatorCore} from "./CreatorCore.sol";
 
 /**
  * @dev Core ERC721 creator implementation

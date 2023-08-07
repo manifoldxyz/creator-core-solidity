@@ -4,11 +4,11 @@ pragma solidity ^0.8.17;
 
 /// @author: manifold.xyz
 
-import "openzeppelin/utils/introspection/ERC165.sol";
-import "openzeppelin/utils/introspection/ERC165Checker.sol";
-import "manifoldxyz/libraries-solidity/access/AdminControl.sol";
-import "../../core/IERC1155CreatorCore.sol";
-import "./IERC1155CreatorMintPermissions.sol";
+import {ERC165, IERC165} from "openzeppelin/utils/introspection/ERC165.sol";
+import {ERC165Checker} from "openzeppelin/utils/introspection/ERC165Checker.sol";
+import {AdminControl} from "manifoldxyz/libraries-solidity/access/AdminControl.sol";
+import {IERC1155CreatorCore} from "../../core/IERC1155CreatorCore.sol";
+import {IERC1155CreatorMintPermissions} from "./IERC1155CreatorMintPermissions.sol";
 
 /**
  * @dev Basic implementation of a permission contract that works with a singular creator contract.

@@ -4,7 +4,7 @@ pragma solidity ^0.8.17;
 
 /// @author: manifold.xyz
 
-import "openzeppelin/utils/introspection/IERC165.sol";
+import {IERC165} from "openzeppelin/utils/introspection/IERC165.sol";
 
 /**
  * @dev Provides functions to set token uri's

@@ -4,17 +4,15 @@ pragma solidity ^0.8.17;
 
 /// @author: manifold.xyz
 
-import "openzeppelin/security/ReentrancyGuard.sol";
-import "openzeppelin/utils/Strings.sol";
-import "openzeppelin/utils/introspection/ERC165.sol";
-import "openzeppelin/utils/introspection/ERC165Checker.sol";
-import "openzeppelin/utils/structs/EnumerableSet.sol";
-import "openzeppelin-upgradeable/utils/AddressUpgradeable.sol";
-
-import "../extensions/ICreatorExtensionTokenURI.sol";
-import "../extensions/ICreatorExtensionRoyalties.sol";
-
-import "./ICreatorCore.sol";
+import {ReentrancyGuard} from "openzeppelin/security/ReentrancyGuard.sol";
+import {Strings} from "openzeppelin/utils/Strings.sol";
+import {ERC165, IERC165} from "openzeppelin/utils/introspection/ERC165.sol";
+import {ERC165Checker} from "openzeppelin/utils/introspection/ERC165Checker.sol";
+import {EnumerableSet} from "openzeppelin/utils/structs/EnumerableSet.sol";
+import {AddressUpgradeable} from "openzeppelin-upgradeable/utils/AddressUpgradeable.sol";
+import {ICreatorExtensionTokenURI} from "../extensions/ICreatorExtensionTokenURI.sol";
+import {ICreatorExtensionRoyalties} from "../extensions/ICreatorExtensionRoyalties.sol";
+import {ICreatorCore} from "./ICreatorCore.sol";
 
 /**
  * @dev Core creator implementation

@@ -4,9 +4,12 @@ pragma solidity ^0.8.17;
 
 /// @author: manifold.xyz
 
-import "./ERC721Creator.sol";
-import "./core/ERC721CreatorCoreEnumerable.sol";
-import "./token/ERC721/ERC721Enumerable.sol";
+import {IERC721Metadata} from "openzeppelin/token/ERC721/extensions/IERC721Metadata.sol";
+import {ERC721Creator} from "./ERC721Creator.sol";
+import {ERC721CreatorCore} from "./core/ERC721CreatorCore.sol";
+import {ERC721CreatorCoreEnumerable} from "./core/ERC721CreatorCoreEnumerable.sol";
+import {IERC721CreatorCoreEnumerable} from "./core/IERC721CreatorCoreEnumerable.sol";
+import {ERC721Enumerable} from "./token/ERC721/ERC721Enumerable.sol";
 
 /**
  * @dev ERC721Creator implementation (with enumerable api's)

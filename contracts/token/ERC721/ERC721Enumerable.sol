@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import "./ERC721Base.sol";
-import "openzeppelin/token/ERC721/extensions/IERC721Enumerable.sol";
+import {IERC165} from "openzeppelin/utils/introspection/ERC165.sol";
+import {IERC721Enumerable} from "openzeppelin/token/ERC721/extensions/IERC721Enumerable.sol";
+import {ERC721Base} from "./ERC721Base.sol";
+import {ERC721Core} from "./ERC721Core.sol";
 
 /**
  * @dev This implements an optional extension of {ERC721} defined in the EIP that adds

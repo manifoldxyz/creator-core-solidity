@@ -4,7 +4,7 @@ pragma solidity ^0.8.17;
 
 /// @author: manifold.xyz
 
-import "../CreatorExtension.sol";
+import {CreatorExtension} from "../CreatorExtension.sol";
 
 /**
  * @dev Base ERC721 creator extension variables

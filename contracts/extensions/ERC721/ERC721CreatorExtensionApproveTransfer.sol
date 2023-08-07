@@ -4,12 +4,13 @@ pragma solidity ^0.8.17;
 
 /// @author: manifold.xyz
 
-import "openzeppelin/utils/introspection/ERC165Checker.sol";
-import "manifoldxyz/libraries-solidity/access/AdminControl.sol";
-
-import "../../core/IERC721CreatorCore.sol";
-import "./ERC721CreatorExtension.sol";
-import "./IERC721CreatorExtensionApproveTransfer.sol";
+import {ERC165Checker} from "openzeppelin/utils/introspection/ERC165Checker.sol";
+import {IERC165} from "openzeppelin/utils/introspection/ERC165.sol";
+import {AdminControl} from "manifoldxyz/libraries-solidity/access/AdminControl.sol";
+import {IERC721CreatorCore} from "../../core/IERC721CreatorCore.sol";
+import {CreatorExtension} from "../CreatorExtension.sol";
+import {ERC721CreatorExtension} from "./ERC721CreatorExtension.sol";
+import {IERC721CreatorExtensionApproveTransfer} from "./IERC721CreatorExtensionApproveTransfer.sol";
 
 /**
  * @dev Suggested implementation for extensions that require the creator to

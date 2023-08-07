@@ -4,7 +4,7 @@ pragma solidity ^0.8.17;
 
 /// @author: manifold.xyz
 
-import "./IERC721CreatorCore.sol";
+import {IERC721CreatorCore} from "./IERC721CreatorCore.sol";
 
 /**
  * @dev Core ERC721 creator interface (with enumerable api's)

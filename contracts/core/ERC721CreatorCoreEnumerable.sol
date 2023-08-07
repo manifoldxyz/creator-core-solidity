@@ -4,10 +4,11 @@ pragma solidity ^0.8.17;
 
 /// @author: manifold.xyz
 
-import "openzeppelin/utils/Strings.sol";
-import "openzeppelin/utils/structs/EnumerableSet.sol";
-import "./ERC721CreatorCore.sol";
-import "./IERC721CreatorCoreEnumerable.sol";
+import {Strings} from "openzeppelin/utils/Strings.sol";
+import {EnumerableSet} from "openzeppelin/utils/structs/EnumerableSet.sol";
+import {IERC165} from "openzeppelin/utils/introspection/ERC165.sol";
+import {ERC721CreatorCore} from "./ERC721CreatorCore.sol";
+import {IERC721CreatorCoreEnumerable} from "./IERC721CreatorCoreEnumerable.sol";
 
 /**
  * @dev Core ERC721 creator implementation (with enumerable api's)

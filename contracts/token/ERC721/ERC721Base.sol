@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.17;
 
-import "./ERC721Core.sol";
+import {ERC721Core} from "./ERC721Core.sol";
 
 /**
  * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard

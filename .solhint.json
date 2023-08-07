@@ -9,8 +9,12 @@
     "not-rely-on-time": "off",
     "var-name-mixedcase": "off",
     "func-name-mixedcase": "off",
-    "max-line-length": "off",
     "function-max-lines": "off",
-    "code-complexity": ["warn", 15]
+    "code-complexity": ["warn", 15],
+    "comprehensive-interface": "off",
+    "func-named-parameters": "off",
+    "max-line-length": "off",
+    "ordering": "off",
+    "reason-string": "off"
   }
 }

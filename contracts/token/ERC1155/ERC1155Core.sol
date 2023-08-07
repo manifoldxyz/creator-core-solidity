@@ -2,12 +2,12 @@
 
 pragma solidity ^0.8.17;
 
-import "openzeppelin/token/ERC1155/IERC1155.sol";
-import "openzeppelin/token/ERC1155/IERC1155Receiver.sol";
-import "openzeppelin/token/ERC1155/extensions/IERC1155MetadataURI.sol";
-import "openzeppelin/utils/Address.sol";
-import "openzeppelin/utils/Strings.sol";
-import "openzeppelin/utils/introspection/ERC165.sol";
+import {IERC1155} from "openzeppelin/token/ERC1155/IERC1155.sol";
+import {IERC1155Receiver} from "openzeppelin/token/ERC1155/IERC1155Receiver.sol";
+import {IERC1155MetadataURI} from "openzeppelin/token/ERC1155/extensions/IERC1155MetadataURI.sol";
+import {Address} from "openzeppelin/utils/Address.sol";
+import {Strings} from "openzeppelin/utils/Strings.sol";
+import {ERC165, IERC165} from "openzeppelin/utils/introspection/ERC165.sol";
 
 /**
  * @dev Implementation of the basic standard multi-token.

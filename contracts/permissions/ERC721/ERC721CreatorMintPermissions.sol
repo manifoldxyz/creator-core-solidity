@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.17;
 
 /// @author: manifold.xyz
 
-import "openzeppelin/utils/introspection/ERC165.sol";
-import "openzeppelin/utils/introspection/ERC165Checker.sol";
-import "manifoldxyz/libraries-solidity/access/AdminControl.sol";
-import "../../core/IERC721CreatorCore.sol";
-import "./IERC721CreatorMintPermissions.sol";
+import {ERC165, IERC165} from "openzeppelin/utils/introspection/ERC165.sol";
+import {ERC165Checker} from "openzeppelin/utils/introspection/ERC165Checker.sol";
+import {AdminControl} from "manifoldxyz/libraries-solidity/access/AdminControl.sol";
+import {IERC721CreatorCore} from "../../core/IERC721CreatorCore.sol";
+import {IERC721CreatorMintPermissions} from "./IERC721CreatorMintPermissions.sol";
 
 /**
  * @dev Basic implementation of a permission contract that works with a singular creator contract.

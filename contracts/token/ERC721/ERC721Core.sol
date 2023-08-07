@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.17;
 
-import "openzeppelin/token/ERC721/IERC721.sol";
-import "openzeppelin/token/ERC721/IERC721Receiver.sol";
-import "openzeppelin/token/ERC721/extensions/IERC721Metadata.sol";
-import "openzeppelin/utils/Address.sol";
-import "openzeppelin/utils/Strings.sol";
-import "openzeppelin/utils/introspection/ERC165.sol";
+import {IERC721} from "openzeppelin/token/ERC721/IERC721.sol";
+import {IERC721Receiver} from "openzeppelin/token/ERC721/IERC721Receiver.sol";
+import {IERC721Metadata} from "openzeppelin/token/ERC721/extensions/IERC721Metadata.sol";
+import {Address} from "openzeppelin/utils/Address.sol";
+import {Strings} from "openzeppelin/utils/Strings.sol";
+import {ERC165, IERC165} from "openzeppelin/utils/introspection/ERC165.sol";
 
 /**
  * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard

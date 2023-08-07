@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.17;
 
 /// @author: manifold.xyz
 
-import "openzeppelin/utils/introspection/ERC165Checker.sol";
-import "manifoldxyz/libraries-solidity/access/AdminControl.sol";
-
-import "../core/IERC721CreatorCore.sol";
-import "./CreatorExtension.sol";
-import "./ICreatorExtensionRoyalties.sol";
+import {ERC165Checker} from "openzeppelin/utils/introspection/ERC165Checker.sol";
+import {IERC165} from "openzeppelin/utils/introspection/ERC165.sol";
+import {AdminControl} from "manifoldxyz/libraries-solidity/access/AdminControl.sol";
+import {IERC721CreatorCore} from "../core/IERC721CreatorCore.sol";
+import {CreatorExtension} from "./CreatorExtension.sol";
+import {ICreatorExtensionRoyalties} from "./ICreatorExtensionRoyalties.sol";
 
 /**
  * @dev Extend this implementation to have creator

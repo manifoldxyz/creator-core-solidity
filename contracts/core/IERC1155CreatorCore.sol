@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.17;
 
 /// @author: manifold.xyz
 
-import "./CreatorCore.sol";
+import {ICreatorCore} from "./CreatorCore.sol";
 
 /**
  * @dev Core ERC1155 creator interface

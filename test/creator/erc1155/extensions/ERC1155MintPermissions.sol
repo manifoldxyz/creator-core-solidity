@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.17;
 
 import {IERC1155CreatorMintPermissions} from "creator-core/permissions/ERC1155/IERC1155CreatorMintPermissions.sol";
 import {IERC165} from "openzeppelin/utils/introspection/IERC165.sol";

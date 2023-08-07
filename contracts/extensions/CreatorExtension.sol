@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.17;
 
 /// @author: manifold.xyz
 
-import "openzeppelin/utils/introspection/ERC165.sol";
+import {ERC165} from "openzeppelin/utils/introspection/ERC165.sol";
 
 /**
  * @dev Base creator extension variables

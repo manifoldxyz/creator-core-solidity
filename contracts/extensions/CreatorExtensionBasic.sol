@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.17;
 
 /// @author: manifold.xyz
 
-import "openzeppelin/utils/introspection/ERC165Checker.sol";
-import "manifoldxyz/libraries-solidity/access/AdminControl.sol";
-
-import "../core/ICreatorCore.sol";
-import "./ICreatorExtensionBasic.sol";
-import "./CreatorExtension.sol";
+import {ERC165Checker} from "openzeppelin/utils/introspection/ERC165Checker.sol";
+import {IERC165} from "openzeppelin/utils/introspection/ERC165.sol";
+import {AdminControl} from "manifoldxyz/libraries-solidity/access/AdminControl.sol";
+import {ICreatorCore} from "../core/ICreatorCore.sol";
+import {ICreatorExtensionBasic} from "./ICreatorExtensionBasic.sol";
+import {CreatorExtension} from "./CreatorExtension.sol";
 
 /**
  * @dev Provides functions to set token uri's

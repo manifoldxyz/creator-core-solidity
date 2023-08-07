@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.17;
 
 /// @author: manifold.xyz
 
-import "manifoldxyz/libraries-solidity/access/AdminControl.sol";
-
-import "./core/ERC1155CreatorCore.sol";
-import "./token/ERC1155/ERC1155Base.sol";
+import {AdminControl} from "manifoldxyz/libraries-solidity/access/AdminControl.sol";
+import {EnumerableSet} from "openzeppelin/utils/structs/EnumerableSet.sol";
+import {ERC1155CreatorCore} from "./core/ERC1155CreatorCore.sol";
+import {ERC1155Base} from "./token/ERC1155/ERC1155Base.sol";
+import {ERC1155Core} from "./token/ERC1155/ERC1155Core.sol";
 
 /**
  * @dev ERC1155Creator implementation

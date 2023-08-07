@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.17;
 
-import "./ERC1155Core.sol";
-import "openzeppelin-upgradeable/proxy/utils/Initializable.sol";
+import {ERC1155Core} from "./ERC1155Core.sol";
+import {Initializable} from "openzeppelin-upgradeable/proxy/utils/Initializable.sol";
 
 /**
  * @dev Implementation of https://eips.ethereum.org/EIPS/eip-1155[ERC1155] Non-Fungible Token Standard,

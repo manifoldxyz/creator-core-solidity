@@ -10,7 +10,6 @@ import {Proxy} from "openzeppelin/proxy/Proxy.sol";
 import {Address} from "openzeppelin/utils/Address.sol";
 import {StorageSlot} from "openzeppelin/utils/StorageSlot.sol";
 import "./lib/YulDeployer.sol";
-import "forge-std/console.sol";
 
 contract ProxyMock is Proxy {
     constructor(address impl) {
@@ -50,7 +49,7 @@ contract DeploymentProxyTest is Test {
     address creator = address(0xC12EA7012);
 
     function setUp() public virtual {
-        proxy = DeploymentProxy(yulDeployer.deployContract("contracts/DeploymentProxy.yul"));
+        proxy = DeploymentProxy(yulDeployer.deployContract("out/DeploymentProxy.yul/DeploymentProxy.json"));
         implementation = address(new ERC721CreatorImplementation());
     }
 

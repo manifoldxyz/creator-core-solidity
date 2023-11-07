@@ -22,6 +22,9 @@ object "DeploymentProxy" {
       if iszero(transfer) { revert(0, 0) }
       // Store address
 			mstore(0, result)
+			// Emit event
+			let signatureHash := 0x4db17dd5e4732fb6da34a148104a592783ca119a1e7bb8829eba6cbadef0b511
+			log1(0, 32, signatureHash)
 			return(12, 20)
 		}
 	}

@@ -3,8 +3,6 @@
 pragma solidity ^0.8.17;
 
 import {ERC721CreatorImplementation} from "creator-core/ERC721CreatorImplementation.sol";
-import {ERC165Checker} from "openzeppelin/utils/introspection/ERC165Checker.sol";
-import {Strings} from "openzeppelin/utils/Strings.sol";
 import {Test} from "forge-std/Test.sol";
 import {Proxy} from "openzeppelin/proxy/Proxy.sol";
 import {Address} from "openzeppelin/utils/Address.sol";

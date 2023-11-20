@@ -3,6 +3,7 @@
 pragma solidity ^0.8.17;
 
 import {ERC721CreatorImplementation} from "creator-core/ERC721CreatorImplementation.sol";
+import {ERC721TokenURIExtension} from "../creator/erc721/extensions/ERC721TokenURIExtension.sol";
 import {Test} from "forge-std/Test.sol";
 import {Proxy} from "openzeppelin/proxy/Proxy.sol";
 import {Address} from "openzeppelin/utils/Address.sol";
@@ -54,11 +55,34 @@ contract DeploymentProxyTest is Test {
     function testDeploy() public {
         vm.prank(creator);
         bytes32 salt = 0x0;
-        bytes memory bytecode = abi.encodePacked(salt, vm.getCode("DeploymentProxy.t.sol:ProxyMock"), abi.encode(implementation));
+        address[] memory extensions = new address[](0);
+        bytes memory bytecode = abi.encodePacked(salt, abi.encode(extensions), vm.getCode("DeploymentProxy.t.sol:ProxyMock"), abi.encode(implementation));
         (bool success, bytes memory data) = address(proxy).call(bytecode);
         assertTrue(success);
         address deployedAddress = address(uint160(bytes20(data)));
         address contractOwner = ERC721CreatorImplementation(deployedAddress).owner();
         assertEq(creator, contractOwner);
+        vm.stopPrank();
+    }
+
+    function testDeployWithExtension() public {
+        bytes32 salt = 0x0;
+        ERC721TokenURIExtension extension1 = new ERC721TokenURIExtension(creator);
+        ERC721TokenURIExtension extension2 = new ERC721TokenURIExtension(creator);
+        address[] memory extensions = new address[](2);
+        extensions[0] = address(extension1);
+        extensions[1] = address(extension2);
+        vm.prank(creator);
+        bytes memory bytecode = abi.encodePacked(salt, abi.encode(extensions), vm.getCode("DeploymentProxy.t.sol:ProxyMock"), abi.encode(implementation));
+        (bool success, bytes memory data) = address(proxy).call(bytecode);
+        assertTrue(success);
+        address deployedAddress = address(uint160(bytes20(data)));
+        address contractOwner = ERC721CreatorImplementation(deployedAddress).owner();
+        assertEq(creator, contractOwner);
+        address[] memory registeredExtensions = ERC721CreatorImplementation(deployedAddress).getExtensions();
+        assertEq(2, registeredExtensions.length);
+        assertEq(address(extension1), registeredExtensions[0]);
+        assertEq(address(extension2), registeredExtensions[1]);
+        vm.stopPrank();
     }
 }

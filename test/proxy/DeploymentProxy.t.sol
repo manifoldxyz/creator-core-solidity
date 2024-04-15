@@ -56,10 +56,10 @@ contract DeploymentProxyTest is Test {
 
     function testDeploy() public {
         vm.prank(creator);
-        bytes32 salt = 0x0;
+        bytes32 nonce = 0x0;
         address[] memory extensions = new address[](0);
         address[] memory admins = new address[](0);
-        bytes memory bytecode = abi.encodePacked(salt, abi.encode(extensions), abi.encode(admins), vm.getCode("DeploymentProxy.t.sol:ProxyMock"), abi.encode(implementation));
+        bytes memory bytecode = abi.encodePacked(nonce, abi.encode(extensions), abi.encode(admins), vm.getCode("DeploymentProxy.t.sol:ProxyMock"), abi.encode(implementation));
         (bool success, bytes memory data) = address(proxy).call(bytecode);
         assertTrue(success);
         address deployedAddress = address(uint160(bytes20(data)));
@@ -69,7 +69,7 @@ contract DeploymentProxyTest is Test {
     }
 
     function testDeployWithExtension() public {
-        bytes32 salt = 0x0;
+        bytes32 nonce = 0x0;
         ERC721TokenURIExtension extension1 = new ERC721TokenURIExtension(creator);
         ERC721TokenURIExtension extension2 = new ERC721TokenURIExtension(creator);
         address[] memory extensions = new address[](2);
@@ -77,7 +77,7 @@ contract DeploymentProxyTest is Test {
         extensions[0] = address(extension1);
         extensions[1] = address(extension2);
         vm.prank(creator);
-        bytes memory bytecode = abi.encodePacked(salt, abi.encode(extensions), abi.encode(admins), vm.getCode("DeploymentProxy.t.sol:ProxyMock"), abi.encode(implementation));
+        bytes memory bytecode = abi.encodePacked(nonce, abi.encode(extensions), abi.encode(admins), vm.getCode("DeploymentProxy.t.sol:ProxyMock"), abi.encode(implementation));
         (bool success, bytes memory data) = address(proxy).call(bytecode);
         assertTrue(success);
         address deployedAddress = address(uint160(bytes20(data)));
@@ -91,13 +91,13 @@ contract DeploymentProxyTest is Test {
     }
 
     function testDeployWithAdmins() public {
-        bytes32 salt = 0x0;
+        bytes32 nonce = 0x0;
         address[] memory extensions = new address[](0);
         address[] memory admins = new address[](2);
         admins[0] = admin1;
         admins[1] = admin2;
         vm.prank(creator);
-        bytes memory bytecode = abi.encodePacked(salt, abi.encode(extensions), abi.encode(admins), vm.getCode("DeploymentProxy.t.sol:ProxyMock"), abi.encode(implementation));
+        bytes memory bytecode = abi.encodePacked(nonce, abi.encode(extensions), abi.encode(admins), vm.getCode("DeploymentProxy.t.sol:ProxyMock"), abi.encode(implementation));
         (bool success, bytes memory data) = address(proxy).call(bytecode);
         assertTrue(success);
         address deployedAddress = address(uint160(bytes20(data)));
@@ -111,14 +111,14 @@ contract DeploymentProxyTest is Test {
     }
 
     function testDeployWithExtensionAndAdmin() public {
-         bytes32 salt = 0x0;
+        bytes32 nonce = 0x0;
         ERC721TokenURIExtension extension = new ERC721TokenURIExtension(creator);
         address[] memory extensions = new address[](1);
         address[] memory admins = new address[](1);
         extensions[0] = address(extension);
         admins[0] = admin1;
         vm.prank(creator);
-        bytes memory bytecode = abi.encodePacked(salt, abi.encode(extensions), abi.encode(admins), vm.getCode("DeploymentProxy.t.sol:ProxyMock"), abi.encode(implementation));
+        bytes memory bytecode = abi.encodePacked(nonce, abi.encode(extensions), abi.encode(admins), vm.getCode("DeploymentProxy.t.sol:ProxyMock"), abi.encode(implementation));
         (bool success, bytes memory data) = address(proxy).call(bytecode);
         assertTrue(success);
         address deployedAddress = address(uint160(bytes20(data)));
@@ -130,6 +130,46 @@ contract DeploymentProxyTest is Test {
         address[] memory registeredAdmins = ERC721CreatorImplementation(deployedAddress).getAdmins();
         assertEq(1, registeredAdmins.length);
         assertEq(admin1, registeredAdmins[0]);
+        vm.stopPrank();
+    }
+
+    function testRedeploy() public {
+        vm.prank(creator);
+        bytes32 nonce = 0x0;
+        address[] memory extensions = new address[](0);
+        address[] memory admins = new address[](0);
+        bytes memory bytecode = abi.encodePacked(nonce, abi.encode(extensions), abi.encode(admins), vm.getCode("DeploymentProxy.t.sol:ProxyMock"), abi.encode(implementation));
+        (bool success, bytes memory data) = address(proxy).call(bytecode);
+        assertTrue(success);
+        address deployedAddress = address(uint160(bytes20(data)));
+        address contractOwner = ERC721CreatorImplementation(deployedAddress).owner();
+        assertEq(creator, contractOwner);
+
+        // Attempt to redeploy
+        (success, data) = address(proxy).call(bytecode);
+        assertFalse(success);
+
+        // Attempt to redeploy with same nonce but different extensions
+        ERC721TokenURIExtension extension = new ERC721TokenURIExtension(creator);
+        extensions = new address[](1);
+        extensions[0] = address(extension);
+        bytecode = abi.encodePacked(nonce, abi.encode(extensions), abi.encode(admins), vm.getCode("DeploymentProxy.t.sol:ProxyMock"), abi.encode(implementation));
+        (success, data) = address(proxy).call(bytecode);
+        assertTrue(success);
+        address deployedAddressWithExtensions = address(uint160(bytes20(data)));
+        assertNotEq(deployedAddress, deployedAddressWithExtensions);
+
+
+        // Attempt to redeploy with same nonce but different admins
+        extensions = new address[](0);
+        admins = new address[](1);
+        admins[0] = admin1;
+        bytecode = abi.encodePacked(nonce, abi.encode(extensions), abi.encode(admins), vm.getCode("DeploymentProxy.t.sol:ProxyMock"), abi.encode(implementation));
+        (success, data) = address(proxy).call(bytecode);
+        assertTrue(success);
+        address deployedAddressWithAdmins = address(uint160(bytes20(data)));
+        assertNotEq(deployedAddress, deployedAddressWithAdmins);
+        assertNotEq(deployedAddressWithExtensions, deployedAddressWithAdmins);
         vm.stopPrank();
     }
 }

@@ -9,21 +9,25 @@ object "DeploymentProxy" {
         // deployed code
         code {
             // Calldata encoded is:
-            // salt (bytes32), extensionArray (address[]), adminArray (address[]), bytecode
-            // salt is 32 bytes at location 0
+            // nonce (bytes32), extensionArray (address[]), adminArray (address[]), bytecode
+            // nonce is 32 bytes at location 0
             // extensionArray starts at location 32, and is of length 64 + length*32 (first byte is array data offset, second is array data length)
             // adminArray starts at 64 + extensionArrayLength*32, and is of length 64 + length*32 (first byte is array data offset, second is array data length)
-            if iszero(eq(0x20, calldataload(32))) { revert(0, 0) }
+            if iszero(eq(32, calldataload(32))) { revert(0, 0) }
             // Load array data
             let extensionArrayLength := calldataload(64)
             let adminArrayOffset := add(96, mul(extensionArrayLength, 32))
-            if iszero(eq(0x20, calldataload(adminArrayOffset))) { revert(0, 0) }
+            if iszero(eq(32, calldataload(adminArrayOffset))) { revert(0, 0) }
             let adminArrayLength := calldataload(add(32, adminArrayOffset))
-            // Copy bytecode without salt + extensionArray + adminArray into position 0
+            // Compute bytecode offset
             let offset := add(160, mul(add(extensionArrayLength, adminArrayLength), 32))
+            // Copy nonce + extensionArray + adminArray into position 0
+            calldatacopy(0, 0, offset)
+            let salt := keccak256(0, offset)
+            // Copy bytecode without nonce + extensionArray + adminArray into position 0
             calldatacopy(0, offset, sub(calldatasize(), offset))
-            // Create2, using the bytecode stored in memory from the prior line, and loading the salt from calldata
-            let result := create2(callvalue(), 0, sub(calldatasize(), offset), calldataload(0))
+            // Create2, using the bytecode stored in memory from the prior line
+            let result := create2(callvalue(), 0, sub(calldatasize(), offset), salt)
             if iszero(result) { revert(0, 0) }
             // Store function selector for registerExtension(address,string)
             for { let i } lt(i, extensionArrayLength) { i := add(i, 1) } {
@@ -31,7 +35,7 @@ object "DeploymentProxy" {
                 // Store the extension
                 calldatacopy(32, add(96, mul(i, 32)), 32)
                 // Store empty string
-                mstore(64, 0x40)
+                mstore(64, 64)
                 mstore(96, 0)
                 let extensionRegisterResult := call(gas(), result, 0, 28, 100, 0, 0)
                 if iszero(extensionRegisterResult) { revert(0, 0) }
@@ -43,7 +47,7 @@ object "DeploymentProxy" {
                 // Store the admin address
                 calldatacopy(32, add(adminArrayDataOffset, mul(i, 32)), 32)
                 // Store empty string
-                mstore(64, 0x40)
+                mstore(64, 64)
                 mstore(96, 0)
                 let approveAdminResult := call(gas(), result, 0, 28, 36, 0, 0)
                 if iszero(approveAdminResult) { revert(0, 0) }

@@ -5,7 +5,9 @@ pragma solidity ^0.8.17;
 import {ERC7211155Core} from "./ERC7211155Core.sol";
 
 /**
- * @dev Implementation of https://eips.ethereum.org/EIPS/eip-1155[ERC1155] Non-Fungible Token Standard
+ * @dev Implementation of Non-Fungible Token Standard and Multi-Token Standard
+ * https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard
+ * https://eips.ethereum.org/EIPS/eip-1155[ERC1155] Multi-Token Standard
  */
 abstract contract ERC7211155Base is ERC7211155Core {
     /**

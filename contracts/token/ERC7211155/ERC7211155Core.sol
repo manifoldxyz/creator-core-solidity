@@ -17,6 +17,11 @@ import {IERC7211155} from "./IERC7211155.sol";
 abstract contract ERC7211155Core is ERC165, IERC7211155 {
     using Address for address;
 
+    struct TokenData721 {
+        address owner;
+        uint96 data;
+    }
+
     // The first token ID to use for ERC1155 tokens
     uint256 public constant MAX_721_TOKEN_ID = 999999;
     uint256 internal constant _OFFSET_1155_TOKEN_ID = 1000000;
@@ -28,7 +33,7 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
     string internal _symbol;
 
     // Mapping from token ID to token data
-    mapping(uint256 => address) internal _721Owner;
+    mapping(uint256 => TokenData721) internal _721TokenData;
 
     // Mapping owner address to token count
     mapping(address => uint256) private _721Balances;
@@ -95,7 +100,7 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
      * @dev See {IERC721-ownerOf}.
      */
     function ownerOf(uint256 tokenId) public view virtual override returns (address) {
-        address owner = _721Owner[tokenId];
+        address owner = _721TokenData[tokenId].owner;
         require(owner != address(0), "ERC721: Invalid token id");
         return owner;
     }
@@ -181,7 +186,7 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
      * and stop existing when they are burned (`_burn`).
      */
     function _721Exists(uint256 tokenId) internal view virtual returns (bool) {
-        return _721Owner[tokenId] != address(0);
+        return _721TokenData[tokenId].owner != address(0);
     }
 
     /**
@@ -206,20 +211,20 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
      *
      * Emits a {Transfer} event.
      */
-    function _721SafeMint(address to, uint256 tokenId) internal virtual {
-        _721SafeMint(to, tokenId, "");
+    function _721SafeMint(address to, uint256 tokenId, uint96 tokenData) internal virtual {
+        _721SafeMint(to, tokenId, tokenData, "");
     }
 
     /**
      * @dev Same as {xref-ERC721-_safeMint-address-uint256-}[`_safeMint`], with an additional `data` parameter which is
      * forwarded in {IERC721Receiver-onERC721Received} to contract recipients.
      */
-    function _721SafeMint(address to, uint256 tokenId, bytes memory data) internal virtual {
+    function _721SafeMint(address to, uint256 tokenId, uint96 tokenData, bytes memory data) internal virtual {
         require(tokenId > 0 && tokenId <= MAX_721_TOKEN_ID, "ERC721: Invalid token id");
         require(to != address(0), "ERC721: mint to the zero address");
         require(!_721Exists(tokenId), "ERC721: token already minted");
 
-        _721BeforeTokenTransfer(address(0), to, tokenId);
+        _721BeforeTokenTransfer(address(0), to, tokenId, tokenData);
 
         unchecked {
             // Will not overflow unless all 2**256 token ids are minted to the same owner.
@@ -229,10 +234,10 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
             _721Balances[to] += 1;
         }
 
-        _721Owner[tokenId] = to;
+        _721TokenData[tokenId] = TokenData721({owner: to, data: tokenData});
         emit Transfer(address(0), to, tokenId);
 
-        _721AfterTokenTransfer(address(0), to, tokenId);
+        _721AfterTokenTransfer(address(0), to, tokenId, tokenData);
         require(
             _checkOnERC721Received(address(0), to, tokenId, data), "ERC721: transfer to non ERC721Receiver implementer"
         );
@@ -249,8 +254,9 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
      * Emits a {Transfer} event.
      */
     function _721Burn(uint256 tokenId) internal virtual {
-        address owner = _721Owner[tokenId];
-        _721BeforeTokenTransfer(owner, address(0), tokenId);
+        TokenData721 memory tokenData = _721TokenData[tokenId];
+        address owner = tokenData.owner;
+        _721BeforeTokenTransfer(owner, address(0), tokenId, tokenData.data);
 
         // Clear approvals
         _721Approve(address(0), tokenId);
@@ -260,11 +266,11 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
             // out than the owner initially received through minting and transferring in.
             _721Balances[owner] -= 1;
         }
-        delete _721Owner[tokenId];
+        delete _721TokenData[tokenId];
 
         emit Transfer(owner, address(0), tokenId);
 
-        _721AfterTokenTransfer(owner, address(0), tokenId);
+        _721AfterTokenTransfer(owner, address(0), tokenId, tokenData.data);
     }
 
     /**
@@ -279,11 +285,12 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
      * Emits a {Transfer} event.
      */
     function _721Transfer(address from, address to, uint256 tokenId) internal virtual {
-        address owner = _721Owner[tokenId];
+        TokenData721 memory tokenData = _721TokenData[tokenId];
+        address owner = tokenData.owner;
         require(owner == from, "ERC721: transfer from incorrect owner");
         require(to != address(0), "ERC721: transfer to the zero address");
 
-        _721BeforeTokenTransfer(from, to, tokenId);
+        _721BeforeTokenTransfer(from, to, tokenId, tokenData.data);
 
         // Clear approvals from the previous owner
         _721Approve(address(0), tokenId);
@@ -297,11 +304,11 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
             _721Balances[from] -= 1;
             _721Balances[to] += 1;
         }
-        _721Owner[tokenId] = to;
+        _721TokenData[tokenId].owner = to;
 
         emit Transfer(from, to, tokenId);
 
-        _721AfterTokenTransfer(from, to, tokenId);
+        _721AfterTokenTransfer(from, to, tokenId, tokenData.data);
     }
 
     /**
@@ -366,7 +373,7 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
      *
      * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
      */
-    function _721BeforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual {}
+    function _721BeforeTokenTransfer(address from, address to, uint256 tokenId, uint96 tokenData) internal virtual {}
 
     /**
      * @dev Hook that is called after any token transfer. This includes minting and burning. If {ERC721Consecutive} is
@@ -381,7 +388,7 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
      *
      * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
      */
-    function _721AfterTokenTransfer(address from, address to, uint256 tokenId) internal virtual {}
+    function _721AfterTokenTransfer(address from, address to, uint256 tokenId, uint96 tokenData) internal virtual {}
 
     /**
      * @dev See {IERC1155-balanceOf}.

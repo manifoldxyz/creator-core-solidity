@@ -10,23 +10,23 @@ contract MockERC7211155 is ERC7211155Base {
     constructor(string memory _name, string memory _symbol) ERC7211155Base(_name, _symbol) {}
 
     function mint721(address to, uint256 tokenId) external {
-        _721SafeMint(to, tokenId);
+        _721SafeMint(to, tokenId, 0);
     }
 
     function mint721(address to, uint256 tokenId, bytes memory data) external {
-        _721SafeMint(to, tokenId, data);
+        _721SafeMint(to, tokenId, 0, data);
     }
 
     function mint721For1155(address to, uint256 tokenId) external {
         if (!_721Exists(tokenId - MAX_721_TOKEN_ID - 1)) {
-            _721SafeMint(to, tokenId - MAX_721_TOKEN_ID - 1);
+            _721SafeMint(to, tokenId - MAX_721_TOKEN_ID - 1, 0);
         }
     }
 
     function mintBatch721For1155(address to, uint256[] calldata tokenIds) external {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             if (!_721Exists(tokenIds[i] - MAX_721_TOKEN_ID - 1)) {
-                _721SafeMint(to, tokenIds[i] - MAX_721_TOKEN_ID - 1);
+                _721SafeMint(to, tokenIds[i] - MAX_721_TOKEN_ID - 1, 0);
             }
         }
     }

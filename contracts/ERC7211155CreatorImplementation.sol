@@ -523,4 +523,33 @@ contract ERC7211155CreatorImplementation is AdminControlUpgradeable, ERC7211155U
     function tokenData(uint256 tokenId) external view returns (uint80) {
         return uint80(_721TokenData[tokenId].data >> 16);
     }
+
+    // 1155 token functions
+    function mint1155(address to, uint256 tokenId, uint256 amount, bytes calldata data) public nonReentrant {
+        _1155Mint(to, tokenId, amount, data);
+    }
+
+    function mintBatch1155(address to, uint256[] calldata tokenIds, uint256[] calldata amounts, bytes calldata data)
+        public
+        nonReentrant
+    {
+        _1155MintBatch(to, tokenIds, amounts, data);
+    }
+
+    /**
+     * @dev See {IERC1155-burn}.
+     */
+    function burn(address account, uint256[] calldata tokenIds, uint256[] calldata amounts)
+        public
+        virtual
+        nonReentrant
+    {
+        require(account == msg.sender || isApprovedForAll(account, msg.sender), "Caller is not owner or approved");
+        require(tokenIds.length == amounts.length, "Invalid input");
+        if (tokenIds.length == 1) {
+            _1155Burn(account, tokenIds[0], amounts[0]);
+        } else {
+            _1155BurnBatch(account, tokenIds, amounts);
+        }
+    }
 }

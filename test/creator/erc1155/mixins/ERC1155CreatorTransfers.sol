@@ -4,15 +4,14 @@ pragma solidity ^0.8.17;
 
 import {BaseERC1155CreatorTest} from "../BaseERC1155CreatorTest.sol";
 import {ERC1155TransferApprovalExtension} from "../extensions/ERC1155TransferApprovalExtension.sol";
+import {ICreatorCore} from "creator-core/core/ICreatorCore.sol";
 
 contract ERC1155CreatorTransfersTest is BaseERC1155CreatorTest {
     ERC1155TransferApprovalExtension public transferApprovalExtension;
 
     modifier withTransferApprovalExtension() {
         vm.prank(creator);
-        transferApprovalExtension = new ERC1155TransferApprovalExtension(
-            creatorContractAddress
-        );
+        transferApprovalExtension = new ERC1155TransferApprovalExtension(creatorContractAddress);
         vm.prank(creator);
         creatorContract().registerExtension(address(transferApprovalExtension), extensionTokenURI);
         _;
@@ -20,9 +19,7 @@ contract ERC1155CreatorTransfersTest is BaseERC1155CreatorTest {
 
     function testTransferApprovalBase() public withTransferApprovalExtension {
         // Deploy new extension for the base transfer approval
-        ERC1155TransferApprovalExtension baseExtension = new ERC1155TransferApprovalExtension(
-                creatorContractAddress
-            );
+        ERC1155TransferApprovalExtension baseExtension = new ERC1155TransferApprovalExtension(creatorContractAddress);
 
         // Enable the extension
         vm.prank(creator);
@@ -56,7 +53,7 @@ contract ERC1155CreatorTransfersTest is BaseERC1155CreatorTest {
         // Validate tokens can't be transferred
         for (uint256 i = 0; i < tokenIds.length; i++) {
             vm.prank(bob);
-            vm.expectRevert("Extension approval failure");
+            vm.expectRevert(ICreatorCore.ExtensionApprovalFailure.selector);
             creatorContract().safeTransferFrom(bob, alice, tokenIds[i], 1, "");
         }
 
@@ -95,7 +92,7 @@ contract ERC1155CreatorTransfersTest is BaseERC1155CreatorTest {
         // Validate tokens can't be transferred
         for (uint256 i = 0; i < tokenIds.length; i++) {
             vm.prank(bob);
-            vm.expectRevert("Extension approval failure");
+            vm.expectRevert(ICreatorCore.ExtensionApprovalFailure.selector);
             creatorContract().safeTransferFrom(bob, alice, tokenIds[i], 1, "");
         }
 
@@ -106,7 +103,7 @@ contract ERC1155CreatorTransfersTest is BaseERC1155CreatorTest {
         // Validate tokens can't be transferred without extension
         for (uint256 i = 0; i < tokenIds.length; i++) {
             vm.prank(bob);
-            vm.expectRevert("Extension approval failure");
+            vm.expectRevert(ICreatorCore.ExtensionApprovalFailure.selector);
             creatorContract().safeTransferFrom(bob, alice, tokenIds[i], 1, "");
         }
     }

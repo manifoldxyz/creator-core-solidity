@@ -113,7 +113,7 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
      */
     function setTokenURIExtension(uint256[] calldata tokenIds, string[] calldata uris) external override {
         requireExtension();
-        require(tokenIds.length == uris.length, "Invalid input");
+        if (tokenIds.length != uris.length) revert InvalidInput();
         for (uint256 i; i < tokenIds.length;) {
             _setTokenURIExtension(tokenIds[i], uris[i]);
             unchecked {
@@ -147,7 +147,7 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
      * @dev See {ICreatorCore-setTokenURI}.
      */
     function setTokenURI(uint256[] calldata tokenIds, string[] calldata uris) external override adminRequired {
-        require(tokenIds.length == uris.length, "Invalid input");
+        if (tokenIds.length != uris.length) revert InvalidInput();
         for (uint256 i; i < tokenIds.length;) {
             _setTokenURI(tokenIds[i], uris[i]);
             unchecked {
@@ -374,17 +374,17 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
      * @dev See {IERC721CreatorCore-tokenExtension}.
      */
     function tokenExtension(uint256 tokenId) public view virtual override returns (address extension) {
-        require(_exists(tokenId), "Nonexistent token");
+        if (!_exists(tokenId)) revert InvalidToken();
         extension = _tokenExtension(tokenId);
-        require(extension != address(0), "No extension for token");
-        require(!_blacklistedExtensions.contains(extension), "Extension blacklisted");
+        if (extension == address(0)) revert InvalidExtension();
+        if (_blacklistedExtensions.contains(extension)) revert BlacklistedExtension();
     }
 
     /**
      * @dev See {IERC721CreatorCore-burn}.
      */
     function burn(uint256 tokenId) public virtual override nonReentrant {
-        require(_isApprovedOrOwner(msg.sender, tokenId), "Caller is not owner or approved");
+        if (!_isApprovedOrOwner(msg.sender, tokenId)) revert NotAllowed();
         address owner = ownerOf(tokenId);
         address extension = _tokenExtension(tokenId);
         _burn(tokenId);
@@ -410,7 +410,7 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
         override
         adminRequired
     {
-        require(_exists(tokenId), "Nonexistent token");
+        if (!_exists(tokenId)) revert InvalidToken();
         _setRoyalties(tokenId, receivers, basisPoints);
     }
 
@@ -435,7 +435,7 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
         override
         returns (address payable[] memory, uint256[] memory)
     {
-        require(_exists(tokenId), "Nonexistent token");
+        if (!_exists(tokenId)) revert InvalidToken();
         return _getRoyalties(tokenId);
     }
 
@@ -449,7 +449,7 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
         override
         returns (address payable[] memory, uint256[] memory)
     {
-        require(_exists(tokenId), "Nonexistent token");
+        if (!_exists(tokenId)) revert InvalidToken();
         return _getRoyalties(tokenId);
     }
 
@@ -457,7 +457,7 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
      * @dev See {ICreatorCore-getFeeRecipients}.
      */
     function getFeeRecipients(uint256 tokenId) external view virtual override returns (address payable[] memory) {
-        require(_exists(tokenId), "Nonexistent token");
+        if (!_exists(tokenId)) revert InvalidToken();
         return _getRoyaltyReceivers(tokenId);
     }
 
@@ -465,7 +465,7 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
      * @dev See {ICreatorCore-getFeeBps}.
      */
     function getFeeBps(uint256 tokenId) external view virtual override returns (uint256[] memory) {
-        require(_exists(tokenId), "Nonexistent token");
+        if (!_exists(tokenId)) revert InvalidToken();
         return _getRoyaltyBPS(tokenId);
     }
 
@@ -473,7 +473,7 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
      * @dev See {ICreatorCore-royaltyInfo}.
      */
     function royaltyInfo(uint256 tokenId, uint256 value) external view virtual override returns (address, uint256) {
-        require(_exists(tokenId), "Nonexistent token");
+        if (!_exists(tokenId)) revert InvalidToken();
         return _getRoyaltyInfo(tokenId, value);
     }
 
@@ -481,7 +481,7 @@ contract ERC721CreatorImplementation is AdminControlUpgradeable, ERC721Upgradeab
      * @dev See {IERC721Metadata-tokenURI}.
      */
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
-        require(_exists(tokenId), "Nonexistent token");
+        if (!_exists(tokenId)) revert InvalidToken();
         return _tokenURI(tokenId);
     }
 

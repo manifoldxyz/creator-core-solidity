@@ -50,7 +50,7 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
      */
     function tokenByIndexExtension(address extension, uint256 index) external view virtual override returns (uint256) {
         requireNonBlacklist(extension);
-        require(index < totalSupplyExtension(extension), "ERC721Creator: Index out of bounds");
+        if (index >= totalSupplyExtension(extension)) revert InvalidInput();
         return _extensionTokens[extension][index];
     }
 
@@ -73,7 +73,7 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
         returns (uint256)
     {
         requireNonBlacklist(extension);
-        require(index < balanceOfExtension(extension, owner), "ERC721Creator: Index out of bounds");
+        if (index >= balanceOfExtension(extension, owner)) revert InvalidInput();
         return _extensionTokensByOwner[extension][owner][index];
     }
 
@@ -88,7 +88,7 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
      * @dev See {IERC721CreatorCoreEnumerable-tokenByIndexBase}.
      */
     function tokenByIndexBase(uint256 index) external view virtual override returns (uint256) {
-        require(index < totalSupplyBase(), "ERC721Creator: Index out of bounds");
+        if (index >= totalSupplyBase()) revert InvalidInput();
         return _extensionTokens[address(0)][index];
     }
 
@@ -103,7 +103,7 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
      * @dev See {IERC721CreatorCoreEnumerable-tokenOfOwnerByIndexBase}.
      */
     function tokenOfOwnerByIndexBase(address owner, uint256 index) external view virtual override returns (uint256) {
-        require(index < balanceOfBase(owner), "ERC721Creator: Index out of bounds");
+        if (index >= balanceOfBase(owner)) revert InvalidInput();
         return _extensionTokensByOwner[address(0)][owner][index];
     }
 
@@ -173,7 +173,6 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
          *  START: Remove from extension token tracking
          *
          */
-
         uint256 lastTokenIndex = totalSupplyExtension(extension) - 1;
         uint256 tokenIndex = _extensionTokensIndex[tokenId];
 
@@ -208,7 +207,6 @@ abstract contract ERC721CreatorCoreEnumerable is ERC721CreatorCore, IERC721Creat
          *  END
          *
          */
-
         ERC721CreatorCore._postBurn(owner, tokenId, extension);
     }
 }

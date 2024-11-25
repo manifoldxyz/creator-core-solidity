@@ -5,6 +5,7 @@ pragma solidity ^0.8.17;
 import {BaseERC721CreatorTest} from "../BaseERC721CreatorTest.sol";
 import {ERC721MintPermissions} from "../extensions/ERC721MintPermissions.sol";
 import {ERC721Extension} from "../extensions/ERC721Extension.sol";
+import {ICreatorCore} from "creator-core/core/ICreatorCore.sol";
 
 contract ERC721CreatorPermissionsTest is BaseERC721CreatorTest {
     function testMintPermissions() public {
@@ -19,13 +20,11 @@ contract ERC721CreatorPermissionsTest is BaseERC721CreatorTest {
         creatorContract().registerExtension(extension2, extensionTokenURI);
 
         // Deploy mint permissions
-        ERC721MintPermissions mintPermissions = new ERC721MintPermissions(
-            creatorContractAddress
-        );
+        ERC721MintPermissions mintPermissions = new ERC721MintPermissions(creatorContractAddress);
 
         // Mint permissions must be a valid contract
         vm.prank(creator);
-        vm.expectRevert("Invalid address");
+        vm.expectRevert(ICreatorCore.InvalidInput.selector);
         creatorContract().setMintPermissions(extension1, alice);
 
         // Set mint permissions

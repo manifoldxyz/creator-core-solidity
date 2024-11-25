@@ -116,7 +116,7 @@ contract ERC1155Creator is AdminControl, ERC1155Base, ERC1155CreatorCore {
      */
     function setTokenURIExtension(uint256[] calldata tokenIds, string[] calldata uris) external override {
         requireExtension();
-        require(tokenIds.length == uris.length, "Invalid input");
+        if (tokenIds.length != uris.length) revert InvalidInput();
         for (uint256 i; i < tokenIds.length;) {
             _setTokenURIExtension(tokenIds[i], uris[i]);
             unchecked {
@@ -150,7 +150,7 @@ contract ERC1155Creator is AdminControl, ERC1155Base, ERC1155CreatorCore {
      * @dev See {ICreatorCore-setTokenURI}.
      */
     function setTokenURI(uint256[] calldata tokenIds, string[] calldata uris) external override adminRequired {
-        require(tokenIds.length == uris.length, "Invalid input");
+        if (tokenIds.length != uris.length) revert InvalidInput();
         for (uint256 i; i < tokenIds.length;) {
             _setTokenURI(tokenIds[i], uris[i]);
             unchecked {
@@ -192,8 +192,8 @@ contract ERC1155Creator is AdminControl, ERC1155Base, ERC1155CreatorCore {
     {
         for (uint256 i; i < tokenIds.length;) {
             uint256 tokenId = tokenIds[i];
-            require(tokenId > 0 && tokenId <= _tokenCount, "Invalid token");
-            require(_tokenExtension(tokenId) == address(0), "Token created by extension");
+            if (tokenId == 0 || tokenId > _tokenCount) revert InvalidToken();
+            if (_tokenExtension(tokenId) != address(0)) revert NotAllowed();
             unchecked {
                 ++i;
             }
@@ -226,7 +226,7 @@ contract ERC1155Creator is AdminControl, ERC1155Base, ERC1155CreatorCore {
     {
         requireExtension();
         for (uint256 i; i < tokenIds.length;) {
-            require(_tokenExtension(tokenIds[i]) == address(msg.sender), "Token not created by this extension");
+            if (_tokenExtension(tokenIds[i]) != msg.sender) revert NotAllowed();
             unchecked {
                 ++i;
             }
@@ -244,11 +244,11 @@ contract ERC1155Creator is AdminControl, ERC1155Base, ERC1155CreatorCore {
         if (to.length > 1) {
             // Multiple receiver.  Give every receiver the same new token
             tokenIds = new uint256[](1);
-            require(uris.length <= 1 && (amounts.length == 1 || to.length == amounts.length), "Invalid input");
+            if (uris.length > 1 || (amounts.length != 1 && to.length != amounts.length)) revert InvalidInput();
         } else {
             // Single receiver.  Generating multiple tokens
             tokenIds = new uint256[](amounts.length);
-            require(uris.length == 0 || amounts.length == uris.length, "Invalid input");
+            if (uris.length != 0 && uris.length != amounts.length) revert InvalidInput();
         }
 
         // Assign tokenIds
@@ -346,7 +346,7 @@ contract ERC1155Creator is AdminControl, ERC1155Base, ERC1155CreatorCore {
                 }
             }
         } else {
-            revert("Invalid input");
+            revert InvalidInput();
         }
     }
 
@@ -355,8 +355,8 @@ contract ERC1155Creator is AdminControl, ERC1155Base, ERC1155CreatorCore {
      */
     function tokenExtension(uint256 tokenId) public view virtual override returns (address extension) {
         extension = _tokenExtension(tokenId);
-        require(extension != address(0), "No extension for token");
-        require(!_blacklistedExtensions.contains(extension), "Extension blacklisted");
+        if (extension == address(0)) revert InvalidExtension();
+        if (_blacklistedExtensions.contains(extension)) revert BlacklistedExtension();
     }
 
     /**
@@ -368,8 +368,8 @@ contract ERC1155Creator is AdminControl, ERC1155Base, ERC1155CreatorCore {
         override
         nonReentrant
     {
-        require(account == msg.sender || isApprovedForAll(account, msg.sender), "Caller is not owner or approved");
-        require(tokenIds.length == amounts.length, "Invalid input");
+        if (account != msg.sender && !isApprovedForAll(account, msg.sender)) revert NotAllowed();
+        if (tokenIds.length != amounts.length) revert InvalidInput();
         if (tokenIds.length == 1) {
             _burn(account, tokenIds[0], amounts[0]);
         } else {

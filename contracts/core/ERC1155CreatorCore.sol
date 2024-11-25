@@ -50,12 +50,12 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
      * @dev Set mint permissions for an extension
      */
     function _setMintPermissions(address extension, address permissions) internal {
-        require(_extensions.contains(extension), "Invalid extension");
-        require(
-            permissions == address(0)
-                || ERC165Checker.supportsInterface(permissions, type(IERC1155CreatorMintPermissions).interfaceId),
-            "Invalid address"
-        );
+        if (!_extensions.contains(extension)) revert InvalidExtension();
+        if (
+            permissions != address(0)
+                && !ERC165Checker.supportsInterface(permissions, type(IERC1155CreatorMintPermissions).interfaceId)
+        ) revert InvalidInput();
+
         if (_extensionPermissions[extension] != permissions) {
             _extensionPermissions[extension] = permissions;
             emit MintPermissionsUpdated(extension, permissions, msg.sender);
@@ -78,10 +78,10 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
      * Post burn actions
      */
     function _postBurn(address owner, uint256[] calldata tokenIds, uint256[] calldata amounts) internal virtual {
-        require(tokenIds.length > 0, "Invalid input");
+        if (tokenIds.length == 0) revert InvalidInput();
         address extension = _tokensExtension[tokenIds[0]];
         for (uint256 i; i < tokenIds.length;) {
-            require(_tokensExtension[tokenIds[i]] == extension, "Mismatched token originators");
+            if (_tokensExtension[tokenIds[i]] != extension) revert MismatchedTokenOriginators();
             unchecked {
                 ++i;
             }
@@ -104,25 +104,23 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
         address extension = _tokensExtension[tokenIds[0]];
 
         for (uint256 i; i < tokenIds.length;) {
-            require(_tokensExtension[tokenIds[i]] == extension, "Mismatched token originators");
+            if (_tokensExtension[tokenIds[i]] != extension) revert MismatchedTokenOriginators();
             unchecked {
                 ++i;
             }
         }
         if (extension != address(0) && _extensionApproveTransfers[extension]) {
-            require(
-                IERC1155CreatorExtensionApproveTransfer(extension).approveTransfer(
+            if (
+                !IERC1155CreatorExtensionApproveTransfer(extension).approveTransfer(
                     msg.sender, from, to, tokenIds, amounts
-                ),
-                "Extension approval failure"
-            );
+                )
+            ) revert ExtensionApprovalFailure();
         } else if (_approveTransferBase != address(0)) {
-            require(
-                IERC1155CreatorExtensionApproveTransfer(_approveTransferBase).approveTransfer(
+            if (
+                !IERC1155CreatorExtensionApproveTransfer(_approveTransferBase).approveTransfer(
                     msg.sender, from, to, tokenIds, amounts
-                ),
-                "Extension approval failure"
-            );
+                )
+            ) revert ExtensionApprovalFailure();
         }
     }
 

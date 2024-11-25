@@ -75,7 +75,7 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
      * Emits an {ApprovalForAll} event.
      */
     function _setApprovalForAll(address owner, address operator, bool approved) internal virtual {
-        require(owner != operator, "ERC7211155: setting approval status for self");
+        if (owner == operator) revert CannotSetForSelf();
         _operatorApprovals[owner][operator] = approved;
         emit ApprovalForAll(owner, operator, approved);
     }
@@ -92,7 +92,7 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
      * @dev See {IERC721-balanceOf}.
      */
     function balanceOf(address owner) public view virtual override returns (uint256) {
-        require(owner != address(0), "ERC721: address zero is not a valid owner");
+        if (owner == address(0)) revert InvalidAddress();
         return _721Balances[owner];
     }
 
@@ -101,7 +101,7 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
      */
     function ownerOf(uint256 tokenId) public view virtual override returns (address) {
         address owner = _721TokenData[tokenId].owner;
-        require(owner != address(0), "ERC721: Invalid token id");
+        if (owner == address(0)) revert InvalidTokenId();
         return owner;
     }
 
@@ -110,12 +110,9 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
      */
     function approve(address to, uint256 tokenId) public virtual override {
         address owner = ERC7211155Core.ownerOf(tokenId);
-        require(to != owner, "ERC721: approval to current owner");
+        if (to == owner) revert CannotSetForSelf();
 
-        require(
-            msg.sender == owner || isApprovedForAll(owner, msg.sender),
-            "ERC721: approve caller is not token owner or approved for all"
-        );
+        if (msg.sender != owner && !isApprovedForAll(owner, msg.sender)) revert PermissionDenied();
 
         _721Approve(to, tokenId);
     }
@@ -133,8 +130,7 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
      */
 
     function transferFrom(address from, address to, uint256 tokenId) public virtual override {
-        //solhint-disable-next-line max-line-length
-        require(_721IsApprovedOrOwner(msg.sender, tokenId), "ERC721: caller is not token owner or approved");
+        if (!_721IsApprovedOrOwner(msg.sender, tokenId)) revert PermissionDenied();
 
         _721Transfer(from, to, tokenId);
     }
@@ -150,7 +146,7 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
      * @dev See {IERC721-safeTransferFrom}.
      */
     function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data) public virtual override {
-        require(_721IsApprovedOrOwner(msg.sender, tokenId), "ERC721: caller is not token owner or approved");
+        if (!_721IsApprovedOrOwner(msg.sender, tokenId)) revert PermissionDenied();
         _721SafeTransfer(from, to, tokenId, data);
     }
 
@@ -174,7 +170,7 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
      */
     function _721SafeTransfer(address from, address to, uint256 tokenId, bytes memory data) internal virtual {
         _721Transfer(from, to, tokenId);
-        require(_checkOnERC721Received(from, to, tokenId, data), "ERC721: transfer to non ERC721Receiver implementer");
+        if (!_checkOnERC721Received(from, to, tokenId, data)) revert TransferFailed();
     }
 
     /**
@@ -220,9 +216,9 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
      * forwarded in {IERC721Receiver-onERC721Received} to contract recipients.
      */
     function _721SafeMint(address to, uint256 tokenId, uint96 tokenData, bytes memory data) internal virtual {
-        require(tokenId > 0 && tokenId <= MAX_721_TOKEN_ID, "ERC721: Invalid token id");
-        require(to != address(0), "ERC721: mint to the zero address");
-        require(!_721Exists(tokenId), "ERC721: token already minted");
+        if (tokenId == 0 || tokenId > MAX_721_TOKEN_ID) revert InvalidTokenId();
+        if (to == address(0)) revert InvalidAddress();
+        if (_721Exists(tokenId)) revert TokenAlreadyMinted();
 
         _721BeforeTokenTransfer(address(0), to, tokenId, tokenData);
 
@@ -287,8 +283,8 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
     function _721Transfer(address from, address to, uint256 tokenId) internal virtual {
         TokenData721 memory tokenData = _721TokenData[tokenId];
         address owner = tokenData.owner;
-        require(owner == from, "ERC721: transfer from incorrect owner");
-        require(to != address(0), "ERC721: transfer to the zero address");
+        if (owner != from) revert PermissionDenied();
+        if (to == address(0)) revert InvalidAddress();
 
         _721BeforeTokenTransfer(from, to, tokenId, tokenData.data);
 
@@ -325,7 +321,7 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
      * @dev Reverts if the `tokenId` has not been minted yet.
      */
     function _721RequireMinted(uint256 tokenId) internal view virtual {
-        require(_721Exists(tokenId), "ERC721: Invalid token id");
+        if (!_721Exists(tokenId)) revert InvalidTokenId();
     }
 
     /**
@@ -347,7 +343,7 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
                 return retval == IERC721Receiver.onERC721Received.selector;
             } catch (bytes memory reason) {
                 if (reason.length == 0) {
-                    revert("ERC721: transfer to non ERC721Receiver implementer");
+                    revert TransferFailed();
                 } else {
                     /// @solidity memory-safe-assembly
                     assembly {
@@ -398,7 +394,7 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
      * - `account` cannot be the zero address.
      */
     function balanceOf(address account, uint256 id) public view virtual override returns (uint256) {
-        require(account != address(0), "ERC1155: address zero is not a valid owner");
+        if (account == address(0)) revert InvalidAddress();
         return _1155Balances[id][account];
     }
 
@@ -416,7 +412,7 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
         override
         returns (uint256[] memory)
     {
-        require(accounts.length == ids.length, "ERC1155: accounts and ids length mismatch");
+        if (accounts.length != ids.length) revert MismatchInputLength();
 
         uint256[] memory batchBalances = new uint256[](accounts.length);
 
@@ -435,9 +431,7 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
         virtual
         override
     {
-        require(
-            from == msg.sender || isApprovedForAll(from, msg.sender), "ERC1155: caller is not token owner or approved"
-        );
+        if (from != msg.sender && !isApprovedForAll(from, msg.sender)) revert PermissionDenied();
         _safeTransferFrom(from, to, id, amount, data);
     }
 
@@ -451,9 +445,7 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
         uint256[] memory amounts,
         bytes memory data
     ) public virtual override {
-        require(
-            from == msg.sender || isApprovedForAll(from, msg.sender), "ERC1155: caller is not token owner or approved"
-        );
+        if (from != msg.sender && !isApprovedForAll(from, msg.sender)) revert PermissionDenied();
         _safeBatchTransferFrom(from, to, ids, amounts, data);
     }
 
@@ -473,7 +465,7 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
         internal
         virtual
     {
-        require(to != address(0), "ERC1155: transfer to the zero address");
+        if (to == address(0)) revert InvalidAddress();
 
         address operator = msg.sender;
         uint256[] memory ids = _asSingletonArray(id);
@@ -482,7 +474,7 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
         _1155BeforeTokenTransfer(operator, from, to, ids, amounts, data);
 
         uint256 fromBalance = _1155Balances[id][from];
-        require(fromBalance >= amount, "ERC1155: insufficient balance for transfer");
+        if (fromBalance < amount) revert InsufficientBalance();
         unchecked {
             _1155Balances[id][from] = fromBalance - amount;
         }
@@ -512,8 +504,8 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
         uint256[] memory amounts,
         bytes memory data
     ) internal virtual {
-        require(ids.length == amounts.length, "ERC1155: ids and amounts length mismatch");
-        require(to != address(0), "ERC1155: transfer to the zero address");
+        if (ids.length != amounts.length) revert MismatchInputLength();
+        if (to == address(0)) revert InvalidAddress();
 
         address operator = msg.sender;
 
@@ -524,7 +516,7 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
             uint256 amount = amounts[i];
 
             uint256 fromBalance = _1155Balances[id][from];
-            require(fromBalance >= amount, "ERC1155: insufficient balance for transfer");
+            if (fromBalance < amount) revert InsufficientBalance();
             unchecked {
                 _1155Balances[id][from] = fromBalance - amount;
             }
@@ -550,9 +542,9 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
      * acceptance magic value.
      */
     function _1155Mint(address to, uint256 id, uint256 amount, bytes memory data) internal virtual {
-        require(to != address(0), "ERC1155: mint to the zero address");
-        require(id > _OFFSET_1155_TOKEN_ID && _721Exists(id - _OFFSET_1155_TOKEN_ID), "ERC1155: Invalid token id");
-        require(msg.sender == ownerOf(id - _OFFSET_1155_TOKEN_ID), "ERC1155: caller is not the 721 token owner");
+        if (to == address(0)) revert InvalidAddress();
+        if (id <= _OFFSET_1155_TOKEN_ID || !_721Exists(id - _OFFSET_1155_TOKEN_ID)) revert InvalidTokenId();
+        if (msg.sender != ownerOf(id - _OFFSET_1155_TOKEN_ID)) revert PermissionDenied();
 
         address operator = msg.sender;
         uint256[] memory ids = _asSingletonArray(id);
@@ -583,8 +575,8 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
         internal
         virtual
     {
-        require(to != address(0), "ERC1155: mint to the zero address");
-        require(ids.length == amounts.length, "ERC1155: ids and amounts length mismatch");
+        if (ids.length != amounts.length) revert MismatchInputLength();
+        if (to == address(0)) revert InvalidAddress();
 
         address operator = msg.sender;
 
@@ -616,7 +608,7 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
      * - `from` must have at least `amount` tokens of token type `id`.
      */
     function _1155Burn(address from, uint256 id, uint256 amount) internal virtual {
-        require(from != address(0), "ERC1155: burn from the zero address");
+        if (from == address(0)) revert InvalidAddress();
 
         address operator = msg.sender;
         uint256[] memory ids = _asSingletonArray(id);
@@ -625,7 +617,7 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
         _1155BeforeTokenTransfer(operator, from, address(0), ids, amounts, "");
 
         uint256 fromBalance = _1155Balances[id][from];
-        require(fromBalance >= amount, "ERC1155: burn amount exceeds balance");
+        if (fromBalance < amount) revert InsufficientBalance();
         unchecked {
             _1155Balances[id][from] = fromBalance - amount;
         }
@@ -645,8 +637,8 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
      * - `ids` and `amounts` must have the same length.
      */
     function _1155BurnBatch(address from, uint256[] memory ids, uint256[] memory amounts) internal virtual {
-        require(from != address(0), "ERC1155: burn from the zero address");
-        require(ids.length == amounts.length, "ERC1155: ids and amounts length mismatch");
+        if (ids.length != amounts.length) revert MismatchInputLength();
+        if (from == address(0)) revert InvalidAddress();
 
         address operator = msg.sender;
 
@@ -657,7 +649,7 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
             uint256 amount = amounts[i];
 
             uint256 fromBalance = _1155Balances[id][from];
-            require(fromBalance >= amount, "ERC1155: burn amount exceeds balance");
+            if (fromBalance < amount) revert InsufficientBalance();
             unchecked {
                 _1155Balances[id][from] = fromBalance - amount;
             }
@@ -737,12 +729,12 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
         if (to.isContract()) {
             try IERC1155Receiver(to).onERC1155Received(operator, from, id, amount, data) returns (bytes4 response) {
                 if (response != IERC1155Receiver.onERC1155Received.selector) {
-                    revert("ERC1155: ERC1155Receiver rejected tokens");
+                    revert TransferFailed();
                 }
             } catch Error(string memory reason) {
                 revert(reason);
             } catch {
-                revert("ERC1155: transfer to non-ERC1155Receiver implementer");
+                revert TransferFailed();
             }
         }
     }
@@ -760,12 +752,12 @@ abstract contract ERC7211155Core is ERC165, IERC7211155 {
                 bytes4 response
             ) {
                 if (response != IERC1155Receiver.onERC1155BatchReceived.selector) {
-                    revert("ERC1155: ERC1155Receiver rejected tokens");
+                    revert TransferFailed();
                 }
             } catch Error(string memory reason) {
                 revert(reason);
             } catch {
-                revert("ERC1155: transfer to non-ERC1155Receiver implementer");
+                revert TransferFailed();
             }
         }
     }

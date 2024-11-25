@@ -9,6 +9,16 @@ import {IERC165} from "openzeppelin/utils/introspection/ERC165.sol";
  * @dev Required interface of an ERC721 compliant contract.
  */
 interface IERC7211155 is IERC165 {
+    // Errors
+    error CannotSetForSelf();
+    error InsufficientBalance();
+    error InvalidAddress();
+    error InvalidTokenId();
+    error MismatchInputLength();
+    error PermissionDenied();
+    error TokenAlreadyMinted();
+    error TransferFailed();
+
     /**
      * @dev Emitted when `owner` enables or disables (`approved`) `operator` to manage all of its assets.
      */

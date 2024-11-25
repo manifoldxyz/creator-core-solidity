@@ -4,15 +4,14 @@ pragma solidity ^0.8.17;
 
 import {BaseERC1155CreatorTest} from "../BaseERC1155CreatorTest.sol";
 import {ERC1155RoyaltiesExtension} from "../extensions/ERC1155RoyaltiesExtension.sol";
+import {ICreatorCore} from "creator-core/core/ICreatorCore.sol";
 
 contract ERC1155CreatorRoyaltiesTest is BaseERC1155CreatorTest {
     ERC1155RoyaltiesExtension public royaltiesExtension;
 
     modifier withRoyaltiesExtension() {
         vm.prank(creator);
-        royaltiesExtension = new ERC1155RoyaltiesExtension(
-            creatorContractAddress
-        );
+        royaltiesExtension = new ERC1155RoyaltiesExtension(creatorContractAddress);
         vm.prank(creator);
         creatorContract().registerExtension(address(royaltiesExtension), extensionTokenURI);
         _;
@@ -33,7 +32,7 @@ contract ERC1155CreatorRoyaltiesTest is BaseERC1155CreatorTest {
 
         // Revert on invalid total royalties
         vm.prank(creator);
-        vm.expectRevert("Invalid total royalties");
+        vm.expectRevert(ICreatorCore.InvalidInput.selector);
         creatorContract().setRoyalties(tokenId, recipients, values);
 
         // Revert on invalid recipients input
@@ -41,7 +40,7 @@ contract ERC1155CreatorRoyaltiesTest is BaseERC1155CreatorTest {
         invalidRecipients[0] = payable(alice);
 
         vm.prank(creator);
-        vm.expectRevert("Invalid input");
+        vm.expectRevert(ICreatorCore.InvalidInput.selector);
         creatorContract().setRoyalties(tokenId, invalidRecipients, values);
 
         // Revert on invalid values input
@@ -49,7 +48,7 @@ contract ERC1155CreatorRoyaltiesTest is BaseERC1155CreatorTest {
         invalidValues[0] = 1000;
 
         vm.prank(creator);
-        vm.expectRevert("Invalid input");
+        vm.expectRevert(ICreatorCore.InvalidInput.selector);
         creatorContract().setRoyalties(tokenId, recipients, invalidValues);
     }
 
@@ -216,7 +215,7 @@ contract ERC1155CreatorRoyaltiesTest is BaseERC1155CreatorTest {
             (, uint256 royaltyValue) = creatorContract().royaltyInfo(tokenId, value);
             assertEq(royaltyValue, (value * expectedValues[0]) / 10000);
         } else if (expectedRecipients.length > 1) {
-            vm.expectRevert("More than 1 royalty receiver");
+            vm.expectRevert(ICreatorCore.InvalidInput.selector);
             creatorContract().royaltyInfo(tokenId, value);
         }
     }

@@ -7,6 +7,7 @@ pragma solidity ^0.8.17;
 
 import {Test} from "forge-std/Test.sol";
 import {MockERC7211155} from "./helpers/ERC7211155.sol";
+import {IERC7211155} from "../../contracts/token/ERC7211155/IERC7211155.sol";
 
 abstract contract ERC1155TokenReceiver {
     function onERC1155Received(address, address, uint256, uint256, bytes calldata) external virtual returns (bytes4) {
@@ -144,20 +145,20 @@ contract ERC1155Test is Test, ERC1155TokenReceiver, ERC721TokenReceiver {
     }
 
     function testMintRequires721Existence() public {
-        vm.expectRevert("ERC1155: Invalid token id");
+        vm.expectRevert(IERC7211155.InvalidTokenId.selector);
         _token().mint1155(address(0xBEEF), 1001337, 1, "");
     }
 
     function testMintRequires721Minimum() public {
-        vm.expectRevert("ERC721: Invalid token id");
+        vm.expectRevert(IERC7211155.InvalidTokenId.selector);
         _token().mint721For1155(address(0xBEEF), 1000000);
-        vm.expectRevert("ERC1155: Invalid token id");
+        vm.expectRevert(IERC7211155.InvalidTokenId.selector);
         _token().mint1155(address(0xBEEF), 1000000, 1, "");
     }
 
     function testMintPermissions() public {
         _token().mint721For1155(address(0xBEEF), 1001337);
-        vm.expectRevert("ERC1155: caller is not the 721 token owner");
+        vm.expectRevert(IERC7211155.PermissionDenied.selector);
         _token().mint1155(address(0xBEEF), 1001337, 1, "");
     }
 

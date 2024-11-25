@@ -4,26 +4,25 @@ pragma solidity ^0.8.17;
 
 import {BaseERC721CreatorTest} from "../BaseERC721CreatorTest.sol";
 import {ERC721RoyaltiesExtension} from "../extensions/ERC721RoyaltiesExtension.sol";
+import {ICreatorCore} from "creator-core/core/ICreatorCore.sol";
 
 contract ERC721CreatorRoyaltiesTest is BaseERC721CreatorTest {
     ERC721RoyaltiesExtension public royaltiesExtension;
 
     modifier withRoyaltiesExtension() {
         vm.prank(creator);
-        royaltiesExtension = new ERC721RoyaltiesExtension(
-            creatorContractAddress
-        );
+        royaltiesExtension = new ERC721RoyaltiesExtension(creatorContractAddress);
         vm.prank(creator);
         creatorContract().registerExtension(address(royaltiesExtension), extensionTokenURI);
         _;
     }
 
     function testRoyaltiesNonExistentToken() public withRoyaltiesExtension {
-        vm.expectRevert("Nonexistent token");
+        vm.expectRevert(ICreatorCore.InvalidToken.selector);
         creatorContract().getRoyalties(1);
 
         vm.prank(creator);
-        vm.expectRevert("Nonexistent token");
+        vm.expectRevert(ICreatorCore.InvalidToken.selector);
         creatorContract().setRoyalties(1, new address payable[](0), new uint256[](0));
     }
 
@@ -42,7 +41,7 @@ contract ERC721CreatorRoyaltiesTest is BaseERC721CreatorTest {
 
         // Revert on invalid total royalties
         vm.prank(creator);
-        vm.expectRevert("Invalid total royalties");
+        vm.expectRevert(ICreatorCore.InvalidInput.selector);
         creatorContract().setRoyalties(tokenId, recipients, values);
 
         // Revert on invalid recipients input
@@ -50,7 +49,7 @@ contract ERC721CreatorRoyaltiesTest is BaseERC721CreatorTest {
         invalidRecipients[0] = payable(alice);
 
         vm.prank(creator);
-        vm.expectRevert("Invalid input");
+        vm.expectRevert(ICreatorCore.InvalidInput.selector);
         creatorContract().setRoyalties(tokenId, invalidRecipients, values);
 
         // Revert on invalid values input
@@ -58,7 +57,7 @@ contract ERC721CreatorRoyaltiesTest is BaseERC721CreatorTest {
         invalidValues[0] = 1000;
 
         vm.prank(creator);
-        vm.expectRevert("Invalid input");
+        vm.expectRevert(ICreatorCore.InvalidInput.selector);
         creatorContract().setRoyalties(tokenId, recipients, invalidValues);
     }
 
@@ -225,7 +224,7 @@ contract ERC721CreatorRoyaltiesTest is BaseERC721CreatorTest {
             (, uint256 royaltyValue) = creatorContract().royaltyInfo(tokenId, value);
             assertEq(royaltyValue, (value * expectedValues[0]) / 10000);
         } else if (expectedRecipients.length > 1) {
-            vm.expectRevert("More than 1 royalty receiver");
+            vm.expectRevert(ICreatorCore.InvalidInput.selector);
             creatorContract().royaltyInfo(tokenId, value);
         }
     }

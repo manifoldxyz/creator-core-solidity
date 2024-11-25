@@ -54,12 +54,11 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
      * @dev Set mint permissions for an extension
      */
     function _setMintPermissions(address extension, address permissions) internal {
-        require(_extensions.contains(extension), "CreatorCore: Invalid extension");
-        require(
-            permissions == address(0)
-                || ERC165Checker.supportsInterface(permissions, type(IERC721CreatorMintPermissions).interfaceId),
-            "Invalid address"
-        );
+        if (!_extensions.contains(extension)) revert InvalidExtension();
+        if (
+            permissions != address(0)
+                && !ERC165Checker.supportsInterface(permissions, type(IERC721CreatorMintPermissions).interfaceId)
+        ) revert InvalidInput();
         if (_extensionPermissions[extension] != permissions) {
             _extensionPermissions[extension] = permissions;
             emit MintPermissionsUpdated(extension, permissions, msg.sender);
@@ -124,17 +123,15 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
         if (from == address(0)) return;
 
         if (extension != address(0) && _extensionApproveTransfers[extension]) {
-            require(
-                IERC721CreatorExtensionApproveTransfer(extension).approveTransfer(msg.sender, from, to, tokenId),
-                "Extension approval failure"
-            );
+            if (!IERC721CreatorExtensionApproveTransfer(extension).approveTransfer(msg.sender, from, to, tokenId)) {
+                revert ExtensionApprovalFailure();
+            }
         } else if (_approveTransferBase != address(0)) {
-            require(
-                IERC721CreatorExtensionApproveTransfer(_approveTransferBase).approveTransfer(
+            if (
+                !IERC721CreatorExtensionApproveTransfer(_approveTransferBase).approveTransfer(
                     msg.sender, from, to, tokenId
-                ),
-                "Extension approval failure"
-            );
+                )
+            ) revert ExtensionApprovalFailure();
         }
     }
 
@@ -142,7 +139,7 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
      * @dev Register an extension
      */
     function _registerExtension(address extension, string calldata baseURI, bool baseURIIdentical) internal override {
-        require(_extensionCounter < 0xFFFF, "Too many extensions");
+        if (_extensionCounter >= 0xFFFF) revert TooManyExtensions();
         if (_extensionToIndex[extension] == 0) {
             ++_extensionCounter;
             _extensionToIndex[extension] = _extensionCounter;

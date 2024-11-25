@@ -5,6 +5,7 @@ pragma solidity ^0.8.17;
 import {BaseERC1155CreatorTest} from "../BaseERC1155CreatorTest.sol";
 import {Strings} from "openzeppelin/utils/Strings.sol";
 import {ERC1155Extension} from "../extensions/ERC1155Extension.sol";
+import {ICreatorCore} from "creator-core/core/ICreatorCore.sol";
 
 contract ERC1155CreatorMintsTest is BaseERC1155CreatorTest {
     ERC1155Extension extension;
@@ -34,10 +35,10 @@ contract ERC1155CreatorMintsTest is BaseERC1155CreatorTest {
 
         mintWithCreator(_addresses(alice, bob), _uint256s(100, 200), _strings("t2"));
 
-        vm.expectRevert("Invalid input");
+        vm.expectRevert(ICreatorCore.InvalidInput.selector);
         mintWithCreator(_addresses(alice, bob), _uint256s(100), _strings("", ""));
 
-        vm.expectRevert("Invalid input");
+        vm.expectRevert(ICreatorCore.InvalidInput.selector);
         mintWithCreator(_addresses(alice, bob), _uint256s(100, 200, 300), new string[](0));
     }
 
@@ -67,10 +68,10 @@ contract ERC1155CreatorMintsTest is BaseERC1155CreatorTest {
 
         mintWithExtension(address(extension), _addresses(alice, bob), _uint256s(100, 200), _strings("t2"));
 
-        vm.expectRevert("Invalid input");
+        vm.expectRevert(ICreatorCore.InvalidInput.selector);
         mintWithExtension(address(extension), _addresses(alice, bob), _uint256s(100), _strings("", ""));
 
-        vm.expectRevert("Invalid input");
+        vm.expectRevert(ICreatorCore.InvalidInput.selector);
         mintWithExtension(address(extension), _addresses(alice, bob), _uint256s(100, 200, 300), new string[](0));
     }
 
@@ -90,7 +91,7 @@ contract ERC1155CreatorMintsTest is BaseERC1155CreatorTest {
 
         // Verify can't use extension to mint token
         vm.prank(creator);
-        vm.expectRevert("Token not created by this extension");
+        vm.expectRevert(ICreatorCore.NotAllowed.selector);
         extension.mintExisting(_addresses(alice), _uint256s(tokenId1), _uint256s(1));
 
         // Mint additional tokenId1
@@ -130,7 +131,7 @@ contract ERC1155CreatorMintsTest is BaseERC1155CreatorTest {
 
         // Verify can't mint extension tokens directly
         vm.prank(creator);
-        vm.expectRevert("Token created by extension");
+        vm.expectRevert(ICreatorCore.NotAllowed.selector);
         creatorContract().mintBaseExisting(_addresses(alice), _uint256s(tokenId1), _uint256s(1));
 
         // Mint additional tokenId1

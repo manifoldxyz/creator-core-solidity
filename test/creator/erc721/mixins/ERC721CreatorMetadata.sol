@@ -4,15 +4,14 @@ pragma solidity ^0.8.17;
 
 import {BaseERC721CreatorTest} from "../BaseERC721CreatorTest.sol";
 import {ERC721TokenURIExtension} from "../extensions/ERC721TokenURIExtension.sol";
+import {ICreatorCore} from "creator-core/core/ICreatorCore.sol";
 
 contract ERC721CreatorMetadataTest is BaseERC721CreatorTest {
     ERC721TokenURIExtension public tokenURIExtension;
 
     modifier withTokenURIExtension() {
         vm.prank(creator);
-        tokenURIExtension = new ERC721TokenURIExtension(
-            creatorContractAddress
-        );
+        tokenURIExtension = new ERC721TokenURIExtension(creatorContractAddress);
         vm.prank(creator);
         creatorContract().registerExtension(address(tokenURIExtension), extensionTokenURI);
         _;
@@ -27,17 +26,17 @@ contract ERC721CreatorMetadataTest is BaseERC721CreatorTest {
 
         // Revert on invalid token ID
         vm.prank(creator);
-        vm.expectRevert("Invalid token");
+        vm.expectRevert(ICreatorCore.InvalidToken.selector);
         creatorContract().setTokenURI(1, "override://");
 
         // Revert on invalid token input
         vm.prank(creator);
-        vm.expectRevert("Invalid input");
+        vm.expectRevert(ICreatorCore.InvalidInput.selector);
         creatorContract().setTokenURI(new uint256[](0), uris);
 
         // Revert on invalid URI input
         vm.prank(creator);
-        vm.expectRevert("Invalid input");
+        vm.expectRevert(ICreatorCore.InvalidInput.selector);
         creatorContract().setTokenURI(tokenIds, new string[](0));
 
         // Correct input allows setting token URI

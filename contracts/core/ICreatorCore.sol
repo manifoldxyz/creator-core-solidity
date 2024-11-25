@@ -10,6 +10,16 @@ import {IERC165} from "openzeppelin/utils/introspection/IERC165.sol";
  * @dev Core creator interface
  */
 interface ICreatorCore is IERC165 {
+    error BlacklistedExtension();
+    error ExtensionRequired();
+    error ExtensionApprovalFailure();
+    error InvalidInput();
+    error InvalidExtension();
+    error InvalidToken();
+    error MismatchedTokenOriginators();
+    error NotAllowed();
+    error TooManyExtensions();
+
     event ExtensionRegistered(address indexed extension, address indexed sender);
     event ExtensionUnregistered(address indexed extension, address indexed sender);
     event ExtensionBlacklisted(address indexed extension, address indexed sender);

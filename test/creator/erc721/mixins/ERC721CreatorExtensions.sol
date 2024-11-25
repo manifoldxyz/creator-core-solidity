@@ -4,6 +4,7 @@ pragma solidity ^0.8.17;
 
 import {BaseERC721CreatorTest} from "../BaseERC721CreatorTest.sol";
 import {ERC721Extension} from "../extensions/ERC721Extension.sol";
+import {ICreatorCore} from "creator-core/core/ICreatorCore.sol";
 
 contract ERC721CreatorExtensionsTest is BaseERC721CreatorTest {
     function testSupportsInterface() public {
@@ -38,11 +39,11 @@ contract ERC721CreatorExtensionsTest is BaseERC721CreatorTest {
         vm.startPrank(account);
 
         // Revert on registering an EOA
-        vm.expectRevert("Invalid");
+        vm.expectRevert(ICreatorCore.InvalidExtension.selector);
         creatorContract().registerExtension(alice, "");
 
         // Revert on registering the creator contract
-        vm.expectRevert("Invalid");
+        vm.expectRevert(ICreatorCore.InvalidExtension.selector);
         creatorContract().registerExtension(creatorContractAddress, "");
 
         // Deploy a new ERC721Extension
@@ -63,7 +64,7 @@ contract ERC721CreatorExtensionsTest is BaseERC721CreatorTest {
     function testExtensionBlacklist() public {
         // Revert on blacklisting self
         vm.prank(creator);
-        vm.expectRevert("Cannot blacklist yourself");
+        vm.expectRevert(ICreatorCore.InvalidExtension.selector);
         creatorContract().blacklistExtension(creatorContractAddress);
 
         // Deploy a new ERC721Extension
@@ -74,7 +75,7 @@ contract ERC721CreatorExtensionsTest is BaseERC721CreatorTest {
         creatorContract().blacklistExtension(extension);
 
         // Can't register a blacklisted ERC721Extension
-        vm.expectRevert("Extension blacklisted");
+        vm.expectRevert(ICreatorCore.BlacklistedExtension.selector);
         vm.prank(creator);
         creatorContract().registerExtension(extension, extensionTokenURI);
     }
@@ -97,10 +98,10 @@ contract ERC721CreatorExtensionsTest is BaseERC721CreatorTest {
         assertEq(creatorContract().getExtensions().length, 0);
 
         // Check token is no longer valid
-        vm.expectRevert("Extension blacklisted");
+        vm.expectRevert(ICreatorCore.BlacklistedExtension.selector);
         creatorContract().tokenURI(tokenId);
 
-        vm.expectRevert("Extension blacklisted");
+        vm.expectRevert(ICreatorCore.BlacklistedExtension.selector);
         creatorContract().tokenExtension(tokenId);
     }
 }

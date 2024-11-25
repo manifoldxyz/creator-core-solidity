@@ -7,6 +7,7 @@ pragma solidity ^0.8.17;
 
 import {Test} from "forge-std/Test.sol";
 import {MockERC7211155} from "./helpers/ERC7211155.sol";
+import {IERC7211155} from "../../contracts/token/ERC7211155/IERC7211155.sol";
 
 abstract contract ERC721TokenReceiver {
     function onERC721Received(address, address, uint256, bytes calldata) external virtual returns (bytes4) {
@@ -395,7 +396,7 @@ contract ERC721Test is Test, ERC721Recipient {
         if (size > 0) to = address(0xBEEF);
 
         if (id < 1 || id >= TOKEN_ID_LIMIT) {
-            vm.expectRevert("ERC721: Invalid token id");
+            vm.expectRevert(IERC7211155.InvalidTokenId.selector);
             _token().mint721(to, id);
         } else {
             _token().mint721(to, id);

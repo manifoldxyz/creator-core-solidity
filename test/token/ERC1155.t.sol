@@ -1106,6 +1106,12 @@ contract ERC1155Test is Test, ERC1155TokenReceiver {
 
         for (uint256 i = 0; i < minLength; i++) {
             uint256 id = ids[i];
+            userMintAmounts[from][id] = 0;
+            userTransferOrBurnAmounts[from][id] = 0;
+        }
+
+        for (uint256 i = 0; i < minLength; i++) {
+            uint256 id = ids[i];
 
             uint256 remainingMintAmountForId = type(uint256).max - userMintAmounts[from][id];
 

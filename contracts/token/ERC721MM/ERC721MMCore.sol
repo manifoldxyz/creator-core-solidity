@@ -116,7 +116,6 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
     function approve(address to, uint256 tokenId) public virtual override {
         address owner = ERC721MMCore.ownerOf(tokenId);
         if (to == owner) revert CannotSetForSelf();
-
         if (msg.sender != owner && !isApprovedForAll(owner, msg.sender)) revert PermissionDenied();
 
         _721Approve(to, tokenId);
@@ -135,7 +134,6 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
 
     function transferFrom(address from, address to, uint256 tokenId) public virtual override {
         if (!_721IsApprovedOrOwner(msg.sender, tokenId)) revert PermissionDenied();
-
         _721Transfer(from, to, tokenId);
     }
 
@@ -252,9 +250,9 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
      * Emits a {Transfer} event.
      */
     function _721Burn(uint256 tokenId) internal virtual {
-        TokenData721 memory tokenData = _721TokenData[tokenId];
-        address owner = tokenData.owner;
-        _721BeforeTokenTransfer(owner, address(0), tokenId, tokenData.data);
+        address owner = _721TokenData[tokenId].owner;
+        uint96 data = _721TokenData[tokenId].data;
+        _721BeforeTokenTransfer(owner, address(0), tokenId, data);
 
         // Clear approvals
         _721Approve(address(0), tokenId);
@@ -268,7 +266,7 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
 
         emit Transfer(owner, address(0), tokenId);
 
-        _721AfterTokenTransfer(owner, address(0), tokenId, tokenData.data);
+        _721AfterTokenTransfer(owner, address(0), tokenId, data);
     }
 
     /**
@@ -283,12 +281,10 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
      * Emits a {Transfer} event.
      */
     function _721Transfer(address from, address to, uint256 tokenId) internal virtual {
-        TokenData721 memory tokenData = _721TokenData[tokenId];
-        address owner = tokenData.owner;
-        if (owner != from) revert PermissionDenied();
+        if (_721TokenData[tokenId].owner != from) revert PermissionDenied();
         _checkNonZeroAddress(to);
 
-        _721BeforeTokenTransfer(from, to, tokenId, tokenData.data);
+        _721BeforeTokenTransfer(from, to, tokenId, _721TokenData[tokenId].data);
 
         // Clear approvals from the previous owner
         _721Approve(address(0), tokenId);
@@ -306,7 +302,7 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
 
         emit Transfer(from, to, tokenId);
 
-        _721AfterTokenTransfer(from, to, tokenId, tokenData.data);
+        _721AfterTokenTransfer(from, to, tokenId, _721TokenData[tokenId].data);
     }
 
     /**
@@ -451,19 +447,18 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
     {
         _checkNonZeroAddress(to);
 
-        address operator = msg.sender;
         uint256[] memory ids = _asSingletonArray(id);
         uint256[] memory amounts = _asSingletonArray(amount);
 
-        _1155BeforeTokenTransfer(operator, from, to, ids, amounts, data);
+        _1155BeforeTokenTransfer(msg.sender, from, to, ids, amounts, data);
 
         _1155Transfer(from, to, id, amount);
 
-        emit TransferSingle(operator, from, to, id, amount);
+        emit TransferSingle(msg.sender, from, to, id, amount);
 
-        _1155AfterTokenTransfer(operator, from, to, ids, amounts, data);
+        _1155AfterTokenTransfer(msg.sender, from, to, ids, amounts, data);
 
-        _checkOnERC1155Received(operator, from, to, id, amount, data);
+        _checkOnERC1155Received(msg.sender, from, to, id, amount, data);
     }
 
     /**
@@ -486,9 +481,7 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
         if (ids.length != amounts.length) revert MismatchInputLength();
         _checkNonZeroAddress(to);
 
-        address operator = msg.sender;
-
-        _1155BeforeTokenTransfer(operator, from, to, ids, amounts, data);
+        _1155BeforeTokenTransfer(msg.sender, from, to, ids, amounts, data);
 
         for (uint256 i; i < ids.length;) {
             _1155Transfer(from, to, ids[i], amounts[i]);
@@ -497,11 +490,11 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
             }
         }
 
-        emit TransferBatch(operator, from, to, ids, amounts);
+        emit TransferBatch(msg.sender, from, to, ids, amounts);
 
-        _1155AfterTokenTransfer(operator, from, to, ids, amounts, data);
+        _1155AfterTokenTransfer(msg.sender, from, to, ids, amounts, data);
 
-        _checkOnERC1155BatchReceived(operator, from, to, ids, amounts, data);
+        _checkOnERC1155BatchReceived(msg.sender, from, to, ids, amounts, data);
     }
 
     /**
@@ -536,18 +529,17 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
         _checkNonZeroAddress(to);
         _1155CheckCanMintToken(id);
 
-        address operator = msg.sender;
         uint256[] memory ids = _asSingletonArray(id);
         uint256[] memory amounts = _asSingletonArray(amount);
 
-        _1155BeforeTokenTransfer(operator, address(0), to, ids, amounts, data);
+        _1155BeforeTokenTransfer(msg.sender, address(0), to, ids, amounts, data);
 
         _1155Balances[id][to] += amount;
-        emit TransferSingle(operator, address(0), to, id, amount);
+        emit TransferSingle(msg.sender, address(0), to, id, amount);
 
-        _1155AfterTokenTransfer(operator, address(0), to, ids, amounts, data);
+        _1155AfterTokenTransfer(msg.sender, address(0), to, ids, amounts, data);
 
-        _checkOnERC1155Received(operator, address(0), to, id, amount, data);
+        _checkOnERC1155Received(msg.sender, address(0), to, id, amount, data);
     }
 
     /**
@@ -568,9 +560,7 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
         if (ids.length != amounts.length) revert MismatchInputLength();
         _checkNonZeroAddress(to);
 
-        address operator = msg.sender;
-
-        _1155BeforeTokenTransfer(operator, address(0), to, ids, amounts, data);
+        _1155BeforeTokenTransfer(msg.sender, address(0), to, ids, amounts, data);
 
         for (uint256 i; i < ids.length;) {
             uint256 id = ids[i];
@@ -581,11 +571,11 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
             }
         }
 
-        emit TransferBatch(operator, address(0), to, ids, amounts);
+        emit TransferBatch(msg.sender, address(0), to, ids, amounts);
 
-        _1155AfterTokenTransfer(operator, address(0), to, ids, amounts, data);
+        _1155AfterTokenTransfer(msg.sender, address(0), to, ids, amounts, data);
 
-        _checkOnERC1155BatchReceived(operator, address(0), to, ids, amounts, data);
+        _checkOnERC1155BatchReceived(msg.sender, address(0), to, ids, amounts, data);
     }
 
     /**
@@ -601,17 +591,16 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
     function _1155Burn(address from, uint256 id, uint256 amount) internal virtual {
         _checkNonZeroAddress(from);
 
-        address operator = msg.sender;
         uint256[] memory ids = _asSingletonArray(id);
         uint256[] memory amounts = _asSingletonArray(amount);
 
-        _1155BeforeTokenTransfer(operator, from, address(0), ids, amounts, "");
+        _1155BeforeTokenTransfer(msg.sender, from, address(0), ids, amounts, "");
 
         _1155Transfer(from, address(0), id, amount);
 
-        emit TransferSingle(operator, from, address(0), id, amount);
+        emit TransferSingle(msg.sender, from, address(0), id, amount);
 
-        _1155AfterTokenTransfer(operator, from, address(0), ids, amounts, "");
+        _1155AfterTokenTransfer(msg.sender, from, address(0), ids, amounts, "");
     }
 
     /**

@@ -77,7 +77,7 @@ abstract contract ERC1155CreatorCore is CreatorCore, IERC1155CreatorCore {
     /**
      * Post burn actions
      */
-    function _postBurn(address owner, uint256[] calldata tokenIds, uint256[] calldata amounts) internal virtual {
+    function _postBurn(address owner, uint256[] memory tokenIds, uint256[] memory amounts) internal virtual {
         if (tokenIds.length == 0) revert InvalidInput();
         address extension = _tokensExtension[tokenIds[0]];
         for (uint256 i; i < tokenIds.length;) {

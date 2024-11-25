@@ -138,7 +138,7 @@ abstract contract ERC721CreatorCore is CreatorCore, IERC721CreatorCore {
     /**
      * @dev Register an extension
      */
-    function _registerExtension(address extension, string calldata baseURI, bool baseURIIdentical) internal override {
+    function _registerExtension(address extension, string memory baseURI, bool baseURIIdentical) internal override {
         if (_extensionCounter >= 0xFFFF) revert TooManyExtensions();
         if (_extensionToIndex[extension] == 0) {
             ++_extensionCounter;

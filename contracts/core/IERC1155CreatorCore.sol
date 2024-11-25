@@ -35,7 +35,7 @@ interface IERC1155CreatorCore is ICreatorCore {
      *
      * @return Returns list of tokenIds minted
      */
-    function mintBaseNew(address[] calldata to, uint256[] calldata amounts, string[] calldata uris)
+    function mintBaseNew(address[] memory to, uint256[] memory amounts, string[] memory uris)
         external
         returns (uint256[] memory);
 
@@ -62,8 +62,7 @@ interface IERC1155CreatorCore is ICreatorCore {
      *        Mints 10 of tokenId 1 to '0x....1' and 20 of tokenId 1 to '0x....2'.
      *
      */
-    function mintBaseExisting(address[] calldata to, uint256[] calldata tokenIds, uint256[] calldata amounts)
-        external;
+    function mintBaseExisting(address[] memory to, uint256[] memory tokenIds, uint256[] memory amounts) external;
 
     /**
      * @dev mint a token from an extension. Can only be called by a registered extension.
@@ -90,7 +89,7 @@ interface IERC1155CreatorCore is ICreatorCore {
      *
      * @return Returns list of tokenIds minted
      */
-    function mintExtensionNew(address[] calldata to, uint256[] calldata amounts, string[] calldata uris)
+    function mintExtensionNew(address[] memory to, uint256[] memory amounts, string[] memory uris)
         external
         returns (uint256[] memory);
 
@@ -117,14 +116,13 @@ interface IERC1155CreatorCore is ICreatorCore {
      *        Mints 10 of tokenId 1 to '0x....1' and 20 of tokenId 1 to '0x....2'.
      *
      */
-    function mintExtensionExisting(address[] calldata to, uint256[] calldata tokenIds, uint256[] calldata amounts)
-        external;
+    function mintExtensionExisting(address[] memory to, uint256[] memory tokenIds, uint256[] memory amounts) external;
 
     /**
      * @dev burn tokens. Can only be called by token owner or approved address.
      * On burn, calls back to the registered extension's onBurn method
      */
-    function burn(address account, uint256[] calldata tokenIds, uint256[] calldata amounts) external;
+    function burn(address account, uint256[] memory tokenIds, uint256[] memory amounts) external;
 
     /**
      * @dev Total amount of tokens in with a given tokenId.

@@ -134,7 +134,7 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     /**
      * @dev Register an extension
      */
-    function _registerExtension(address extension, string calldata baseURI, bool baseURIIdentical) internal virtual {
+    function _registerExtension(address extension, string memory baseURI, bool baseURIIdentical) internal virtual {
         if (extension == address(this) || !extension.isContract()) revert InvalidExtension();
         emit ExtensionRegistered(extension, msg.sender);
         _extensionBaseURI[extension] = baseURI;
@@ -182,7 +182,7 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     /**
      * @dev Set base token uri for an extension
      */
-    function _setBaseTokenURIExtension(string calldata uri, bool identical) internal {
+    function _setBaseTokenURIExtension(string memory uri, bool identical) internal {
         _extensionBaseURI[msg.sender] = uri;
         _extensionBaseURIIdentical[msg.sender] = identical;
     }
@@ -190,14 +190,14 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     /**
      * @dev Set token uri prefix for an extension
      */
-    function _setTokenURIPrefixExtension(string calldata prefix) internal {
+    function _setTokenURIPrefixExtension(string memory prefix) internal {
         _extensionURIPrefix[msg.sender] = prefix;
     }
 
     /**
      * @dev Set token uri for a token of an extension
      */
-    function _setTokenURIExtension(uint256 tokenId, string calldata uri) internal {
+    function _setTokenURIExtension(uint256 tokenId, string memory uri) internal {
         if (_tokenExtension(tokenId) != msg.sender) revert InvalidToken();
         _tokenURIs[tokenId] = uri;
     }
@@ -205,21 +205,21 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     /**
      * @dev Set base token uri for tokens with no extension
      */
-    function _setBaseTokenURI(string calldata uri) internal {
+    function _setBaseTokenURI(string memory uri) internal {
         _extensionBaseURI[address(0)] = uri;
     }
 
     /**
      * @dev Set token uri prefix for tokens with no extension
      */
-    function _setTokenURIPrefix(string calldata prefix) internal {
+    function _setTokenURIPrefix(string memory prefix) internal {
         _extensionURIPrefix[address(0)] = prefix;
     }
 
     /**
      * @dev Set token uri for a token with no extension
      */
-    function _setTokenURI(uint256 tokenId, string calldata uri) internal {
+    function _setTokenURI(uint256 tokenId, string memory uri) internal {
         if (tokenId == 0 || tokenId > _tokenCount || _tokenExtension(tokenId) != address(0)) revert InvalidToken();
         _tokenURIs[tokenId] = uri;
     }
@@ -319,7 +319,7 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     /**
      * Set royalties for a token
      */
-    function _setRoyalties(uint256 tokenId, address payable[] calldata receivers, uint256[] calldata basisPoints)
+    function _setRoyalties(uint256 tokenId, address payable[] memory receivers, uint256[] memory basisPoints)
         internal
     {
         _checkRoyalties(receivers, basisPoints);
@@ -331,11 +331,9 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     /**
      * Set royalties for all tokens of an extension
      */
-    function _setRoyaltiesExtension(
-        address extension,
-        address payable[] calldata receivers,
-        uint256[] calldata basisPoints
-    ) internal {
+    function _setRoyaltiesExtension(address extension, address payable[] memory receivers, uint256[] memory basisPoints)
+        internal
+    {
         _checkRoyalties(receivers, basisPoints);
         delete _extensionRoyalty[extension];
         _setRoyalties(receivers, basisPoints, _extensionRoyalty[extension]);
@@ -349,7 +347,7 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
     /**
      * Helper function to check that royalties provided are valid
      */
-    function _checkRoyalties(address payable[] calldata receivers, uint256[] calldata basisPoints) private pure {
+    function _checkRoyalties(address payable[] memory receivers, uint256[] memory basisPoints) private pure {
         if (receivers.length != basisPoints.length) revert InvalidInput();
         uint256 totalBasisPoints;
         for (uint256 i; i < basisPoints.length;) {
@@ -365,8 +363,8 @@ abstract contract CreatorCore is ReentrancyGuard, ICreatorCore, ERC165 {
      * Helper function to set royalties
      */
     function _setRoyalties(
-        address payable[] calldata receivers,
-        uint256[] calldata basisPoints,
+        address payable[] memory receivers,
+        uint256[] memory basisPoints,
         RoyaltyConfig[] storage royalties
     ) private {
         for (uint256 i; i < basisPoints.length;) {

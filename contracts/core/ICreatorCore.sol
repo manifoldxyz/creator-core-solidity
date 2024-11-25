@@ -40,14 +40,14 @@ interface ICreatorCore is IERC165 {
      * extension address must point to a contract implementing ICreatorExtension.
      * Returns True if newly added, False if already added.
      */
-    function registerExtension(address extension, string calldata baseURI) external;
+    function registerExtension(address extension, string memory baseURI) external;
 
     /**
      * @dev add an extension.  Can only be called by contract owner or admin.
      * extension address must point to a contract implementing ICreatorExtension.
      * Returns True if newly added, False if already added.
      */
-    function registerExtension(address extension, string calldata baseURI, bool baseURIIdentical) external;
+    function registerExtension(address extension, string memory baseURI, bool baseURIIdentical) external;
 
     /**
      * @dev add an extension.  Can only be called by contract owner or admin.
@@ -66,53 +66,53 @@ interface ICreatorCore is IERC165 {
     /**
      * @dev set the baseTokenURI of an extension.  Can only be called by extension.
      */
-    function setBaseTokenURIExtension(string calldata uri) external;
+    function setBaseTokenURIExtension(string memory uri) external;
 
     /**
      * @dev set the baseTokenURI of an extension.  Can only be called by extension.
      * For tokens with no uri configured, tokenURI will return "uri+tokenId"
      */
-    function setBaseTokenURIExtension(string calldata uri, bool identical) external;
+    function setBaseTokenURIExtension(string memory uri, bool identical) external;
 
     /**
      * @dev set the common prefix of an extension.  Can only be called by extension.
      * If configured, and a token has a uri set, tokenURI will return "prefixURI+tokenURI"
      * Useful if you want to use ipfs/arweave
      */
-    function setTokenURIPrefixExtension(string calldata prefix) external;
+    function setTokenURIPrefixExtension(string memory prefix) external;
 
     /**
      * @dev set the tokenURI of a token extension.  Can only be called by extension that minted token.
      */
-    function setTokenURIExtension(uint256 tokenId, string calldata uri) external;
+    function setTokenURIExtension(uint256 tokenId, string memory uri) external;
 
     /**
      * @dev set the tokenURI of a token extension for multiple tokens.  Can only be called by extension that minted token.
      */
-    function setTokenURIExtension(uint256[] memory tokenId, string[] calldata uri) external;
+    function setTokenURIExtension(uint256[] memory tokenId, string[] memory uri) external;
 
     /**
      * @dev set the baseTokenURI for tokens with no extension.  Can only be called by owner/admin.
      * For tokens with no uri configured, tokenURI will return "uri+tokenId"
      */
-    function setBaseTokenURI(string calldata uri) external;
+    function setBaseTokenURI(string memory uri) external;
 
     /**
      * @dev set the common prefix for tokens with no extension.  Can only be called by owner/admin.
      * If configured, and a token has a uri set, tokenURI will return "prefixURI+tokenURI"
      * Useful if you want to use ipfs/arweave
      */
-    function setTokenURIPrefix(string calldata prefix) external;
+    function setTokenURIPrefix(string memory prefix) external;
 
     /**
      * @dev set the tokenURI of a token with no extension.  Can only be called by owner/admin.
      */
-    function setTokenURI(uint256 tokenId, string calldata uri) external;
+    function setTokenURI(uint256 tokenId, string memory uri) external;
 
     /**
      * @dev set the tokenURI of multiple tokens with no extension.  Can only be called by owner/admin.
      */
-    function setTokenURI(uint256[] memory tokenIds, string[] calldata uris) external;
+    function setTokenURI(uint256[] memory tokenIds, string[] memory uris) external;
 
     /**
      * @dev set a permissions contract for an extension.  Used to control minting.
@@ -133,22 +133,18 @@ interface ICreatorCore is IERC165 {
     /**
      * @dev Set default royalties
      */
-    function setRoyalties(address payable[] calldata receivers, uint256[] calldata basisPoints) external;
+    function setRoyalties(address payable[] memory receivers, uint256[] memory basisPoints) external;
 
     /**
      * @dev Set royalties of a token
      */
-    function setRoyalties(uint256 tokenId, address payable[] calldata receivers, uint256[] calldata basisPoints)
-        external;
+    function setRoyalties(uint256 tokenId, address payable[] memory receivers, uint256[] memory basisPoints) external;
 
     /**
      * @dev Set royalties of an extension
      */
-    function setRoyaltiesExtension(
-        address extension,
-        address payable[] calldata receivers,
-        uint256[] calldata basisPoints
-    ) external;
+    function setRoyaltiesExtension(address extension, address payable[] memory receivers, uint256[] memory basisPoints)
+        external;
 
     /**
      * @dev Get royalites of a token.  Returns list of receivers and basisPoints

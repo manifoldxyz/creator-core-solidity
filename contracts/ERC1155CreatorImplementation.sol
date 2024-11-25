@@ -53,7 +53,7 @@ contract ERC1155CreatorImplementation is AdminControlUpgradeable, ERC1155Upgrade
     /**
      * @dev See {ICreatorCore-registerExtension}.
      */
-    function registerExtension(address extension, string calldata baseURI) external override adminRequired {
+    function registerExtension(address extension, string memory baseURI) external override adminRequired {
         requireNonBlacklist(extension);
         _registerExtension(extension, baseURI, false);
     }
@@ -61,7 +61,7 @@ contract ERC1155CreatorImplementation is AdminControlUpgradeable, ERC1155Upgrade
     /**
      * @dev See {ICreatorCore-registerExtension}.
      */
-    function registerExtension(address extension, string calldata baseURI, bool baseURIIdentical)
+    function registerExtension(address extension, string memory baseURI, bool baseURIIdentical)
         external
         override
         adminRequired
@@ -87,7 +87,7 @@ contract ERC1155CreatorImplementation is AdminControlUpgradeable, ERC1155Upgrade
     /**
      * @dev See {ICreatorCore-setBaseTokenURIExtension}.
      */
-    function setBaseTokenURIExtension(string calldata uri_) external override {
+    function setBaseTokenURIExtension(string memory uri_) external override {
         requireExtension();
         _setBaseTokenURIExtension(uri_, false);
     }
@@ -95,7 +95,7 @@ contract ERC1155CreatorImplementation is AdminControlUpgradeable, ERC1155Upgrade
     /**
      * @dev See {ICreatorCore-setBaseTokenURIExtension}.
      */
-    function setBaseTokenURIExtension(string calldata uri_, bool identical) external override {
+    function setBaseTokenURIExtension(string memory uri_, bool identical) external override {
         requireExtension();
         _setBaseTokenURIExtension(uri_, identical);
     }
@@ -103,7 +103,7 @@ contract ERC1155CreatorImplementation is AdminControlUpgradeable, ERC1155Upgrade
     /**
      * @dev See {ICreatorCore-setTokenURIPrefixExtension}.
      */
-    function setTokenURIPrefixExtension(string calldata prefix) external override {
+    function setTokenURIPrefixExtension(string memory prefix) external override {
         requireExtension();
         _setTokenURIPrefixExtension(prefix);
     }
@@ -111,7 +111,7 @@ contract ERC1155CreatorImplementation is AdminControlUpgradeable, ERC1155Upgrade
     /**
      * @dev See {ICreatorCore-setTokenURIExtension}.
      */
-    function setTokenURIExtension(uint256 tokenId, string calldata uri_) external override {
+    function setTokenURIExtension(uint256 tokenId, string memory uri_) external override {
         requireExtension();
         _setTokenURIExtension(tokenId, uri_);
     }
@@ -119,7 +119,7 @@ contract ERC1155CreatorImplementation is AdminControlUpgradeable, ERC1155Upgrade
     /**
      * @dev See {ICreatorCore-setTokenURIExtension}.
      */
-    function setTokenURIExtension(uint256[] calldata tokenIds, string[] calldata uris) external override {
+    function setTokenURIExtension(uint256[] memory tokenIds, string[] memory uris) external override {
         requireExtension();
         if (tokenIds.length != uris.length) revert InvalidInput();
         for (uint256 i; i < tokenIds.length;) {
@@ -133,28 +133,28 @@ contract ERC1155CreatorImplementation is AdminControlUpgradeable, ERC1155Upgrade
     /**
      * @dev See {ICreatorCore-setBaseTokenURI}.
      */
-    function setBaseTokenURI(string calldata uri_) external override adminRequired {
+    function setBaseTokenURI(string memory uri_) external override adminRequired {
         _setBaseTokenURI(uri_);
     }
 
     /**
      * @dev See {ICreatorCore-setTokenURIPrefix}.
      */
-    function setTokenURIPrefix(string calldata prefix) external override adminRequired {
+    function setTokenURIPrefix(string memory prefix) external override adminRequired {
         _setTokenURIPrefix(prefix);
     }
 
     /**
      * @dev See {ICreatorCore-setTokenURI}.
      */
-    function setTokenURI(uint256 tokenId, string calldata uri_) external override adminRequired {
+    function setTokenURI(uint256 tokenId, string memory uri_) external override adminRequired {
         _setTokenURI(tokenId, uri_);
     }
 
     /**
      * @dev See {ICreatorCore-setTokenURI}.
      */
-    function setTokenURI(uint256[] calldata tokenIds, string[] calldata uris) external override adminRequired {
+    function setTokenURI(uint256[] memory tokenIds, string[] memory uris) external override adminRequired {
         if (tokenIds.length != uris.length) revert InvalidInput();
         for (uint256 i; i < tokenIds.length;) {
             _setTokenURI(tokenIds[i], uris[i]);
@@ -174,7 +174,7 @@ contract ERC1155CreatorImplementation is AdminControlUpgradeable, ERC1155Upgrade
     /**
      * @dev See {IERC1155CreatorCore-mintBaseNew}.
      */
-    function mintBaseNew(address[] calldata to, uint256[] calldata amounts, string[] calldata uris)
+    function mintBaseNew(address[] memory to, uint256[] memory amounts, string[] memory uris)
         public
         virtual
         override
@@ -188,7 +188,7 @@ contract ERC1155CreatorImplementation is AdminControlUpgradeable, ERC1155Upgrade
     /**
      * @dev See {IERC1155CreatorCore-mintBaseExisting}.
      */
-    function mintBaseExisting(address[] calldata to, uint256[] calldata tokenIds, uint256[] calldata amounts)
+    function mintBaseExisting(address[] memory to, uint256[] memory tokenIds, uint256[] memory amounts)
         public
         virtual
         override
@@ -209,7 +209,7 @@ contract ERC1155CreatorImplementation is AdminControlUpgradeable, ERC1155Upgrade
     /**
      * @dev See {IERC1155CreatorCore-mintExtensionNew}.
      */
-    function mintExtensionNew(address[] calldata to, uint256[] calldata amounts, string[] calldata uris)
+    function mintExtensionNew(address[] memory to, uint256[] memory amounts, string[] memory uris)
         public
         virtual
         override
@@ -223,7 +223,7 @@ contract ERC1155CreatorImplementation is AdminControlUpgradeable, ERC1155Upgrade
     /**
      * @dev See {IERC1155CreatorCore-mintExtensionExisting}.
      */
-    function mintExtensionExisting(address[] calldata to, uint256[] calldata tokenIds, uint256[] calldata amounts)
+    function mintExtensionExisting(address[] memory to, uint256[] memory tokenIds, uint256[] memory amounts)
         public
         virtual
         override
@@ -242,7 +242,7 @@ contract ERC1155CreatorImplementation is AdminControlUpgradeable, ERC1155Upgrade
     /**
      * @dev Mint new tokens
      */
-    function _mintNew(address extension, address[] calldata to, uint256[] calldata amounts, string[] calldata uris)
+    function _mintNew(address extension, address[] memory to, uint256[] memory amounts, string[] memory uris)
         internal
         returns (uint256[] memory tokenIds)
     {
@@ -310,12 +310,9 @@ contract ERC1155CreatorImplementation is AdminControlUpgradeable, ERC1155Upgrade
     /**
      * @dev Mint existing tokens
      */
-    function _mintExisting(
-        address extension,
-        address[] calldata to,
-        uint256[] calldata tokenIds,
-        uint256[] calldata amounts
-    ) internal {
+    function _mintExisting(address extension, address[] memory to, uint256[] memory tokenIds, uint256[] memory amounts)
+        internal
+    {
         if (extension != address(0)) {
             _checkMintPermissions(to, tokenIds, amounts);
         }
@@ -367,7 +364,7 @@ contract ERC1155CreatorImplementation is AdminControlUpgradeable, ERC1155Upgrade
     /**
      * @dev See {IERC1155CreatorCore-burn}.
      */
-    function burn(address account, uint256[] calldata tokenIds, uint256[] calldata amounts)
+    function burn(address account, uint256[] memory tokenIds, uint256[] memory amounts)
         public
         virtual
         override
@@ -386,7 +383,7 @@ contract ERC1155CreatorImplementation is AdminControlUpgradeable, ERC1155Upgrade
     /**
      * @dev See {ICreatorCore-setRoyalties}.
      */
-    function setRoyalties(address payable[] calldata receivers, uint256[] calldata basisPoints)
+    function setRoyalties(address payable[] memory receivers, uint256[] memory basisPoints)
         external
         override
         adminRequired
@@ -397,7 +394,7 @@ contract ERC1155CreatorImplementation is AdminControlUpgradeable, ERC1155Upgrade
     /**
      * @dev See {ICreatorCore-setRoyalties}.
      */
-    function setRoyalties(uint256 tokenId, address payable[] calldata receivers, uint256[] calldata basisPoints)
+    function setRoyalties(uint256 tokenId, address payable[] memory receivers, uint256[] memory basisPoints)
         external
         override
         adminRequired
@@ -408,11 +405,11 @@ contract ERC1155CreatorImplementation is AdminControlUpgradeable, ERC1155Upgrade
     /**
      * @dev See {ICreatorCore-setRoyaltiesExtension}.
      */
-    function setRoyaltiesExtension(
-        address extension,
-        address payable[] calldata receivers,
-        uint256[] calldata basisPoints
-    ) external override adminRequired {
+    function setRoyaltiesExtension(address extension, address payable[] memory receivers, uint256[] memory basisPoints)
+        external
+        override
+        adminRequired
+    {
         _setRoyaltiesExtension(extension, receivers, basisPoints);
     }
 

@@ -20,7 +20,7 @@ interface IERC721CreatorCore is ICreatorCore {
      * @dev mint a token with no extension. Can only be called by an admin.
      * Returns tokenId minted
      */
-    function mintBase(address to, string calldata uri) external returns (uint256);
+    function mintBase(address to, string memory uri) external returns (uint256);
 
     /**
      * @dev batch mint a token with no extension. Can only be called by an admin.
@@ -32,7 +32,7 @@ interface IERC721CreatorCore is ICreatorCore {
      * @dev batch mint a token with no extension. Can only be called by an admin.
      * Returns tokenId minted
      */
-    function mintBaseBatch(address to, string[] calldata uris) external returns (uint256[] memory);
+    function mintBaseBatch(address to, string[] memory uris) external returns (uint256[] memory);
 
     /**
      * @dev mint a token. Can only be called by a registered extension.
@@ -44,7 +44,7 @@ interface IERC721CreatorCore is ICreatorCore {
      * @dev mint a token. Can only be called by a registered extension.
      * Returns tokenId minted
      */
-    function mintExtension(address to, string calldata uri) external returns (uint256);
+    function mintExtension(address to, string memory uri) external returns (uint256);
 
     /**
      * @dev mint a token. Can only be called by a registered extension.
@@ -62,13 +62,13 @@ interface IERC721CreatorCore is ICreatorCore {
      * @dev batch mint a token. Can only be called by a registered extension.
      * Returns tokenId minted
      */
-    function mintExtensionBatch(address to, string[] calldata uris) external returns (uint256[] memory);
+    function mintExtensionBatch(address to, string[] memory uris) external returns (uint256[] memory);
 
     /**
      * @dev batch mint a token. Can only be called by a registered extension.
      * Returns tokenId minted
      */
-    function mintExtensionBatch(address to, uint80[] calldata data) external returns (uint256[] memory);
+    function mintExtensionBatch(address to, uint80[] memory data) external returns (uint256[] memory);
 
     /**
      * @dev burn a token. Can only be called by token owner or approved address.

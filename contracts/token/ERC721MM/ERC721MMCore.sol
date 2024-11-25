@@ -174,7 +174,7 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
      */
     function _721SafeTransfer(address from, address to, uint256 tokenId, bytes memory data) internal virtual {
         _721Transfer(from, to, tokenId);
-        if (!_checkOnERC721Received(from, to, tokenId, data)) revert TransferFailed();
+        _checkOnERC721Received(from, to, tokenId, data);
     }
 
     /**
@@ -238,7 +238,7 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
         emit Transfer(address(0), to, tokenId);
 
         _721AfterTokenTransfer(address(0), to, tokenId, tokenData);
-        if (!_checkOnERC721Received(address(0), to, tokenId, data)) revert TransferFailed();
+        _checkOnERC721Received(address(0), to, tokenId, data);
     }
 
     /**
@@ -322,32 +322,20 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
     /**
      * @dev Internal function to invoke {IERC721Receiver-onERC721Received} on a target address.
      * The call is not executed if the target address is not a contract.
+     * Reverts if the call does not return the expected magic value.
      *
      * @param from address representing the previous owner of the given token ID
      * @param to target address that will receive the tokens
      * @param tokenId uint256 ID of the token to be transferred
      * @param data bytes optional data to send along with the call
-     * @return bool whether the call correctly returned the expected magic value
      */
-    function _checkOnERC721Received(address from, address to, uint256 tokenId, bytes memory data)
-        private
-        returns (bool)
-    {
+    function _checkOnERC721Received(address from, address to, uint256 tokenId, bytes memory data) private {
         if (to.isContract()) {
             try IERC721Receiver(to).onERC721Received(msg.sender, from, tokenId, data) returns (bytes4 retval) {
-                return retval == IERC721Receiver.onERC721Received.selector;
-            } catch (bytes memory reason) {
-                if (reason.length == 0) {
-                    revert TransferFailed();
-                } else {
-                    /// @solidity memory-safe-assembly
-                    assembly {
-                        revert(add(32, reason), mload(reason))
-                    }
-                }
+                if (retval != IERC721Receiver.onERC721Received.selector) revert TransferFailed();
+            } catch {
+                revert TransferFailed();
             }
-        } else {
-            return true;
         }
     }
 
@@ -712,6 +700,17 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
         bytes memory data
     ) internal virtual {}
 
+    /**
+     * @dev Internal function to invoke {IER1155Receiver-onERC1155Received} on a target address.
+     * The call is not executed if the target address is not a contract.
+     * Reverts if the call does not return the expected magic value.
+     *
+     * @param operator address initiating the transfer
+     * @param from address representing the previous owner of the given token ID
+     * @param to target address that will receive the tokens
+     * @param id uint256 ID of the token to be transferred
+     * @param data bytes optional data to send along with the call
+     */
     function _checkOnERC1155Received(
         address operator,
         address from,
@@ -725,14 +724,24 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
                 if (response != IERC1155Receiver.onERC1155Received.selector) {
                     revert TransferFailed();
                 }
-            } catch Error(string memory reason) {
-                revert(reason);
             } catch {
                 revert TransferFailed();
             }
         }
     }
 
+    /**
+     * @dev Internal function to invoke {IER1155Receiver-onERC1155Received} on a target address.
+     * The call is not executed if the target address is not a contract.
+     * Reverts if the call does not return the expected magic value.
+     *
+     * @param operator address initiating the transfer
+     * @param from address representing the previous owner of the given token ID
+     * @param to target address that will receive the tokens
+     * @param ids uint256 ID of the token to be transferred
+     * @param amounts uint256 amount of the token to be transferred
+     * @param data bytes optional data to send along with the call
+     */
     function _checkOnERC1155BatchReceived(
         address operator,
         address from,
@@ -748,18 +757,14 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
                 if (response != IERC1155Receiver.onERC1155BatchReceived.selector) {
                     revert TransferFailed();
                 }
-            } catch Error(string memory reason) {
-                revert(reason);
             } catch {
                 revert TransferFailed();
             }
         }
     }
 
-    function _asSingletonArray(uint256 element) private pure returns (uint256[] memory) {
-        uint256[] memory array = new uint256[](1);
+    function _asSingletonArray(uint256 element) private pure returns (uint256[] memory array) {
+        array = new uint256[](1);
         array[0] = element;
-
-        return array;
     }
 }

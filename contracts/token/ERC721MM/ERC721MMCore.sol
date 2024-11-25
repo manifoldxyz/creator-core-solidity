@@ -88,10 +88,17 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
     }
 
     /**
+     * @dev Check if the address is not zero and revert if it is.
+     */
+    function _checkNonZeroAddress(address addr) private pure {
+        if (addr == address(0)) revert InvalidAddress();
+    }
+
+    /**
      * @dev See {IERC721-balanceOf}.
      */
     function balanceOf(address owner) public view virtual override returns (uint256) {
-        if (owner == address(0)) revert InvalidAddress();
+        _checkNonZeroAddress(owner);
         return _721Balances[owner];
     }
 
@@ -99,9 +106,8 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
      * @dev See {IERC721-ownerOf}.
      */
     function ownerOf(uint256 tokenId) public view virtual override returns (address) {
-        address owner = _721TokenData[tokenId].owner;
-        if (owner == address(0)) revert InvalidTokenId();
-        return owner;
+        if (!_721Exists(tokenId)) revert InvalidTokenId();
+        return _721TokenData[tokenId].owner;
     }
 
     /**
@@ -120,8 +126,7 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
      * @dev See {IERC721-getApproved}.
      */
     function getApproved(uint256 tokenId) public view virtual override returns (address) {
-        _721RequireMinted(tokenId);
-
+        if (!_721Exists(tokenId)) revert InvalidTokenId();
         return _721TokenApprovals[tokenId];
     }
     /**
@@ -216,7 +221,7 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
      */
     function _721SafeMint(address to, uint256 tokenId, uint96 tokenData, bytes memory data) internal virtual {
         if (tokenId == 0 || tokenId > MAX_721_TOKEN_ID) revert InvalidTokenId();
-        if (to == address(0)) revert InvalidAddress();
+        _checkNonZeroAddress(to);
         if (_721Exists(tokenId)) revert TokenAlreadyMinted();
 
         _721BeforeTokenTransfer(address(0), to, tokenId, tokenData);
@@ -281,7 +286,7 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
         TokenData721 memory tokenData = _721TokenData[tokenId];
         address owner = tokenData.owner;
         if (owner != from) revert PermissionDenied();
-        if (to == address(0)) revert InvalidAddress();
+        _checkNonZeroAddress(to);
 
         _721BeforeTokenTransfer(from, to, tokenId, tokenData.data);
 
@@ -312,13 +317,6 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
     function _721Approve(address to, uint256 tokenId) internal virtual {
         _721TokenApprovals[tokenId] = to;
         emit Approval(ERC721MMCore.ownerOf(tokenId), to, tokenId);
-    }
-
-    /**
-     * @dev Reverts if the `tokenId` has not been minted yet.
-     */
-    function _721RequireMinted(uint256 tokenId) internal view virtual {
-        if (!_721Exists(tokenId)) revert InvalidTokenId();
     }
 
     /**
@@ -391,7 +389,7 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
      * - `account` cannot be the zero address.
      */
     function balanceOf(address account, uint256 id) public view virtual override returns (uint256) {
-        if (account == address(0)) revert InvalidAddress();
+        _checkNonZeroAddress(account);
         return _1155Balances[id][account];
     }
 
@@ -407,17 +405,15 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
         view
         virtual
         override
-        returns (uint256[] memory)
+        returns (uint256[] memory batchBalances)
     {
         if (accounts.length != ids.length) revert MismatchInputLength();
 
-        uint256[] memory batchBalances = new uint256[](accounts.length);
+        batchBalances = new uint256[](accounts.length);
 
         for (uint256 i = 0; i < accounts.length; ++i) {
             batchBalances[i] = balanceOf(accounts[i], ids[i]);
         }
-
-        return batchBalances;
     }
 
     /**
@@ -429,7 +425,7 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
         override
     {
         if (from != msg.sender && !isApprovedForAll(from, msg.sender)) revert PermissionDenied();
-        _safeTransferFrom(from, to, id, amount, data);
+        _1155SafeTransferFrom(from, to, id, amount, data);
     }
 
     /**
@@ -443,7 +439,7 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
         bytes memory data
     ) public virtual override {
         if (from != msg.sender && !isApprovedForAll(from, msg.sender)) revert PermissionDenied();
-        _safeBatchTransferFrom(from, to, ids, amounts, data);
+        _1155SafeBatchTransferFrom(from, to, ids, amounts, data);
     }
 
     /**
@@ -458,11 +454,11 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
      * - If `to` refers to a smart contract, it must implement {IERC1155Receiver-onERC1155Received} and return the
      * acceptance magic value.
      */
-    function _safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes memory data)
+    function _1155SafeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes memory data)
         internal
         virtual
     {
-        if (to == address(0)) revert InvalidAddress();
+        _checkNonZeroAddress(to);
 
         address operator = msg.sender;
         uint256[] memory ids = _asSingletonArray(id);
@@ -470,12 +466,7 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
 
         _1155BeforeTokenTransfer(operator, from, to, ids, amounts, data);
 
-        uint256 fromBalance = _1155Balances[id][from];
-        if (fromBalance < amount) revert InsufficientBalance();
-        unchecked {
-            _1155Balances[id][from] = fromBalance - amount;
-        }
-        _1155Balances[id][to] += amount;
+        _1155Transfer(from, to, id, amount);
 
         emit TransferSingle(operator, from, to, id, amount);
 
@@ -494,7 +485,7 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
      * - If `to` refers to a smart contract, it must implement {IERC1155Receiver-onERC1155BatchReceived} and return the
      * acceptance magic value.
      */
-    function _safeBatchTransferFrom(
+    function _1155SafeBatchTransferFrom(
         address from,
         address to,
         uint256[] memory ids,
@@ -502,22 +493,14 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
         bytes memory data
     ) internal virtual {
         if (ids.length != amounts.length) revert MismatchInputLength();
-        if (to == address(0)) revert InvalidAddress();
+        _checkNonZeroAddress(to);
 
         address operator = msg.sender;
 
         _1155BeforeTokenTransfer(operator, from, to, ids, amounts, data);
 
         for (uint256 i = 0; i < ids.length; ++i) {
-            uint256 id = ids[i];
-            uint256 amount = amounts[i];
-
-            uint256 fromBalance = _1155Balances[id][from];
-            if (fromBalance < amount) revert InsufficientBalance();
-            unchecked {
-                _1155Balances[id][from] = fromBalance - amount;
-            }
-            _1155Balances[id][to] += amount;
+            _1155Transfer(from, to, ids[i], amounts[i]);
         }
 
         emit TransferBatch(operator, from, to, ids, amounts);
@@ -525,6 +508,23 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
         _1155AfterTokenTransfer(operator, from, to, ids, amounts, data);
 
         _checkOnERC1155BatchReceived(operator, from, to, ids, amounts, data);
+    }
+
+    /**
+     * @dev Internal function to transfer `amount` tokens of token type `id` from `from` to `to`.
+     */
+    function _1155Transfer(address from, address to, uint256 id, uint256 amount) private {
+        uint256 fromBalance = _1155Balances[id][from];
+        if (fromBalance < amount) revert InsufficientBalance();
+        unchecked {
+            _1155Balances[id][from] = fromBalance - amount;
+        }
+        _1155Balances[id][to] += amount;
+    }
+
+    function _1155CheckCanMintToken(uint256 id) private view {
+        if (id <= _OFFSET_1155_TOKEN_ID || !_721Exists(id - _OFFSET_1155_TOKEN_ID)) revert InvalidTokenId();
+        if (msg.sender != ownerOf(id - _OFFSET_1155_TOKEN_ID)) revert PermissionDenied();
     }
 
     /**
@@ -539,9 +539,8 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
      * acceptance magic value.
      */
     function _1155Mint(address to, uint256 id, uint256 amount, bytes memory data) internal virtual {
-        if (to == address(0)) revert InvalidAddress();
-        if (id <= _OFFSET_1155_TOKEN_ID || !_721Exists(id - _OFFSET_1155_TOKEN_ID)) revert InvalidTokenId();
-        if (msg.sender != ownerOf(id - _OFFSET_1155_TOKEN_ID)) revert PermissionDenied();
+        _checkNonZeroAddress(to);
+        _1155CheckCanMintToken(id);
 
         address operator = msg.sender;
         uint256[] memory ids = _asSingletonArray(id);
@@ -573,7 +572,7 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
         virtual
     {
         if (ids.length != amounts.length) revert MismatchInputLength();
-        if (to == address(0)) revert InvalidAddress();
+        _checkNonZeroAddress(to);
 
         address operator = msg.sender;
 
@@ -581,10 +580,8 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
 
         for (uint256 i = 0; i < ids.length; i++) {
             uint256 id = ids[i];
-            uint256 amount = amounts[i];
-            if (id <= _OFFSET_1155_TOKEN_ID || !_721Exists(id - _OFFSET_1155_TOKEN_ID)) revert InvalidTokenId();
-            if (msg.sender != ownerOf(id - _OFFSET_1155_TOKEN_ID)) revert PermissionDenied();
-            _1155Balances[id][to] += amount;
+            _1155CheckCanMintToken(id);
+            _1155Balances[id][to] += amounts[i];
         }
 
         emit TransferBatch(operator, address(0), to, ids, amounts);
@@ -605,7 +602,7 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
      * - `from` must have at least `amount` tokens of token type `id`.
      */
     function _1155Burn(address from, uint256 id, uint256 amount) internal virtual {
-        if (from == address(0)) revert InvalidAddress();
+        _checkNonZeroAddress(from);
 
         address operator = msg.sender;
         uint256[] memory ids = _asSingletonArray(id);
@@ -635,7 +632,7 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
      */
     function _1155BurnBatch(address from, uint256[] memory ids, uint256[] memory amounts) internal virtual {
         if (ids.length != amounts.length) revert MismatchInputLength();
-        if (from == address(0)) revert InvalidAddress();
+        _checkNonZeroAddress(from);
 
         address operator = msg.sender;
 

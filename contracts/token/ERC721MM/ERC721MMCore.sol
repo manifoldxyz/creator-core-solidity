@@ -399,8 +399,11 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
 
         batchBalances = new uint256[](accounts.length);
 
-        for (uint256 i = 0; i < accounts.length; ++i) {
+        for (uint256 i; i < accounts.length;) {
             batchBalances[i] = balanceOf(accounts[i], ids[i]);
+            unchecked {
+                ++i;
+            }
         }
     }
 
@@ -487,8 +490,11 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
 
         _1155BeforeTokenTransfer(operator, from, to, ids, amounts, data);
 
-        for (uint256 i = 0; i < ids.length; ++i) {
+        for (uint256 i; i < ids.length;) {
             _1155Transfer(from, to, ids[i], amounts[i]);
+            unchecked {
+                ++i;
+            }
         }
 
         emit TransferBatch(operator, from, to, ids, amounts);
@@ -507,7 +513,7 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
         unchecked {
             _1155Balances[id][from] = fromBalance - amount;
         }
-        _1155Balances[id][to] += amount;
+        if (to != address(0)) _1155Balances[id][to] += amount;
     }
 
     function _1155CheckCanMintToken(uint256 id) private view {
@@ -566,10 +572,13 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
 
         _1155BeforeTokenTransfer(operator, address(0), to, ids, amounts, data);
 
-        for (uint256 i = 0; i < ids.length; i++) {
+        for (uint256 i; i < ids.length;) {
             uint256 id = ids[i];
             _1155CheckCanMintToken(id);
             _1155Balances[id][to] += amounts[i];
+            unchecked {
+                ++i;
+            }
         }
 
         emit TransferBatch(operator, address(0), to, ids, amounts);
@@ -598,11 +607,7 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
 
         _1155BeforeTokenTransfer(operator, from, address(0), ids, amounts, "");
 
-        uint256 fromBalance = _1155Balances[id][from];
-        if (fromBalance < amount) revert InsufficientBalance();
-        unchecked {
-            _1155Balances[id][from] = fromBalance - amount;
-        }
+        _1155Transfer(from, address(0), id, amount);
 
         emit TransferSingle(operator, from, address(0), id, amount);
 
@@ -626,14 +631,10 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
 
         _1155BeforeTokenTransfer(operator, from, address(0), ids, amounts, "");
 
-        for (uint256 i = 0; i < ids.length; i++) {
-            uint256 id = ids[i];
-            uint256 amount = amounts[i];
-
-            uint256 fromBalance = _1155Balances[id][from];
-            if (fromBalance < amount) revert InsufficientBalance();
+        for (uint256 i; i < ids.length;) {
+            _1155Transfer(from, address(0), ids[i], amounts[i]);
             unchecked {
-                _1155Balances[id][from] = fromBalance - amount;
+                ++i;
             }
         }
 

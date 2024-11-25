@@ -94,6 +94,10 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
         if (addr == address(0)) revert InvalidAddress();
     }
 
+    function _checkMismatchInputLengthsUint256(uint256[] memory arr1, uint256[] memory arr2) private pure {
+        if (arr1.length != arr2.length) revert MismatchInputLength();
+    }
+
     /**
      * @dev See {IERC721-balanceOf}.
      */
@@ -478,7 +482,7 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
         uint256[] memory amounts,
         bytes memory data
     ) internal virtual {
-        if (ids.length != amounts.length) revert MismatchInputLength();
+        _checkMismatchInputLengthsUint256(ids, amounts);
         _checkNonZeroAddress(to);
 
         _1155BeforeTokenTransfer(msg.sender, from, to, ids, amounts, data);
@@ -510,8 +514,9 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
     }
 
     function _1155CheckCanMintToken(uint256 id) private view {
-        if (id <= _OFFSET_1155_TOKEN_ID || !_721Exists(id - _OFFSET_1155_TOKEN_ID)) revert InvalidTokenId();
-        if (msg.sender != ownerOf(id - _OFFSET_1155_TOKEN_ID)) revert PermissionDenied();
+        uint256 tokenId721 = id - _OFFSET_1155_TOKEN_ID;
+        if (!_721Exists(tokenId721)) revert InvalidTokenId();
+        if (msg.sender != ownerOf(tokenId721)) revert PermissionDenied();
     }
 
     /**
@@ -557,7 +562,7 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
         internal
         virtual
     {
-        if (ids.length != amounts.length) revert MismatchInputLength();
+        _checkMismatchInputLengthsUint256(ids, amounts);
         _checkNonZeroAddress(to);
 
         _1155BeforeTokenTransfer(msg.sender, address(0), to, ids, amounts, data);
@@ -613,7 +618,7 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
      * - `ids` and `amounts` must have the same length.
      */
     function _1155BurnBatch(address from, uint256[] memory ids, uint256[] memory amounts) internal virtual {
-        if (ids.length != amounts.length) revert MismatchInputLength();
+        _checkMismatchInputLengthsUint256(ids, amounts);
         _checkNonZeroAddress(from);
 
         address operator = msg.sender;

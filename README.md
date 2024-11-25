@@ -22,7 +22,7 @@ Go [here](https://docs.manifold.xyz/v/manifold-for-developers/manifold-creator-a
 ### Installation
 
 ```console
-$ npm install @manifoldxyz/creator-core-solidity
+$ forge install manifoldxyz/creator-core-solidity
 ```
 
 ### Usage
@@ -32,7 +32,7 @@ Once installed, you can use the contracts in the library by importing them:
 ```solidity
 pragma solidity ^0.8.0;
 
-import "@manifoldxyz/creator-core-solidity/contracts/ERC721Creator.sol";
+import "manifoldxyz/creator-core-solidity/contracts/ERC721Creator.sol";
 
 contract MyContract is ERC721Creator  {
     constructor() ERC721Creator ("MyContract", "MC") {

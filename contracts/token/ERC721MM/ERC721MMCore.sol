@@ -5,7 +5,6 @@ pragma solidity ^0.8.17;
 import {IERC1155Receiver} from "openzeppelin/token/ERC1155/IERC1155Receiver.sol";
 import {IERC721Receiver} from "openzeppelin/token/ERC721/IERC721Receiver.sol";
 import {Address} from "openzeppelin/utils/Address.sol";
-import {Strings} from "openzeppelin/utils/Strings.sol";
 import {ERC165, IERC165} from "openzeppelin/utils/introspection/ERC165.sol";
 import {IERC721MM} from "./IERC721MM.sol";
 
@@ -234,9 +233,7 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
         emit Transfer(address(0), to, tokenId);
 
         _721AfterTokenTransfer(address(0), to, tokenId, tokenData);
-        require(
-            _checkOnERC721Received(address(0), to, tokenId, data), "ERC721: transfer to non ERC721Receiver implementer"
-        );
+        if (!_checkOnERC721Received(address(0), to, tokenId, data)) revert TransferFailed();
     }
 
     /**
@@ -585,8 +582,8 @@ abstract contract ERC721MMCore is ERC165, IERC721MM {
         for (uint256 i = 0; i < ids.length; i++) {
             uint256 id = ids[i];
             uint256 amount = amounts[i];
-            require(id > _OFFSET_1155_TOKEN_ID && _721Exists(id - _OFFSET_1155_TOKEN_ID), "ERC1155: Invalid token id");
-            require(msg.sender == ownerOf(id - _OFFSET_1155_TOKEN_ID), "ERC1155: caller is not the 721 token owner");
+            if (id <= _OFFSET_1155_TOKEN_ID || !_721Exists(id - _OFFSET_1155_TOKEN_ID)) revert InvalidTokenId();
+            if (msg.sender != ownerOf(id - _OFFSET_1155_TOKEN_ID)) revert PermissionDenied();
             _1155Balances[id][to] += amount;
         }
 
